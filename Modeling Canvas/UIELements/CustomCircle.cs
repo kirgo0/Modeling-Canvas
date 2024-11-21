@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows;
+using System.Windows.Input;
 
 namespace Modeling_Canvas.UIELements
 {
@@ -85,6 +86,16 @@ namespace Modeling_Canvas.UIELements
         protected override Size ArrangeOverride(Size finalSize)
         {
             return finalSize;
+        }
+
+        protected override void MoveElement(Vector offset)
+        {
+            Center = new Point(Center.X + offset.X / UnitSize,Center.Y - offset.Y / UnitSize);
+        }
+
+        public override string ToString()
+        {
+            return $"X: {Center.X:0.0} Y: {Center.Y:0.0)} | Radius: {Radius}";
         }
     }
 }

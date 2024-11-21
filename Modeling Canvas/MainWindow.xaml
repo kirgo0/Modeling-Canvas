@@ -11,7 +11,7 @@
             <ColumnDefinition Width="169*"/>
         </Grid.ColumnDefinitions>
 
-        <local:CustomCanvas x:Name="MyCanvas" Background="White" UnitSize="100">
+        <local:CustomCanvas x:Name="MyCanvas" Background="White" UnitSize="25">
         </local:CustomCanvas>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
