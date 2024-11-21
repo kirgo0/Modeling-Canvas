@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
+﻿using System.Windows.Media;
 using System.Windows;
-using System.Windows.Input;
 
 namespace Modeling_Canvas.UIELements
 {
@@ -27,13 +21,13 @@ namespace Modeling_Canvas.UIELements
 
             // Get the center of the element
             // Create a geometry for the circle segment
-            var geometry = CreateCircleSegmentGeometry(Center, Radius * UnitSize, SegmentStartDegrees, SegmentEndDegrees, Precision);
+            var geometry = CreateCircleSegmentGeometry(new Point(0, 0), Radius * UnitSize, SegmentStartDegrees, SegmentEndDegrees, Precision);
 
             // Draw the circle segment
             drawingContext.DrawGeometry(Fill, new Pen(Stroke, StrokeThickness), geometry);
 
             // Draw the center dot
-            drawingContext.DrawGeometry(Brushes.Black, new Pen(Brushes.Black, 1), CreateCircleSegmentGeometry(Center, 4, 0, 360, Precision));
+            drawingContext.DrawGeometry(Brushes.Black, new Pen(Brushes.Black, 1), CreateCircleSegmentGeometry(new Point(0, 0), 4, 0, 360, Precision));
         }
 
 
@@ -74,7 +68,7 @@ namespace Modeling_Canvas.UIELements
         }
         public override Point GetOriginPoint(Size arrangedSize)
         {
-            return new Point(arrangedSize.Width / 2  + (UnitSize-1) * Center.X, arrangedSize.Height / 2 - (UnitSize+1) * Center.Y);
+            return new Point(arrangedSize.Width / 2  + UnitSize * Center.X, arrangedSize.Height / 2 - UnitSize * Center.Y);
         }
 
         // Override MeasureOverride and ArrangeOverride to size the element
@@ -90,12 +84,20 @@ namespace Modeling_Canvas.UIELements
 
         protected override void MoveElement(Vector offset)
         {
-            Center = new Point(Center.X + offset.X / UnitSize,Center.Y - offset.Y / UnitSize);
+            Point newCenter = new Point(
+                Center.X + offset.X / UnitSize,
+                Center.Y - offset.Y / UnitSize
+                );
+
+
+            // Update the circle's center position
+            Center = newCenter;
+            InvalidateCanvas();
         }
 
         public override string ToString()
         {
-            return $"X: {Center.X:0.0} Y: {Center.Y:0.0)} | Radius: {Radius}";
+            return $"X: {Center.X} \nY: {Center.Y} \n| Radius: {Radius}";
         }
     }
 }

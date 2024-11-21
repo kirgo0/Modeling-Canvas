@@ -39,11 +39,11 @@ namespace Modeling_Canvas.UIELements
             base.OnRender(dc);
             DrawCoordinateGrid(dc);
         }
-
+        public bool GridSnapping { get; set; } = false; // Enable grid snapping by default
+        // Calculate grid lines for snapping
 
         protected override Size ArrangeOverride(Size arrangeSize)
         {
-            var e = new Ellipse();
             double centerX = arrangeSize.Width / 2;
             double centerY = arrangeSize.Height / 2;
 
@@ -52,6 +52,7 @@ namespace Modeling_Canvas.UIELements
                 if (child is CustomElement element)
                 {
                     var point = element.GetOriginPoint(arrangeSize);
+                    //var point = new Point(0, 0);
                     // Arrange the element
                     element.Arrange(new Rect(point, element.DesiredSize));
                 }
@@ -67,21 +68,31 @@ namespace Modeling_Canvas.UIELements
             double halfWidth = width / 2;
             double halfHeight = height / 2;
 
-            Pen gridPen = new Pen(Brushes.Black, 1);
+            Pen gridPen = new Pen(Brushes.Black, 0.1);
             Pen axisPen = new Pen(Brushes.Black, 2);
 
             // Draw grid
             if (UnitSize > 0 && GridFrequency > 0)
             {
+                // Vertical lines and coordinates
                 for (double x = halfWidth; x < width; x += UnitSize * GridFrequency)
+                {
                     dc.DrawLine(gridPen, new Point(x, 0), new Point(x, height));
+                }
                 for (double x = halfWidth; x > 0; x -= UnitSize * GridFrequency)
+                {
                     dc.DrawLine(gridPen, new Point(x, 0), new Point(x, height));
+                }
 
+                // Horizontal lines and coordinates
                 for (double y = halfHeight; y < height; y += UnitSize * GridFrequency)
+                {
                     dc.DrawLine(gridPen, new Point(0, y), new Point(width, y));
+                }
                 for (double y = halfHeight; y > 0; y -= UnitSize * GridFrequency)
+                {
                     dc.DrawLine(gridPen, new Point(0, y), new Point(width, y));
+                }
             }
 
             // Draw axes
@@ -111,6 +122,7 @@ namespace Modeling_Canvas.UIELements
             dc.DrawText(xLabel, new Point(width - xLabel.Width - 5, halfHeight - xLabel.Height - 5)); // X-axis label
             dc.DrawText(yLabel, new Point(halfWidth + 5, 5)); // Y-axis label
         }
+
     }
 }
 

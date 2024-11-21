@@ -11,7 +11,7 @@
             <ColumnDefinition Width="169*"/>
         </Grid.ColumnDefinitions>
 
-        <local:CustomCanvas x:Name="MyCanvas" Background="White" UnitSize="25">
+        <local:CustomCanvas x:Name="MyCanvas" Background="White" UnitSize="50" >
         </local:CustomCanvas>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
@@ -19,7 +19,7 @@
                 <RowDefinition Height="144*"/>
                 <RowDefinition Height="585*"/>
             </Grid.RowDefinitions>
-            <Label x:Name="CurrentElementLabel" Content="Label" HorizontalAlignment="Center" Margin="0,55,0,0" VerticalAlignment="Top" Grid.RowSpan="2" Width="170"/>
+            <Label x:Name="CurrentElementLabel" Content="Label" HorizontalAlignment="Center" Margin="0,55,0,0" VerticalAlignment="Top" Grid.RowSpan="2" Width="170" Height="162"/>
         </Grid>
     </Grid>
 </Window>

@@ -1,4 +1,6 @@
-﻿using Modeling_Canvas.UIELements;
+﻿using Microsoft.Extensions.Logging;
+using Modeling_Canvas.UIELements;
+using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -23,18 +25,18 @@ namespace Modeling_Canvas
             CenterWindowOnScreen();
             var customSegment = new CustomCircle
             {
-                Radius = 3,
+                Radius = 6,
                 Stroke = Brushes.DarkGreen,
                 StrokeThickness = 3,
                 Precision = 100,
                 SegmentStartDegrees = 0, // Start at 45 degrees
                 SegmentEndDegrees = 270,
-                Center = new Point(4, -3), // End at 270 degrees
-                Canvas = MyCanvas
+                Center = new Point(-2, 0), // End at 270 degrees
+                Canvas = MyCanvas,
             };
 
             MyCanvas.Children.Add(customSegment);
-
+            
         }
 
         private void CenterWindowOnScreen()

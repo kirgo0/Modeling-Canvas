@@ -18,7 +18,10 @@ namespace Modeling_Canvas.UIELements
         public double UnitSize { get => Canvas.UnitSize; }
         public virtual Point GetOriginPoint(Size arrangedSize)
         {
-            return new Point(arrangedSize.Width/2-StrokeThickness, arrangedSize.Height/2-StrokeThickness);  
+            return new Point(
+                arrangedSize.Width/2, 
+                arrangedSize.Height/2
+                );
         }
 
         protected override void OnMouseEnter(MouseEventArgs e)
@@ -43,6 +46,7 @@ namespace Modeling_Canvas.UIELements
 
         private bool _isDragging = false;
         private Point _lastMousePosition;
+        protected Point? _lastSnappedPosition = null; // Track the last snapped position
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
@@ -62,7 +66,6 @@ namespace Modeling_Canvas.UIELements
 
                 // Update the position of the element
                 MoveElement(offset);
-                InvalidateCanvas();
 
                 _lastMousePosition = currentMousePosition;
             }
@@ -82,10 +85,9 @@ namespace Modeling_Canvas.UIELements
         protected abstract void MoveElement(Vector offset);
 
         // Helper method to invalidate the parent canvas
-        private void InvalidateCanvas()
+        protected void InvalidateCanvas()
         {
             // Request the canvas to re-render by invalidating it
-            Canvas?.InvalidateArrange();
             Canvas?.InvalidateVisual();
         }
     }
