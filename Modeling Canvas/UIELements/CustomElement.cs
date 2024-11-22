@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -16,6 +17,8 @@ namespace Modeling_Canvas.UIELements
         public double StrokeThickness { get; set; } = 2; // Default stroke thickness
         public CustomCanvas Canvas { get; set; } = new CustomCanvas() { UnitSize = 1};
         public double UnitSize { get => Canvas.UnitSize; }
+
+        public Point? LastGridSnappedPoint { get; set; } = null;
         public virtual Point GetOriginPoint(Size arrangedSize)
         {
             return new Point(
@@ -46,7 +49,6 @@ namespace Modeling_Canvas.UIELements
 
         private bool _isDragging = false;
         private Point _lastMousePosition;
-        protected Point? _lastSnappedPosition = null; // Track the last snapped position
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
@@ -67,7 +69,12 @@ namespace Modeling_Canvas.UIELements
                 // Update the position of the element
                 MoveElement(offset);
 
-                _lastMousePosition = currentMousePosition;
+                _lastMousePosition = currentMousePosition; 
+                var window = App.Current.MainWindow as MainWindow;
+                if (window != null)
+                {
+                    window.CurrentElementLabel.Content = ToString();
+                }
             }
         }
 

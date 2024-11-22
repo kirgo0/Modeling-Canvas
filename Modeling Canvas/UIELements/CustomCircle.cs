@@ -7,12 +7,19 @@ namespace Modeling_Canvas.UIELements
     public class CustomCircle : CustomElement
     {
         public double Radius { get; set; } = 5; // Default radius
-        
         public int Precision { get; set; } = 100; // Number of points for the circle
         public double SegmentStartDegrees { get; set; } = 0; // Start angle in degrees
         public double SegmentEndDegrees { get; set; } = 360; // End angle in degrees
 
         public Point Center { get; set; } = new Point(1,1);
+
+        public CustomCircle()
+        {
+            if(Center.X % 1 == 0 && Center.Y % 1 == 0)
+            {
+                LastGridSnappedPoint = Center;
+            }
+        }
 
         // Properties for the center dot
         protected override void OnRender(DrawingContext drawingContext)
@@ -84,14 +91,41 @@ namespace Modeling_Canvas.UIELements
 
         protected override void MoveElement(Vector offset)
         {
+            if(Canvas.IsSpacePressed)
+            {
+                return;
+            }
             Point newCenter = new Point(
                 Center.X + offset.X / UnitSize,
                 Center.Y - offset.Y / UnitSize
                 );
 
+            if(Canvas.GridSnapping)
+            {
+                // calculate last grid lines to snap
+                Point oldCenterRounded = new Point(
+                    Round(Center.X),
+                    Round(Center.Y)
+                );
 
+                // check if new and old grid lines to snap are the same
+                if (Round(newCenter.X) == oldCenterRounded.X && 
+                    Round(newCenter.Y) == oldCenterRounded.Y)
+                {
+                    // don't snap
+                    Center = new Point(Center.X + offset.X / UnitSize, Center.Y - offset.Y / UnitSize);
+                } else
+                {
+                    // if not snap to new line
+                    Center = new Point(Round(newCenter.X), Round(newCenter.Y));
+                }
+            }
+            else
+            {
+                Center = newCenter;
+            }
+            
             // Update the circle's center position
-            Center = newCenter;
             InvalidateCanvas();
         }
 
@@ -99,5 +133,41 @@ namespace Modeling_Canvas.UIELements
         {
             return $"X: {Center.X} \nY: {Center.Y} \n| Radius: {Radius}";
         }
+
+        public static double Round(double value)
+        {
+            // Define thresholds
+            const double lowerThreshold = 0.1;
+            const double upperThreshold = 0.9;
+            const double toHalfLower = 0.45;
+            const double toHalfUpper = 0.55;
+
+            // Extract the integer and fractional parts
+            double integerPart = Math.Floor(value);
+            double fractionalPart = value - integerPart;
+
+            if (fractionalPart <= lowerThreshold)
+            {
+                // Round down to the nearest integer
+                return integerPart;
+            }
+            else if (fractionalPart >= upperThreshold)
+            {
+                // Round up to the nearest integer
+                return integerPart + 1;
+            }
+            else if (fractionalPart >= toHalfLower && fractionalPart <= toHalfUpper)
+            {
+                // Round to .5
+                return integerPart + 0.5;
+            }
+            else
+            {
+                // Keep the original value
+                return value;
+            }
+        }
+
+
     }
 }

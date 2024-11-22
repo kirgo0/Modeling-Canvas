@@ -36,7 +36,9 @@ namespace Modeling_Canvas
             };
 
             MyCanvas.Children.Add(customSegment);
-            
+
+            PreviewKeyUp += MyCanvas.OnKeyUp;
+            PreviewKeyDown += MyCanvas.OnKeyDown;
         }
 
         private void CenterWindowOnScreen()
@@ -47,12 +49,6 @@ namespace Modeling_Canvas
             double windowHeight = Height;
             Left = (screenWidth / 2) - (windowWidth / 2);
             Top = (screenHeight / 2) - (windowHeight / 2);
-        }
-
-       
-        private void OnMouse(object sender, MouseEventArgs e)
-        {
-            // Handle mouse enter events
         }
 
     }

@@ -8,12 +8,16 @@ using System.Windows.Media;
 using System.Windows;
 using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
+using System.Windows.Input;
 
 namespace Modeling_Canvas.UIELements
 {
 
     public class CustomCanvas : Canvas
     {
+        public double XOffset { get; set; } = 0;
+        public double YOffset { get; set; } = 0;
+
         public double UnitSize
         {
             get => (double)GetValue(UnitSizeProperty);
@@ -24,15 +28,15 @@ namespace Modeling_Canvas.UIELements
             DependencyProperty.Register(nameof(UnitSize), typeof(double), typeof(CustomCanvas),
                 new FrameworkPropertyMetadata(20.0, FrameworkPropertyMetadataOptions.AffectsRender));
 
-        public int GridFrequency
+        public double GridFrequency
         {
-            get => (int)GetValue(GridFrequencyProperty);
+            get => (double)GetValue(GridFrequencyProperty);
             set => SetValue(GridFrequencyProperty, value);
         }
 
         public static readonly DependencyProperty GridFrequencyProperty =
-            DependencyProperty.Register(nameof(GridFrequency), typeof(int), typeof(CustomCanvas),
-                new FrameworkPropertyMetadata(1, FrameworkPropertyMetadataOptions.AffectsRender));
+            DependencyProperty.Register(nameof(GridFrequency), typeof(double), typeof(CustomCanvas),
+                new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.AffectsRender));
 
         protected override void OnRender(DrawingContext dc)
         {
@@ -52,9 +56,12 @@ namespace Modeling_Canvas.UIELements
                 if (child is CustomElement element)
                 {
                     var point = element.GetOriginPoint(arrangeSize);
-                    //var point = new Point(0, 0);
+                    var pointWithOffset = new Point(point.X + XOffset, point.Y - YOffset);
                     // Arrange the element
-                    element.Arrange(new Rect(point, element.DesiredSize));
+                    element.Arrange(new Rect(pointWithOffset, element.DesiredSize));
+                    element.InvalidateVisual();
+                    element.InvalidateMeasure();
+                    element.InvalidateArrange();
                 }
             }
 
@@ -65,34 +72,39 @@ namespace Modeling_Canvas.UIELements
         {
             double width = ActualWidth;
             double height = ActualHeight;
-            double halfWidth = width / 2;
-            double halfHeight = height / 2;
+            double halfWidth = width / 2 + XOffset;
+            double halfHeight = height / 2 - YOffset;
 
             Pen gridPen = new Pen(Brushes.Black, 0.1);
             Pen axisPen = new Pen(Brushes.Black, 2);
 
             // Draw grid
-            if (UnitSize > 0 && GridFrequency > 0)
+            if (UnitSize < 0 || GridFrequency < 0)
             {
-                // Vertical lines and coordinates
-                for (double x = halfWidth; x < width; x += UnitSize * GridFrequency)
-                {
-                    dc.DrawLine(gridPen, new Point(x, 0), new Point(x, height));
-                }
-                for (double x = halfWidth; x > 0; x -= UnitSize * GridFrequency)
-                {
-                    dc.DrawLine(gridPen, new Point(x, 0), new Point(x, height));
-                }
+                return;
+            }
 
-                // Horizontal lines and coordinates
-                for (double y = halfHeight; y < height; y += UnitSize * GridFrequency)
-                {
-                    dc.DrawLine(gridPen, new Point(0, y), new Point(width, y));
-                }
-                for (double y = halfHeight; y > 0; y -= UnitSize * GridFrequency)
-                {
-                    dc.DrawLine(gridPen, new Point(0, y), new Point(width, y));
-                }
+            var calculatedFrequncy = GridFrequency;
+            if (UnitSize < 5) calculatedFrequncy = 25;
+
+            // Vertical lines and coordinates
+            for (double x = halfWidth; x < width; x += UnitSize * calculatedFrequncy)
+            {
+                dc.DrawLine(gridPen, new Point(x, 0), new Point(x, height));
+            }
+            for (double x = halfWidth; x > 0; x -= UnitSize * calculatedFrequncy)
+            {
+                dc.DrawLine(gridPen, new Point(x, 0), new Point(x, height));
+            }
+
+            // Horizontal lines and coordinates
+            for (double y = halfHeight; y < height; y += UnitSize * calculatedFrequncy)
+            {
+                dc.DrawLine(gridPen, new Point(0, y), new Point(width, y));
+            }
+            for (double y = halfHeight; y > 0; y -= UnitSize * calculatedFrequncy)
+            {
+                dc.DrawLine(gridPen, new Point(0, y), new Point(width, y));
             }
 
             // Draw axes
@@ -121,6 +133,110 @@ namespace Modeling_Canvas.UIELements
             // Position X and Y labels at the ends of the axes
             dc.DrawText(xLabel, new Point(width - xLabel.Width - 5, halfHeight - xLabel.Height - 5)); // X-axis label
             dc.DrawText(yLabel, new Point(halfWidth + 5, 5)); // Y-axis label
+        }
+        public bool IsCtrlPressed { get; set; } = false;
+        public bool IsAltPressed { get; set; } = false;
+        public bool IsSpacePressed { get; set; } = false;
+        public bool IsLeftMouseButtonPressed { get; set; } = false;
+
+        private Point previousMousePosition;
+        public CustomCanvas()
+        {
+            // Hook mouse and key events
+            MouseDown += OnMouseDown;
+            MouseUp += OnMouseUp;
+            MouseMove += OnMouseMove;
+            KeyDown += OnKeyDown;
+            KeyUp += OnKeyUp;
+        }
+        public void OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+            {
+                GridSnapping = true;
+            }
+            else if (e.Key == Key.LeftCtrl)
+            {
+                IsCtrlPressed = true;
+            }
+            else if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
+            {
+                IsAltPressed = true;
+            }
+            else if (e.Key == Key.Space)
+            {
+                IsSpacePressed = true;
+            }
+        }
+
+        public void OnKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+            {
+                GridSnapping = false;
+            }
+            else if (e.Key == Key.LeftCtrl)
+            {
+                IsCtrlPressed = false;
+                IsAltPressed = false;
+            }
+            else if (e.Key == Key.Space)
+            {
+                IsSpacePressed = false;
+            }
+        }
+
+        private void OnMouseMove(object sender, MouseEventArgs e)
+        {
+            if (IsSpacePressed && IsLeftMouseButtonPressed)
+            {
+                var currentMousePosition = e.GetPosition(this);
+                var deltaX = currentMousePosition.X - previousMousePosition.X;
+                var deltaY = currentMousePosition.Y - previousMousePosition.Y;
+
+                // Update offsets
+                XOffset += deltaX;
+                YOffset -= deltaY; // Invert Y for typical grid behavior
+
+                previousMousePosition = currentMousePosition;
+
+                // Redraw canvas
+                InvalidateVisual();
+            }
+        }
+
+        private void OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                IsLeftMouseButtonPressed = true;
+                previousMousePosition = e.GetPosition(this);
+            }
+        }
+
+        private void OnMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Released)
+            {
+                IsLeftMouseButtonPressed = false;
+            }
+        }
+        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        {
+            base.OnMouseWheel(e);
+
+            if (IsCtrlPressed)
+            {
+                // Determine delta multiplier based on whether Alt is pressed
+                double deltaMultiplier = IsAltPressed ? 0.01 : 0.1;
+
+                if (e.Delta != 0)
+                {
+                    // Adjust UnitSize based on delta multiplier
+                    UnitSize += Math.Round(e.Delta * deltaMultiplier);
+                    if (UnitSize <= 0) UnitSize = 1;
+                }
+            }
         }
 
     }
