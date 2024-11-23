@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows;
-using System.Windows.Media.Media3D;
-using System.Windows.Shapes;
 using System.Windows.Input;
 
 namespace Modeling_Canvas.UIELements
@@ -38,9 +31,11 @@ namespace Modeling_Canvas.UIELements
             DependencyProperty.Register(nameof(GridFrequency), typeof(double), typeof(CustomCanvas),
                 new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.AffectsRender));
 
+        public HashSet<CustomElement> SelectedElements { get; set; } = new();
+
         public Point GetCanvasUnitCoordinates(Point pixelCoordinates)
         {
-            return new Point((pixelCoordinates.X - ActualWidth / 2) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y) / UnitSize);
+            return new Point((pixelCoordinates.X - ActualWidth / 2 - XOffset) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y - YOffset) / UnitSize);
         }
 
         protected override void OnRender(DrawingContext dc)
@@ -149,9 +144,6 @@ namespace Modeling_Canvas.UIELements
         public CustomCanvas()
         {
             // Hook mouse and key events
-            MouseDown += OnMouseDown;
-            MouseUp += OnMouseUp;
-            MouseMove += OnMouseMove;
             KeyDown += OnKeyDown;
             KeyUp += OnKeyUp;
         }
@@ -172,6 +164,7 @@ namespace Modeling_Canvas.UIELements
             else if (e.Key == Key.Space)
             {
                 IsSpacePressed = true;
+                Mouse.OverrideCursor = Cursors.Hand;
             }
         }
 
@@ -189,10 +182,11 @@ namespace Modeling_Canvas.UIELements
             else if (e.Key == Key.Space)
             {
                 IsSpacePressed = false;
+                Mouse.OverrideCursor = null;
             }
         }
 
-        private void OnMouseMove(object sender, MouseEventArgs e)
+        protected override void OnMouseMove(MouseEventArgs e)
         {
             if (IsSpacePressed && IsLeftMouseButtonPressed)
             {
@@ -209,24 +203,25 @@ namespace Modeling_Canvas.UIELements
                 // Redraw canvas
                 InvalidateVisual();
             }
+            base.OnMouseMove(e);
         }
 
-        private void OnMouseDown(object sender, MouseButtonEventArgs e)
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                IsLeftMouseButtonPressed = true;
-                previousMousePosition = e.GetPosition(this);
-            }
+            SelectedElements.Clear();
+            InvalidateVisual();
+            IsLeftMouseButtonPressed = true;
+            previousMousePosition = e.GetPosition(this);
+            base.OnMouseLeftButtonDown(e);
         }
 
-        private void OnMouseUp(object sender, MouseButtonEventArgs e)
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Released)
-            {
-                IsLeftMouseButtonPressed = false;
-            }
+            IsLeftMouseButtonPressed = false;
+            Mouse.OverrideCursor = null;
+            base.OnMouseLeftButtonUp(e);
         }
+
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
             base.OnMouseWheel(e);
