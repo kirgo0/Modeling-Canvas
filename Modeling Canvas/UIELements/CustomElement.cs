@@ -14,11 +14,20 @@ namespace Modeling_Canvas.UIELements
     {
         public Brush Fill { get; set; } = Brushes.Transparent; // Default fill color
         public Brush Stroke { get; set; } = Brushes.Black; // Default stroke color
-        public double StrokeThickness { get; set; } = 2; // Default stroke thickness
-        public CustomCanvas Canvas { get; set; } = new CustomCanvas() { UnitSize = 1};
+        public double StrokeThickness { get; set; } = 1; // Default stroke thickness
+        public CustomCanvas Canvas { get; set; }
+        public double Opacity { get; set; } = 1;
         public double UnitSize { get => Canvas.UnitSize; }
 
-        public Point? LastGridSnappedPoint { get; set; } = null;
+        protected bool _isDragging = false;
+
+        protected Point _lastMousePosition;
+
+        protected CustomElement(CustomCanvas canvas)
+        {
+            Canvas = canvas;
+        }
+
         public virtual Point GetOriginPoint(Size arrangedSize)
         {
             return new Point(
@@ -46,9 +55,6 @@ namespace Modeling_Canvas.UIELements
                 window.CurrentElementLabel.Content = "";
             }
         }
-
-        private bool _isDragging = false;
-        private Point _lastMousePosition;
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {

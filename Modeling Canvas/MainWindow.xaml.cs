@@ -23,19 +23,31 @@ namespace Modeling_Canvas
         {
             InitializeComponent();
             CenterWindowOnScreen();
-            var customSegment = new CustomCircle
+            var customSegment = new CustomCircle (MyCanvas)
             {
                 Radius = 6,
                 Stroke = Brushes.DarkGreen,
                 StrokeThickness = 3,
                 Precision = 100,
-                SegmentStartDegrees = 0, // Start at 45 degrees
-                SegmentEndDegrees = 270,
+                StartDegrees = 0, // Start at 45 degrees
+                EndDegrees = 70,
+                Center = new Point(-2, 0), // End at 270 degrees
+            };
+            MyCanvas.Children.Add(customSegment);
+
+            var customSegment2 = new CustomCircle (MyCanvas)
+            {
+                Radius = 4,
+                Stroke = Brushes.Red,
+                StrokeThickness = 3,
+                Precision = 100,
+                StartDegrees = 0, // Start at 45 degrees
+                EndDegrees = 90,
                 Center = new Point(-2, 0), // End at 270 degrees
                 Canvas = MyCanvas,
             };
+            MyCanvas.Children.Add(customSegment2);
 
-            MyCanvas.Children.Add(customSegment);
 
             PreviewKeyUp += MyCanvas.OnKeyUp;
             PreviewKeyDown += MyCanvas.OnKeyDown;

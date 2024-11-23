@@ -38,6 +38,11 @@ namespace Modeling_Canvas.UIELements
             DependencyProperty.Register(nameof(GridFrequency), typeof(double), typeof(CustomCanvas),
                 new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.AffectsRender));
 
+        public Point GetCanvasUnitCoordinates(Point pixelCoordinates)
+        {
+            return new Point((pixelCoordinates.X - ActualWidth / 2) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y) / UnitSize);
+        }
+
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
@@ -51,8 +56,9 @@ namespace Modeling_Canvas.UIELements
             double centerX = arrangeSize.Width / 2;
             double centerY = arrangeSize.Height / 2;
 
-            foreach (UIElement child in InternalChildren)
+            for (var i = 0; i < InternalChildren.Count; i++)
             {
+                var child = InternalChildren[i];
                 if (child is CustomElement element)
                 {
                     var point = element.GetOriginPoint(arrangeSize);
