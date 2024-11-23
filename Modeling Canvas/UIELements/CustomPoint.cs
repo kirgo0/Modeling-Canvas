@@ -34,42 +34,41 @@ namespace Modeling_Canvas.UIELements
             semiTransparentFill.Opacity = Opacity;
 
             drawingContext.DrawGeometry(semiTransparentFill, new Pen(Stroke, StrokeThickness), 
-                CreateCircleSegmentGeometry(new Point(0, 0), Radius, 20));
+                CreateCircleSegmentGeometry(new Point(0, 0), Radius, 100));
         }
 
-        private Geometry CreateCircleSegmentGeometry(Point center, double radius, int precision)
+        protected Geometry CreateCircleSegmentGeometry(Point center, double radius, int precision)
         {
             var geometry = new StreamGeometry();
 
             using (var context = geometry.Open())
             {
-
-                // Calculate the step size for each segment
-                double segmentStep = 360 / precision;
+                // Calculate the step size for each segment in radians
+                double segmentStep = (2 * Math.PI) / precision;
 
                 // Calculate the start point
                 var startPoint = new Point(
                     center.X + radius * Math.Cos(0),
                     center.Y + radius * Math.Sin(0));
 
-
                 context.BeginFigure(startPoint, true, true); // Is filled, Is closed
 
-                // Add points for the segment
-                for (int i = 1; i <= precision + 1; i++)
+                // Add points for the segments
+                for (int i = 1; i <= precision; i++)
                 {
-                    double angle = 0 + i * segmentStep;
+                    double angle = i * segmentStep; // Angle in radians
                     var point = new Point(
                         center.X + radius * Math.Cos(angle),
                         center.Y + radius * Math.Sin(angle));
 
-                    context.LineTo(point, true, true); // Line to the calculated point
+                    context.LineTo(point, true, false); // Line to the calculated point
                 }
             }
 
             geometry.Freeze(); // Freeze for performance
             return geometry;
         }
+
 
         private double DegToRad(double deg)
         {
@@ -85,15 +84,13 @@ namespace Modeling_Canvas.UIELements
         {
             return new Point(arrangedSize.Width / 2 + UnitSize * Position.X, arrangedSize.Height / 2 - UnitSize * Position.Y);
         }
+
+        protected override void MoveElement(Vector offset)
+        {
+        }
         public override string ToString()
         {
             return $"Point\nX: {Position.X}\nY: {Position.Y}";
-        }
-
-        public Action<Vector> MoveAction;
-        protected override void MoveElement(Vector offset)
-        {
-            MoveAction?.Invoke(offset);
         }
     }
 }

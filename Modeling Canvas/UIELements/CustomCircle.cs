@@ -31,7 +31,10 @@ namespace Modeling_Canvas.UIELements
         {
             return new Point(arrangedSize.Width / 2 + UnitSize * Center.X, arrangedSize.Height / 2 - UnitSize * Center.Y);
         }
-
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            return new Size((Radius * UnitSize + StrokeThickness) * 2, (Radius * UnitSize + StrokeThickness) * 2);
+        }
 
         protected override void OnRender(DrawingContext drawingContext)
         {
@@ -49,10 +52,10 @@ namespace Modeling_Canvas.UIELements
             RadiusPoint.Opacity = ShowControls ? 0.7 : 0;
             RadiusPoint.Position = new Point(Center.X + (Radius + 1) * Math.Cos(0), Center.Y - Radius * Math.Sin(0));
 
-            StartDegreesPoint.Opacity = ShowControls ? 0.3 : 0;
+            StartDegreesPoint.Opacity = ShowControls ? 0.7 : 0;
             StartDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(DegToRad(StartDegrees)), Center.Y - Radius * Math.Sin(DegToRad(StartDegrees)));
 
-            EndDegreesPoint.Opacity = ShowControls ? 0.3 : 0;
+            EndDegreesPoint.Opacity = ShowControls ? 0.7 : 0;
             EndDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(DegToRad(EndDegrees)), Center.Y - Radius * Math.Sin(DegToRad(EndDegrees)));
 
             // Нормалізуємо кути
@@ -71,14 +74,14 @@ namespace Modeling_Canvas.UIELements
             RadiusPoint = new DraggablePoint(Canvas)
             {
                 Radius = 8,
-                MoveAction = RadiusPointMoveAction,
+                OverrideMoveAction = RadiusPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
             };
             Canvas.Children.Add(RadiusPoint);
 
             StartDegreesPoint = new DraggablePoint(Canvas)
             {
-                MoveAction = StartDegreesPointMoveAction,
+                OverrideMoveAction = StartDegreesPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
                 Fill = Brushes.Red
             };
@@ -86,13 +89,13 @@ namespace Modeling_Canvas.UIELements
 
             EndDegreesPoint = new DraggablePoint(Canvas)
             {
-                MoveAction = EndDegreesPointMoveAction,
+                OverrideMoveAction = EndDegreesPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
                 Fill = Brushes.Blue
             };
             Canvas.Children.Add(EndDegreesPoint);
 
-            CenterPoint = new CustomPoint(Canvas) { Radius = 3, MoveAction = MoveElement };
+            CenterPoint = new DraggablePoint(Canvas) { Radius = 3, OverrideMoveAction = MoveElement };
             Canvas.Children.Add(CenterPoint);
         }
 
@@ -110,9 +113,9 @@ namespace Modeling_Canvas.UIELements
 
         public virtual void RadiusPointMoveAction(Vector offset)
         {
-            if (Canvas.GridSnapping)
+            if (SnappingEnabled)
             {
-                Radius = Round(Radius + offset.X / UnitSize);
+                Radius = SnapValue(Radius + offset.X / UnitSize);
             }
             else
             {
@@ -123,7 +126,7 @@ namespace Modeling_Canvas.UIELements
 
         public virtual void StartDegreesPointMoveAction(Vector offset)
         {
-            if (Canvas.GridSnapping && Math.Abs(StartDegrees - EndDegrees) < 5)
+            if (SnappingEnabled && Math.Abs(StartDegrees - EndDegrees) < 5)
             {
                 StartDegrees = EndDegrees;
             } else
@@ -133,7 +136,7 @@ namespace Modeling_Canvas.UIELements
         }
         public virtual void EndDegreesPointMoveAction(Vector offset)
         {
-            if (Canvas.GridSnapping && Math.Abs(StartDegrees - EndDegrees) < 5)
+            if (SnappingEnabled && Math.Abs(StartDegrees - EndDegrees) < 5)
             {
                 EndDegrees = StartDegrees;
             }
@@ -205,11 +208,6 @@ namespace Modeling_Canvas.UIELements
         private double DegToRad(double deg) => Math.PI * deg / 180.0;
         private double NormalizeAngle(double angle) => (angle % 360 + 360) % 360;
 
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            return new Size((Radius * UnitSize + StrokeThickness) * 2, (Radius * UnitSize + StrokeThickness) * 2);
-        }
-
         protected override void MoveElement(Vector offset)
         {
             if (Canvas.IsCtrlPressed || Canvas.IsSpacePressed) return;
@@ -218,24 +216,8 @@ namespace Modeling_Canvas.UIELements
                 Center.X + offset.X / UnitSize,
                 Center.Y - offset.Y / UnitSize);
 
-            Center = Canvas.GridSnapping ? new Point(Round(newCenter.X), Round(newCenter.Y)) : newCenter;
+            Center = SnappingEnabled ? new Point(SnapValue(newCenter.X), SnapValue(newCenter.Y)) : newCenter;
             InvalidateCanvas();
-        }
-
-        public static double Round(double value)
-        {
-            const double lowerThreshold = 0.1;
-            const double upperThreshold = 0.9;
-            const double toHalfLower = 0.45;
-            const double toHalfUpper = 0.55;
-
-            double integerPart = Math.Floor(value);
-            double fractionalPart = value - integerPart;
-
-            if (fractionalPart <= lowerThreshold) return integerPart;
-            if (fractionalPart >= upperThreshold) return integerPart + 1;
-            if (fractionalPart >= toHalfLower && fractionalPart <= toHalfUpper) return integerPart + 0.5;
-            return value;
         }
 
         public override string ToString()

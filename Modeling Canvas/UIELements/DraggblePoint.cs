@@ -6,31 +6,55 @@ namespace Modeling_Canvas.UIELements
 {
     public class DraggablePoint : CustomPoint
     {
+        public double DragRadius { get; set; } = 10;
         public DraggablePoint(CustomCanvas canvas) : base(canvas)
         {
         }
+        public DraggablePoint(CustomCanvas canvas, Point position) : base(canvas)
+        {
+            Position = position;
+        }
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            base.OnRender(drawingContext);
+            var transparentFill = Brushes.Transparent;
+
+            drawingContext.DrawGeometry(transparentFill, new Pen(Stroke, 0),
+                CreateCircleSegmentGeometry(new Point(0, 0), DragRadius, 100));
+        }
+
+        public Action<Vector> OverrideMoveAction;
 
         protected override void MoveElement(Vector offset)
         {
-            base.MoveElement(offset);
+            if (OverrideMoveAction is not null)
+            {
+                OverrideMoveAction?.Invoke(offset);
+                return;
+            }
             if (Canvas.IsCtrlPressed || Canvas.IsSpacePressed)
             {
                 return;
             }
-            Position = new Point(
-                Position.X + offset.X / UnitSize,
-                Position.Y - offset.Y / UnitSize
-                );
 
+            if (SnappingEnabled)
+            {
+                Position = new Point(
+                    Position.X + offset.X / UnitSize,
+                    Position.Y - offset.Y / UnitSize
+                    );
+            }
             // Update the circle's center position
             InvalidateCanvas();
         }
+
+        public Point PixelPosition { get => new Point(Position.X * UnitSize, -Position.Y * UnitSize); }
 
         public Action<MouseButtonEventArgs> MouseLeftButtonDownAction { get; set; }
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            MouseLeftButtonDownAction.Invoke(e);
+            MouseLeftButtonDownAction?.Invoke(e);
             base.OnMouseLeftButtonDown(e);
         }
 

@@ -48,6 +48,11 @@ namespace Modeling_Canvas
             };
             MyCanvas.Children.Add(customSegment2);
 
+            var customLine = new CustomLine(MyCanvas, new Point(4, 1), new Point(-1, -6));
+            customLine.AddPoint(5, 5);
+            customLine.AddPoint(10, -5);
+            customLine.AddPoint(1, 1);
+            MyCanvas.Children.Add(customLine);
 
             PreviewKeyUp += MyCanvas.OnKeyUp;
             PreviewKeyDown += MyCanvas.OnKeyDown;

@@ -16,12 +16,13 @@ namespace Modeling_Canvas.UIELements
         public Brush Stroke { get; set; } = Brushes.Black; // Default stroke color
         public double StrokeThickness { get; set; } = 1; // Default stroke thickness
         public CustomCanvas Canvas { get; set; }
-        public double Opacity { get; set; } = 1;
         public double UnitSize { get => Canvas.UnitSize; }
 
         protected bool _isDragging = false;
 
         protected Point _lastMousePosition;
+        public bool AllowSnapping { get; set; } = true;
+        protected virtual bool SnappingEnabled { get => AllowSnapping ? Canvas.GridSnapping : false; }
 
         protected CustomElement(CustomCanvas canvas)
         {
@@ -74,6 +75,7 @@ namespace Modeling_Canvas.UIELements
 
                 // Update the position of the element
                 MoveElement(offset);
+                InvalidateCanvas();
 
                 _lastMousePosition = currentMousePosition; 
                 var window = App.Current.MainWindow as MainWindow;
@@ -102,6 +104,22 @@ namespace Modeling_Canvas.UIELements
         {
             // Request the canvas to re-render by invalidating it
             Canvas?.InvalidateVisual();
+        }
+
+        protected double SnapValue(double value)
+        {
+            const double lowerThreshold = 0.1;
+            const double upperThreshold = 0.9;
+            const double toHalfLower = 0.45;
+            const double toHalfUpper = 0.55;
+
+            double integerPart = Math.Floor(value);
+            double fractionalPart = value - integerPart;
+
+            if (fractionalPart <= lowerThreshold) return integerPart;
+            if (fractionalPart >= upperThreshold) return integerPart + 1;
+            if (fractionalPart >= toHalfLower && fractionalPart <= toHalfUpper) return integerPart + 0.5;
+            return value;
         }
     }
 }
