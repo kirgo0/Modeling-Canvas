@@ -23,7 +23,7 @@ namespace Modeling_Canvas
         {
             InitializeComponent();
             CenterWindowOnScreen();
-            var customSegment = new CustomCircle (MyCanvas)
+            var customSegment = new CustomCircle(MyCanvas)
             {
                 Radius = 9,
                 Stroke = Brushes.DarkGreen,
@@ -35,7 +35,7 @@ namespace Modeling_Canvas
             };
             MyCanvas.Children.Add(customSegment);
 
-            var customSegment2 = new CustomCircle (MyCanvas)
+            var customSegment2 = new CustomCircle(MyCanvas)
             {
                 Radius = 9,
                 Stroke = Brushes.Red,

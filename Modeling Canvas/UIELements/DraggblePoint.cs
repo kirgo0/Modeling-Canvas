@@ -9,10 +9,12 @@ namespace Modeling_Canvas.UIELements
         public double DragRadius { get; set; } = 10;
         public DraggablePoint(CustomCanvas canvas) : base(canvas)
         {
+            Focusable = false;
         }
         public DraggablePoint(CustomCanvas canvas, Point position) : base(canvas)
         {
             Position = position;
+            Focusable = false;
         }
         protected override void OnRender(DrawingContext drawingContext)
         {
@@ -23,18 +25,22 @@ namespace Modeling_Canvas.UIELements
             var transparentFill = Brushes.Transparent;
 
             drawingContext.DrawGeometry(transparentFill, new Pen(Stroke, 0),
-                CreateCircleSegmentGeometry(new Point(0, 0), DragRadius, 100));
+                CreateCircleGeometry(new Point(0, 0), DragRadius, 100));
         }
 
         public Action<Vector> OverrideMoveAction;
+        public Action<Vector> MoveAction;
 
-        protected override void MoveElement(Vector offset)
+        public override void MoveElement(Vector offset)
         {
             if (OverrideMoveAction is not null)
             {
                 OverrideMoveAction?.Invoke(offset);
                 return;
             }
+
+            base.MoveElement(offset);
+            MoveAction?.Invoke(offset);
             if (Canvas.IsCtrlPressed || Canvas.IsSpacePressed)
             {
                 return;
