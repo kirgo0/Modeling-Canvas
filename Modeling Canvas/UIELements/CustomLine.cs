@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 
 namespace Modeling_Canvas.UIELements
@@ -11,6 +6,8 @@ namespace Modeling_Canvas.UIELements
     public class CustomLine : CustomElement
     {
         public List<DraggablePoint> Points { get; set; } = new();
+        public bool OverrideAnchorPoint { get; set; } = false;
+        public DraggablePoint AnchorPoint { get; set; }
         public bool IsFirstRender { get; set; } = true;
         public CustomLine(CustomCanvas canvas) : base(canvas)
         {

@@ -49,12 +49,16 @@ namespace Modeling_Canvas.UIELements
 
             CenterPoint.Position = Center;
 
+            RadiusPoint.Visibility = ShowControls ? Visibility.Visible : Visibility.Hidden;
+
             RadiusPoint.Opacity = ShowControls ? 0.7 : 0;
             RadiusPoint.Position = new Point(Center.X + (Radius + 1) * Math.Cos(0), Center.Y - Radius * Math.Sin(0));
 
+            StartDegreesPoint.Visibility = ShowControls ? Visibility.Visible : Visibility.Hidden;
             StartDegreesPoint.Opacity = ShowControls ? 0.7 : 0;
             StartDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(DegToRad(StartDegrees)), Center.Y - Radius * Math.Sin(DegToRad(StartDegrees)));
 
+            EndDegreesPoint.Visibility = ShowControls ? Visibility.Visible : Visibility.Hidden;
             EndDegreesPoint.Opacity = ShowControls ? 0.7 : 0;
             EndDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(DegToRad(EndDegrees)), Center.Y - Radius * Math.Sin(DegToRad(EndDegrees)));
 

@@ -16,7 +16,10 @@ namespace Modeling_Canvas.UIELements
         }
         protected override void OnRender(DrawingContext drawingContext)
         {
+            // Draw point
             base.OnRender(drawingContext);
+
+            // Create an invisible drag zone
             var transparentFill = Brushes.Transparent;
 
             drawingContext.DrawGeometry(transparentFill, new Pen(Stroke, 0),
@@ -40,10 +43,17 @@ namespace Modeling_Canvas.UIELements
             if (SnappingEnabled)
             {
                 Position = new Point(
+                    SnapValue(Position.X + offset.X / UnitSize),
+                    SnapValue(Position.Y - offset.Y / UnitSize)
+                    );
+            } else
+            {
+                Position = new Point(
                     Position.X + offset.X / UnitSize,
                     Position.Y - offset.Y / UnitSize
                     );
             }
+
             // Update the circle's center position
             InvalidateCanvas();
         }

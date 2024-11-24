@@ -25,7 +25,7 @@ namespace Modeling_Canvas
             CenterWindowOnScreen();
             var customSegment = new CustomCircle (MyCanvas)
             {
-                Radius = 6,
+                Radius = 9,
                 Stroke = Brushes.DarkGreen,
                 StrokeThickness = 3,
                 Precision = 100,
@@ -37,7 +37,7 @@ namespace Modeling_Canvas
 
             var customSegment2 = new CustomCircle (MyCanvas)
             {
-                Radius = 4,
+                Radius = 9,
                 Stroke = Brushes.Red,
                 StrokeThickness = 3,
                 Precision = 100,
@@ -50,9 +50,8 @@ namespace Modeling_Canvas
 
             var customLine = new CustomLine(MyCanvas, new Point(4, 1), new Point(-1, -6));
             customLine.AddPoint(5, 5);
-            customLine.AddPoint(10, -5);
-            customLine.AddPoint(1, 1);
             MyCanvas.Children.Add(customLine);
+
 
             PreviewKeyUp += MyCanvas.OnKeyUp;
             PreviewKeyDown += MyCanvas.OnKeyDown;
