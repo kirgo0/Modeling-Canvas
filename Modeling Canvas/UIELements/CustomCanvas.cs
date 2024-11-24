@@ -11,6 +11,7 @@ namespace Modeling_Canvas.UIELements
         public double XOffset { get; set; } = 0;
         public double YOffset { get; set; } = 0;
 
+        public int RotationPrecision { get; set; } = 4;
         public double UnitSize
         {
             get => (double)GetValue(UnitSizeProperty);
@@ -211,6 +212,8 @@ namespace Modeling_Canvas.UIELements
             SelectedElements.Clear();
             InvalidateVisual();
             IsLeftMouseButtonPressed = true;
+            Keyboard.ClearFocus();
+            Keyboard.Focus(this);
             previousMousePosition = e.GetPosition(this);
             base.OnMouseLeftButtonDown(e);
         }

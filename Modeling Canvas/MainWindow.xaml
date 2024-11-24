@@ -11,7 +11,7 @@
             <ColumnDefinition Width="169*"/>
         </Grid.ColumnDefinitions>
 
-        <local:CustomCanvas x:Name="MyCanvas" Background="White" UnitSize="50" Panel.ZIndex="0" Grid.Column="0">
+        <local:CustomCanvas x:Name="MyCanvas" Focusable="True" FocusVisualStyle="{x:Null}" Background="White" UnitSize="50" Panel.ZIndex="0" Grid.Column="0">
         </local:CustomCanvas>
 
         <Grid Grid.Column="1" Panel.ZIndex="1" Background="White">

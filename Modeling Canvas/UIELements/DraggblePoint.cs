@@ -41,6 +41,7 @@ namespace Modeling_Canvas.UIELements
 
             base.MoveElement(offset);
             MoveAction?.Invoke(offset);
+
             if (Canvas.IsCtrlPressed || Canvas.IsSpacePressed)
             {
                 return;
@@ -71,6 +72,7 @@ namespace Modeling_Canvas.UIELements
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             MouseLeftButtonDownAction?.Invoke(e);
+            e.Handled = true;
             base.OnMouseLeftButtonDown(e);
         }
 

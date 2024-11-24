@@ -10,6 +10,7 @@ namespace Modeling_Canvas.UIELements
         public Brush Fill { get; set; } = Brushes.Transparent; // Default fill color
         public Brush Stroke { get; set; } = Brushes.Black; // Default stroke color
         public double StrokeThickness { get; set; } = 1; // Default stroke thickness
+        public bool ShowControls { get => Canvas.SelectedElements.Contains(this); }
         public bool AnchorVisible { get; set; } = false;
         public bool HasAnchorPoint { get; set; } = true;
 

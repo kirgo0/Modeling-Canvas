@@ -50,6 +50,7 @@ namespace Modeling_Canvas
 
             var customLine = new CustomLine(MyCanvas, new Point(4, 1), new Point(-1, -6));
             customLine.AddPoint(5, 5);
+            customLine.AddPoint(7, 7);
             MyCanvas.Children.Add(customLine);
 
 

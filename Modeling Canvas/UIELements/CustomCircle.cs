@@ -21,8 +21,6 @@ namespace Modeling_Canvas.UIELements
         public DraggablePoint StartDegreesPoint { get; set; }
         public DraggablePoint EndDegreesPoint { get; set; }
 
-        public bool ShowControls { get => Canvas.SelectedElements.Contains(this); }
-
         public override Point GetOriginPoint(Size arrangedSize)
         {
             return new Point(arrangedSize.Width / 2 + UnitSize * Center.X, arrangedSize.Height / 2 - UnitSize * Center.Y);
@@ -44,12 +42,12 @@ namespace Modeling_Canvas.UIELements
             base.OnRender(drawingContext);
 
             CenterPoint.Position = Center;
-
+            CenterPoint.Visibility = ShowControls ? Visibility.Visible : Visibility.Hidden;
 
             RadiusPoint.Visibility = ShowControls ? Visibility.Visible : Visibility.Hidden;
 
             RadiusPoint.Opacity = 0.7;
-            RadiusPoint.Position = new Point(Center.X + (Radius + 1) * Math.Cos(0), Center.Y - Radius * Math.Sin(0));
+            RadiusPoint.Position = new Point(Center.X + (Radius + 1) * Math.Cos(DegToRad(0)), Center.Y - Radius * Math.Sin(0));
 
             StartDegreesPoint.Visibility = ShowControls ? Visibility.Visible : Visibility.Hidden;
             StartDegreesPoint.Opacity = 0.7;
@@ -223,6 +221,29 @@ namespace Modeling_Canvas.UIELements
         public override string ToString()
         {
             return $"X: {Center.X} \nY: {Center.Y} \nRadius: {Radius}\nStart: {StartDegrees}\nEnd: {EndDegrees}";
+        }
+
+        private Point RotatePoint(Point point1, Point point2, double degrees)
+        {
+            // Calculate rotation
+            double dx = point1.X - point2.X;
+            double dy = point1.Y - point2.Y;
+            double radians = DegToRad(degrees);
+
+            double rotatedX = Math.Cos(radians) * dx - Math.Sin(radians) * dy + point2.X;
+            double rotatedY = Math.Sin(radians) * dx + Math.Cos(radians) * dy + point2.Y;
+
+            // Update point position
+            return new Point(Math.Round(rotatedX, Canvas.RotationPrecision), Math.Round(rotatedY, Canvas.RotationPrecision));
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            if (e.Key == Key.R)
+            {
+                var result = RotatePoint(Center, AnchorPoint.Position, 90);
+            }
         }
     }
 }
