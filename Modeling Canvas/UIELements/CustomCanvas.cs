@@ -39,6 +39,18 @@ namespace Modeling_Canvas.UIELements
             return new Point((pixelCoordinates.X - ActualWidth / 2 - XOffset) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y - YOffset) / UnitSize);
         }
 
+        public double GetDegreesBetweenMouseAndPoint(Point point)
+        {
+            var mousePosition = GetCanvasMousePosition();
+            var angleInDegrees = Math.Atan2(-(mousePosition.Y - point.Y), mousePosition.X - point.X) * (180 / Math.PI);
+            return (angleInDegrees + 360) % 360;
+        }
+
+        public Point GetCanvasMousePosition()
+        {
+            var mouseOnCanvas = Mouse.GetPosition(this);
+            return GetCanvasUnitCoordinates(mouseOnCanvas);
+        }
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);

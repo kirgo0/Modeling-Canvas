@@ -52,6 +52,9 @@ namespace Modeling_Canvas
             customLine.AddPoint(5, 5);
             customLine.AddPoint(7, 7);
             MyCanvas.Children.Add(customLine);
+
+            //var rect = new CustomRectangle(MyCanvas, new Point(0, 0), 5, 5);
+            //MyCanvas.Children.Add(rect);
         }
 
         private void CenterWindowOnScreen()

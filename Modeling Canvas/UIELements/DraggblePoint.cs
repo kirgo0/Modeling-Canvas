@@ -75,7 +75,12 @@ namespace Modeling_Canvas.UIELements
             base.OnMouseLeftButtonDown(e);
         }
 
-
+        public Func<DraggablePoint, string>? OverrideToStringAction;
+        public override string ToString()
+        {
+            if (OverrideToStringAction is not null) return OverrideToStringAction.Invoke(this);
+            return base.ToString();
+        }
     }
 
 }

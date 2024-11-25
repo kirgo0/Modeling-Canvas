@@ -193,7 +193,7 @@ namespace Modeling_Canvas.UIELements
         public override void MoveElement(Vector offset)
         {
         }
-        protected override void RotateElement()
+        protected override void RotateElement(double degrees)
         {
         }
 

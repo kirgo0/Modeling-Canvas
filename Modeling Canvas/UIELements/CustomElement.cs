@@ -10,6 +10,7 @@ namespace Modeling_Canvas.UIELements
         public Brush Fill { get; set; } = Brushes.Transparent; // Default fill color
         public Brush Stroke { get; set; } = Brushes.Black; // Default stroke color
         public double StrokeThickness { get; set; } = 1; // Default stroke thickness
+
         public Visibility ShowControls { get => Canvas.SelectedElements.Contains(this) ? Visibility.Visible : Visibility.Hidden; }
         public Visibility AnchorVisibility { get; set; } = Visibility.Hidden;
         public bool HasAnchorPoint { get; set; } = true;
@@ -18,7 +19,13 @@ namespace Modeling_Canvas.UIELements
         public bool OverrideAnchorPoint
         {
             get => HasAnchorPoint ? overrideAnchorPoint : false;
-            set => overrideAnchorPoint = value;
+            set {
+                if (!value)
+                {
+                    AnchorPoint.Position = GetAnchorDefaultPosition();
+                }
+                overrideAnchorPoint = value;
+            }
         }
         private DraggablePoint anchorPoint;
         public DraggablePoint AnchorPoint
@@ -36,33 +43,24 @@ namespace Modeling_Canvas.UIELements
         public bool AllowSnapping { get; set; } = true;
         protected virtual bool SnappingEnabled { get => AllowSnapping ? Canvas.GridSnapping : false; }
 
-        protected CustomElement(CustomCanvas canvas)
+        protected double _lastRotationDegrees { get; set; } = 0;
+
+        public DraggablePoint RotationPoint { get; set; }
+
+        protected bool _isRotating { get; set; } = false;
+        protected CustomElement(CustomCanvas canvas, bool hasAnchorPoint = true)
         {
             Canvas = canvas;
             Focusable = true;
             FocusVisualStyle = null;
+            HasAnchorPoint = hasAnchorPoint;
         }
 
         protected override void OnRender(DrawingContext drawingContext)
         {
-            if (HasAnchorPoint && AnchorPoint is null)
-            {
-                AnchorPoint = new DraggablePoint(Canvas)
-                {
-                    Radius = 10,
-                    HasAnchorPoint = false,
-                    Fill = Brushes.Transparent,
-                    Stroke = Brushes.Green,
-                    StrokeThickness = 2,
-                    Shape = PointShape.Anchor,
-                    MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
-                    MoveAction = OnAnchorPointMove
-                };
-                Canvas.Children.Add(AnchorPoint);
-            }
             if (HasAnchorPoint)
             {
-                if (!OverrideAnchorPoint)
+                if(!OverrideAnchorPoint)
                 {
                     AnchorPoint.Position = GetAnchorDefaultPosition();
                 }
@@ -71,6 +69,38 @@ namespace Modeling_Canvas.UIELements
             base.OnRender(drawingContext);
 
         }
+
+        protected override void OnInitialized(EventArgs e)
+        {
+            base.OnInitialized(e);
+            InitControls();
+        }
+
+        protected virtual void InitControls()
+        {
+            if (HasAnchorPoint)
+            {
+                AnchorPoint = new DraggablePoint(Canvas)
+                {
+                    Radius = 10,
+                    HasAnchorPoint = false,
+                    Focusable = false,
+                    Fill = Brushes.Transparent,
+                    Stroke = Brushes.Green,
+                    StrokeThickness = 2,
+                    Shape = PointShape.Anchor,
+                    MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
+                    MoveAction = OnAnchorPointMove,
+                    OverrideToStringAction = (e) => {
+                        return $"Anchor point\nX: {e.Position.X}\nY: {e.Position.Y}";
+                    }
+                };
+                AnchorPoint.Position = GetAnchorDefaultPosition();
+                Canvas.Children.Add(AnchorPoint);
+                Panel.SetZIndex(AnchorPoint, Panel.GetZIndex(this) + 1);
+            }
+        }
+
         protected virtual Point GetAnchorDefaultPosition()
         {
             return new Point(0,0);
@@ -79,6 +109,28 @@ namespace Modeling_Canvas.UIELements
         protected virtual void OnAnchorPointMove(Vector offset)
         {
             OverrideAnchorPoint = true;
+        }
+
+        protected override void OnMouseRightButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseRightButtonDown(e);
+            if (HasAnchorPoint)
+            {
+                _isRotating = true;
+                _lastRotationDegrees = Canvas.GetDegreesBetweenMouseAndPoint(AnchorPoint.Position);
+                Keyboard.Focus(this);
+                CaptureMouse();
+            }
+        }
+
+        protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
+        {
+            base.OnMouseRightButtonUp(e);
+            if (HasAnchorPoint && _isRotating)
+            {
+                _isRotating = false;
+                ReleaseMouseCapture();
+            }
         }
 
         protected virtual void OnPointMouseLeftButtonDown(MouseButtonEventArgs e)
@@ -99,19 +151,12 @@ namespace Modeling_Canvas.UIELements
             if (e.Key == Key.E)
             {
                 OverrideAnchorPoint = false;
-                InvalidateVisual();
-                Canvas.InvalidateVisual();
-            }
-            if (e.Key == Key.R)
-            {
-                RotateElement();
                 InvalidateCanvas();
-                // Recalculate draggable point positions
             }
             base.OnKeyDown(e);
         }
 
-        protected abstract void RotateElement();
+        protected abstract void RotateElement(double degrees);
 
         #region logic for dragging elements
         protected override void OnMouseEnter(MouseEventArgs e)
@@ -147,18 +192,26 @@ namespace Modeling_Canvas.UIELements
             {
                 Point currentMousePosition = e.GetPosition(Canvas);
                 Vector offset = currentMousePosition - _lastMousePosition;
-
-                // Update the position of the element
                 MoveElement(offset);
-
-                _lastMousePosition = currentMousePosition; 
-                var window = App.Current.MainWindow as MainWindow;
-                if (window != null)
-                {
-                    window.CurrentElementLabel.Content = ToString();
-                }
-                InvalidateCanvas();
+                _lastMousePosition = currentMousePosition;
             }
+            else if (_isRotating)
+            {
+                var angle = Canvas.GetDegreesBetweenMouseAndPoint(AnchorPoint.Position);
+                RotateElement(_lastRotationDegrees - angle);
+                _lastRotationDegrees = angle;
+            }
+            else
+            {
+                return;
+            }
+
+            var window = App.Current.MainWindow as MainWindow;
+            if (window != null)
+            {
+                window.CurrentElementLabel.Content = ToString();
+            }
+            InvalidateCanvas();
         }
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
@@ -170,7 +223,6 @@ namespace Modeling_Canvas.UIELements
             }
         }
 
-        // Adjust element position and request canvas to redraw
         public virtual void MoveElement(Vector offset)
         {
             if (HasAnchorPoint)
@@ -203,7 +255,6 @@ namespace Modeling_Canvas.UIELements
             if (fractionalPart >= toHalfLower && fractionalPart <= toHalfUpper) return integerPart + 0.5;
             return value;
         }
-
 
         protected Point RotatePoint(Point point1, Point point2, double degrees)
         {

@@ -9,7 +9,6 @@ namespace Modeling_Canvas.UIELements
     {
         public CustomCircle(CustomCanvas canvas) : base(canvas)
         {
-            InitializeControls();
         }
 
         public int Precision { get; set; } = 100; // Number of points for the circle
@@ -31,7 +30,7 @@ namespace Modeling_Canvas.UIELements
             return new Size((Radius * UnitSize + StrokeThickness) * 2, (Radius * UnitSize + StrokeThickness) * 2);
         }
 
-        private void InitializeControls()
+        protected override void InitControls()
         {
             RadiusPoint = new DraggablePoint(Canvas)
             {
@@ -39,7 +38,7 @@ namespace Modeling_Canvas.UIELements
                 Opacity = 0.7,
                 OverrideMoveAction = RadiusPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
-                HasAnchorPoint = false
+                HasAnchorPoint = false,
             };
             Canvas.Children.Add(RadiusPoint);
 
@@ -70,6 +69,7 @@ namespace Modeling_Canvas.UIELements
                 HasAnchorPoint = false
             };
             Canvas.Children.Add(CenterPoint);
+            base.InitControls();
         }
 
         protected override void OnRender(DrawingContext drawingContext)
@@ -126,7 +126,7 @@ namespace Modeling_Canvas.UIELements
                 StartDegrees = EndDegrees;
             } else
             {
-                StartDegrees = GetAngleBetweenMouseAndCenter();
+                StartDegrees = Canvas.GetDegreesBetweenMouseAndPoint(Center);
             }
         }
         public virtual void EndDegreesPointMoveAction(Vector offset)
@@ -137,16 +137,8 @@ namespace Modeling_Canvas.UIELements
             }
             else
             {
-                EndDegrees = GetAngleBetweenMouseAndCenter();
+                EndDegrees = Canvas.GetDegreesBetweenMouseAndPoint(Center);
             }
-        }
-
-        public double GetAngleBetweenMouseAndCenter()
-        {
-            var mouseOnCanvas = Mouse.GetPosition(Canvas);
-            var mousePosition = Canvas.GetCanvasUnitCoordinates(mouseOnCanvas);
-            var angleInDegrees = Math.Atan2(-(mousePosition.Y - Center.Y), mousePosition.X - Center.X) * (180 / Math.PI);
-            return (angleInDegrees + 360) % 360;
         }
 
         private Geometry CreateCircleSegmentGeometry(Point center, double radius, double startDegrees, double endDegrees, int precision)
@@ -206,12 +198,13 @@ namespace Modeling_Canvas.UIELements
             base.MoveElement(offset);
         }
 
-        protected override void RotateElement()
+        protected override void RotateElement(double degrees)
         {
-            Center = RotatePoint(Center, AnchorPoint.Position, 90);
-            EndDegrees -=90;
-            StartDegrees -= 90;
-            UpdateUIControls();
+            Center = RotatePoint(Center, AnchorPoint.Position, degrees);
+            EndDegrees -= degrees;
+            StartDegrees -= degrees;
+            NormalizeAngle(EndDegrees);
+            NormalizeAngle(StartDegrees);
         }
 
         public override string ToString()

@@ -9,7 +9,7 @@ namespace Modeling_Canvas.UIELements
     {
         public int PointsRadius { get; set; } = 5;
         public PointShape PointsShape { get; set; } = PointShape.Circle;
-        public List<DraggablePoint> Points { get; set; } = new();
+        public List<DraggablePoint> Points { get; } = new();
         public CustomLine(CustomCanvas canvas) : base(canvas)
         {
             StrokeThickness = 3;
@@ -23,23 +23,9 @@ namespace Modeling_Canvas.UIELements
             AddPoint(secondPoint.X, secondPoint.Y);
         }
 
-        protected override Point GetAnchorDefaultPosition()
-        {
-            if (Points == null || !Points.Any())
-                throw new InvalidOperationException("The list of points is empty.");
-
-            // Calculate the average of X and Y coordinates
-            double centerX = Points.Average(p => p.Position.X);
-            double centerY = Points.Average(p => p.Position.Y);
-
-            return new Point(centerX, centerY);
-        }
-
-
         protected override void OnRender(DrawingContext drawingContext)
         {
             AnchorVisibility = ShowControls;
-            base.OnRender(drawingContext);
             foreach(var point in Points)
             {
                 point.Visibility = ShowControls;
@@ -49,6 +35,17 @@ namespace Modeling_Canvas.UIELements
                 drawingContext.DrawLine(new Pen(Stroke, StrokeThickness), Points[i].PixelPosition, Points[i + 1].PixelPosition);
                 drawingContext.DrawLine(new Pen(Brushes.Transparent, StrokeThickness + 10), Points[i].PixelPosition, Points[i + 1].PixelPosition);
             }
+            base.OnRender(drawingContext);
+        }
+        protected override Point GetAnchorDefaultPosition()
+        {
+            if (Points == null || !Points.Any()) return new Point(0,0);
+
+            // Calculate the average of X and Y coordinates
+            double centerX = Points.Average(p => p.Position.X);
+            double centerY = Points.Average(p => p.Position.Y);
+
+            return new Point(centerX, centerY);
         }
 
         public void AddPoint(double x, double y)
@@ -77,13 +74,12 @@ namespace Modeling_Canvas.UIELements
                 point.MoveElement(offset);
             }
             base.MoveElement(offset);
-            OverrideAnchorPoint = false;
         }
-        protected override void RotateElement()
+        protected override void RotateElement(double degrees)
         {
             foreach (var point in Points)
             {
-                point.Position = RotatePoint(point.Position, AnchorPoint.Position, 90);
+                point.Position = RotatePoint(point.Position, AnchorPoint.Position, degrees);
             }
         }
 
