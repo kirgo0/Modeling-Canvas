@@ -10,8 +10,8 @@ namespace Modeling_Canvas.UIELements
         public Brush Fill { get; set; } = Brushes.Transparent; // Default fill color
         public Brush Stroke { get; set; } = Brushes.Black; // Default stroke color
         public double StrokeThickness { get; set; } = 1; // Default stroke thickness
-        public bool ShowControls { get => Canvas.SelectedElements.Contains(this); }
-        public bool AnchorVisible { get; set; } = false;
+        public Visibility ShowControls { get => Canvas.SelectedElements.Contains(this) ? Visibility.Visible : Visibility.Hidden; }
+        public Visibility AnchorVisibility { get; set; } = Visibility.Hidden;
         public bool HasAnchorPoint { get; set; } = true;
 
         private bool overrideAnchorPoint = false;
@@ -31,7 +31,6 @@ namespace Modeling_Canvas.UIELements
         public double UnitSize { get => Canvas.UnitSize; }
 
         protected bool _isDragging = false;
-        public bool IsFirstRender { get; set; } = true;
 
         protected Point _lastMousePosition;
         public bool AllowSnapping { get; set; } = true;
@@ -67,7 +66,7 @@ namespace Modeling_Canvas.UIELements
                 {
                     AnchorPoint.Position = GetAnchorDefaultPosition();
                 }
-                AnchorPoint.Visibility = AnchorVisible ? Visibility.Visible : Visibility.Hidden;
+                AnchorPoint.Visibility = AnchorVisibility;
             }
             base.OnRender(drawingContext);
 
@@ -97,13 +96,22 @@ namespace Modeling_Canvas.UIELements
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if(e.Key == Key.Home)
+            if (e.Key == Key.E)
             {
                 OverrideAnchorPoint = false;
                 InvalidateVisual();
                 Canvas.InvalidateVisual();
             }
+            if (e.Key == Key.R)
+            {
+                RotateElement();
+                InvalidateCanvas();
+                // Recalculate draggable point positions
+            }
+            base.OnKeyDown(e);
         }
+
+        protected abstract void RotateElement();
 
         #region logic for dragging elements
         protected override void OnMouseEnter(MouseEventArgs e)
@@ -142,7 +150,6 @@ namespace Modeling_Canvas.UIELements
 
                 // Update the position of the element
                 MoveElement(offset);
-                InvalidateCanvas();
 
                 _lastMousePosition = currentMousePosition; 
                 var window = App.Current.MainWindow as MainWindow;
@@ -150,6 +157,7 @@ namespace Modeling_Canvas.UIELements
                 {
                     window.CurrentElementLabel.Content = ToString();
                 }
+                InvalidateCanvas();
             }
         }
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
@@ -169,15 +177,15 @@ namespace Modeling_Canvas.UIELements
             {
                 AnchorPoint.MoveElement(offset);
             }
-            InvalidateCanvas();
+            //InvalidateCanvas();
         }
         #endregion
 
         // Helper method to invalidate the parent canvas
-        protected void InvalidateCanvas()
+        public void InvalidateCanvas()
         {
             // Request the canvas to re-render by invalidating it
-            Canvas?.InvalidateVisual();
+            Canvas.InvalidateVisual();
         }
 
         protected double SnapValue(double value)
@@ -195,5 +203,23 @@ namespace Modeling_Canvas.UIELements
             if (fractionalPart >= toHalfLower && fractionalPart <= toHalfUpper) return integerPart + 0.5;
             return value;
         }
+
+
+        protected Point RotatePoint(Point point1, Point point2, double degrees)
+        {
+            // Calculate rotation
+            double dx = point1.X - point2.X;
+            double dy = point1.Y - point2.Y;
+            double radians = DegToRad(degrees);
+
+            double rotatedX = Math.Cos(radians) * dx - Math.Sin(radians) * dy + point2.X;
+            double rotatedY = Math.Sin(radians) * dx + Math.Cos(radians) * dy + point2.Y;
+
+            // Update point position
+            return new Point(Math.Round(rotatedX, Canvas.RotationPrecision), Math.Round(rotatedY, Canvas.RotationPrecision));
+        }
+        protected double DegToRad(double deg) => Math.PI * deg / 180.0;
+        protected double NormalizeAngle(double angle) => (angle % 360 + 360) % 360;
+
     }
 }

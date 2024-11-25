@@ -63,7 +63,8 @@ namespace Modeling_Canvas.UIELements
                 // Calculate the start point
                 var startPoint = new Point(
                     center.X + radius * Math.Cos(0),
-                    center.Y + radius * Math.Sin(0));
+                    center.Y + radius * Math.Sin(0)
+                    );
 
                 context.BeginFigure(startPoint, true, true); // Is filled, Is closed
 
@@ -192,10 +193,14 @@ namespace Modeling_Canvas.UIELements
         public override void MoveElement(Vector offset)
         {
         }
+        protected override void RotateElement()
+        {
+        }
 
         public override string ToString()
         {
             return $"Point\nX: {Position.X}\nY: {Position.Y}";
         }
+
     }
 }

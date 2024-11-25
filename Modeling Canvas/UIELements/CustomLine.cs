@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -6,13 +7,22 @@ namespace Modeling_Canvas.UIELements
 {
     public class CustomLine : CustomElement
     {
+        public int PointsRadius { get; set; } = 5;
+        public PointShape PointsShape { get; set; } = PointShape.Circle;
         public List<DraggablePoint> Points { get; set; } = new();
-        public bool IsFirstRender { get; set; } = true;
         public CustomLine(CustomCanvas canvas) : base(canvas)
         {
             StrokeThickness = 3;
             Stroke = Brushes.Cyan;
         }
+        public CustomLine(CustomCanvas canvas, Point firstPoint, Point secondPoint) : base(canvas)
+        {
+            StrokeThickness = 2;
+            Stroke = Brushes.Cyan;
+            AddPoint(firstPoint.X, firstPoint.Y);
+            AddPoint(secondPoint.X, secondPoint.Y);
+        }
+
         protected override Point GetAnchorDefaultPosition()
         {
             if (Points == null || !Points.Any())
@@ -25,31 +35,14 @@ namespace Modeling_Canvas.UIELements
             return new Point(centerX, centerY);
         }
 
-        public CustomLine(CustomCanvas canvas, Point firstPoint, Point secondPoint) : base(canvas)
-        {
-            StrokeThickness = 2;
-            Stroke = Brushes.Cyan;
-            Points.Add(new DraggablePoint(Canvas, firstPoint));
-            Points.Add(new DraggablePoint(Canvas, secondPoint));
-        }
 
         protected override void OnRender(DrawingContext drawingContext)
         {
-            if(IsFirstRender)
-            {
-                foreach(var point in Points)
-                {
-                    point.Radius = 5;
-                    Canvas.Children.Add(point);
-                }
-                IsFirstRender = false;
-            }
-
-            AnchorVisible = ShowControls;
+            AnchorVisibility = ShowControls;
             base.OnRender(drawingContext);
             foreach(var point in Points)
             {
-                point.Visibility = ShowControls ? Visibility.Visible : Visibility.Hidden;
+                point.Visibility = ShowControls;
             }
 
             for (int i = 0; i < Points.Count-1; i++) {
@@ -57,14 +50,24 @@ namespace Modeling_Canvas.UIELements
                 drawingContext.DrawLine(new Pen(Brushes.Transparent, StrokeThickness + 10), Points[i].PixelPosition, Points[i + 1].PixelPosition);
             }
         }
+
         public void AddPoint(double x, double y)
         {
-            Points.Add(new DraggablePoint(Canvas, new Point(x, y)));
+            var point = new DraggablePoint(Canvas, new Point(x, y))
+            {
+                Shape = PointsShape,
+                Radius = PointsRadius
+            };
+            Points.Add(point);
+            Canvas.Children.Add(point);
+            Panel.SetZIndex(point, Canvas.Children.Count+1);
         }
 
         public void AddPoint(Point point)
         {
-            Points.Add(new DraggablePoint(Canvas, point));
+            var draggablepoint = new DraggablePoint(Canvas, point);
+            Points.Add(draggablepoint);
+            Canvas.Children.Add(draggablepoint);
         }
 
         public override void MoveElement(Vector offset)
@@ -74,6 +77,14 @@ namespace Modeling_Canvas.UIELements
                 point.MoveElement(offset);
             }
             base.MoveElement(offset);
+            OverrideAnchorPoint = false;
+        }
+        protected override void RotateElement()
+        {
+            foreach (var point in Points)
+            {
+                point.Position = RotatePoint(point.Position, AnchorPoint.Position, 90);
+            }
         }
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)

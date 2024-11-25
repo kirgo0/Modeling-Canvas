@@ -60,9 +60,8 @@ namespace Modeling_Canvas.UIELements
                     Position.Y - offset.Y / UnitSize
                     );
             }
-
             // Update the circle's center position
-            InvalidateCanvas();
+            //InvalidateCanvas();
         }
 
         public Point PixelPosition { get => new Point(Position.X * UnitSize, -Position.Y * UnitSize); }

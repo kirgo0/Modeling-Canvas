@@ -9,10 +9,11 @@ namespace Modeling_Canvas.UIELements
     {
         public CustomCircle(CustomCanvas canvas) : base(canvas)
         {
+            InitializeControls();
         }
 
-        public double Radius { get; set; } = 5; // Default radius
         public int Precision { get; set; } = 100; // Number of points for the circle
+        public double Radius { get; set; } = 5; // Default radius
         public double StartDegrees { get; set; } = 0; // Start angle in degrees
         public double EndDegrees { get; set; } = 360; // End angle in degrees
         public Point Center { get; set; } = new Point(1, 1);
@@ -30,72 +31,62 @@ namespace Modeling_Canvas.UIELements
             return new Size((Radius * UnitSize + StrokeThickness) * 2, (Radius * UnitSize + StrokeThickness) * 2);
         }
 
-        protected override void OnRender(DrawingContext drawingContext)
-        {
-            if (Canvas != null && IsFirstRender)
-            {
-                AddUIControls();
-                IsFirstRender = false;
-            }
-
-            AnchorVisible = ShowControls;
-            base.OnRender(drawingContext);
-
-            CenterPoint.Position = Center;
-            CenterPoint.Visibility = ShowControls ? Visibility.Visible : Visibility.Hidden;
-
-            RadiusPoint.Visibility = ShowControls ? Visibility.Visible : Visibility.Hidden;
-
-            RadiusPoint.Opacity = 0.7;
-            RadiusPoint.Position = new Point(Center.X + (Radius + 1) * Math.Cos(DegToRad(0)), Center.Y - Radius * Math.Sin(0));
-
-            StartDegreesPoint.Visibility = ShowControls ? Visibility.Visible : Visibility.Hidden;
-            StartDegreesPoint.Opacity = 0.7;
-            StartDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(DegToRad(StartDegrees)), Center.Y - Radius * Math.Sin(DegToRad(StartDegrees)));
-
-            EndDegreesPoint.Visibility = ShowControls ? Visibility.Visible : Visibility.Hidden;
-            EndDegreesPoint.Opacity = 0.7;
-            EndDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(DegToRad(EndDegrees)), Center.Y - Radius * Math.Sin(DegToRad(EndDegrees)));
-
-            // Нормалізуємо кути
-            //double normalizedStart = NormalizeAngle(StartDegrees);
-            //double normalizedEnd = NormalizeAngle(EndDegrees);
-
-            // Створюємо геометрію сегмента кола
-            var geometry = CreateCircleSegmentGeometry(new Point(0, 0), Radius * UnitSize, StartDegrees, EndDegrees, Precision);
-
-            // Малюємо сегмент
-            drawingContext.DrawGeometry(Fill, new Pen(Stroke, StrokeThickness), geometry);
-        }
-
-        private void AddUIControls()
+        private void InitializeControls()
         {
             RadiusPoint = new DraggablePoint(Canvas)
             {
                 Radius = 8,
+                Opacity = 0.7,
                 OverrideMoveAction = RadiusPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
+                HasAnchorPoint = false
             };
             Canvas.Children.Add(RadiusPoint);
 
             StartDegreesPoint = new DraggablePoint(Canvas)
             {
+                Opacity = 0.7,
                 OverrideMoveAction = StartDegreesPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
-                Fill = Brushes.Red
+                Fill = Brushes.Red,
+                HasAnchorPoint = false
             };
             Canvas.Children.Add(StartDegreesPoint);
 
             EndDegreesPoint = new DraggablePoint(Canvas)
             {
+                Opacity = 0.7,
                 OverrideMoveAction = EndDegreesPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
-                Fill = Brushes.Blue
+                Fill = Brushes.Blue,
+                HasAnchorPoint = false
             };
             Canvas.Children.Add(EndDegreesPoint);
 
-            CenterPoint = new DraggablePoint(Canvas) { Radius = 3, OverrideMoveAction = MoveElement };
+            CenterPoint = new DraggablePoint(Canvas)
+            {
+                Radius = 3,
+                OverrideMoveAction = MoveElement,
+                HasAnchorPoint = false
+            };
             Canvas.Children.Add(CenterPoint);
+        }
+
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+
+            AnchorVisibility = ShowControls;
+            CenterPoint.Visibility = ShowControls;
+            RadiusPoint.Visibility = ShowControls;
+            StartDegreesPoint.Visibility = ShowControls;
+            EndDegreesPoint.Visibility = ShowControls;
+
+            UpdateUIControls();
+
+            // Create and draw the circle segment geometry
+            var geometry = CreateCircleSegmentGeometry(new Point(0, 0), Radius * UnitSize, StartDegrees, EndDegrees, Precision);
+            drawingContext.DrawGeometry(Fill, new Pen(Stroke, StrokeThickness), geometry);
+            base.OnRender(drawingContext);
         }
 
         protected override Point GetAnchorDefaultPosition()
@@ -204,9 +195,6 @@ namespace Modeling_Canvas.UIELements
             }
         }
 
-        private double DegToRad(double deg) => Math.PI * deg / 180.0;
-        private double NormalizeAngle(double angle) => (angle % 360 + 360) % 360;
-
         public override void MoveElement(Vector offset)
         {
             if (Canvas.IsCtrlPressed || Canvas.IsSpacePressed) return;
@@ -218,32 +206,27 @@ namespace Modeling_Canvas.UIELements
             base.MoveElement(offset);
         }
 
+        protected override void RotateElement()
+        {
+            Center = RotatePoint(Center, AnchorPoint.Position, 90);
+            EndDegrees -=90;
+            StartDegrees -= 90;
+            UpdateUIControls();
+        }
+
         public override string ToString()
         {
             return $"X: {Center.X} \nY: {Center.Y} \nRadius: {Radius}\nStart: {StartDegrees}\nEnd: {EndDegrees}";
         }
 
-        private Point RotatePoint(Point point1, Point point2, double degrees)
+        private void UpdateUIControls()
         {
-            // Calculate rotation
-            double dx = point1.X - point2.X;
-            double dy = point1.Y - point2.Y;
-            double radians = DegToRad(degrees);
-
-            double rotatedX = Math.Cos(radians) * dx - Math.Sin(radians) * dy + point2.X;
-            double rotatedY = Math.Sin(radians) * dx + Math.Cos(radians) * dy + point2.Y;
-
-            // Update point position
-            return new Point(Math.Round(rotatedX, Canvas.RotationPrecision), Math.Round(rotatedY, Canvas.RotationPrecision));
+            RadiusPoint.Position = new Point(Center.X + (Radius + 1) * Math.Cos(DegToRad(0)), Center.Y - Radius * Math.Sin(0));
+            StartDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(DegToRad(StartDegrees)), Center.Y - Radius * Math.Sin(DegToRad(StartDegrees)));
+            EndDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(DegToRad(EndDegrees)), Center.Y - Radius * Math.Sin(DegToRad(EndDegrees)));
+            CenterPoint.Position = Center;
         }
 
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            base.OnKeyDown(e);
-            if (e.Key == Key.R)
-            {
-                var result = RotatePoint(Center, AnchorPoint.Position, 90);
-            }
-        }
+
     }
 }

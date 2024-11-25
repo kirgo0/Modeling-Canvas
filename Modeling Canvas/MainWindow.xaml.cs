@@ -33,29 +33,25 @@ namespace Modeling_Canvas
                 EndDegrees = 70,
                 Center = new Point(-2, 0), // End at 270 degrees
             };
-            MyCanvas.Children.Add(customSegment);
+            MyCanvas.Children.Insert(0,customSegment);
 
-            var customSegment2 = new CustomCircle(MyCanvas)
-            {
-                Radius = 9,
-                Stroke = Brushes.Red,
-                StrokeThickness = 3,
-                Precision = 100,
-                StartDegrees = 0, // Start at 45 degrees
-                EndDegrees = 90,
-                Center = new Point(-2, 0), // End at 270 degrees
-                Canvas = MyCanvas,
-            };
-            MyCanvas.Children.Add(customSegment2);
+            //var customSegment2 = new CustomCircle(MyCanvas)
+            //{
+            //    Radius = 9,
+            //    Stroke = Brushes.Red,
+            //    StrokeThickness = 3,
+            //    Precision = 100,
+            //    StartDegrees = 0, // Start at 45 degrees
+            //    EndDegrees = 90,
+            //    Center = new Point(-2, 0), // End at 270 degrees
+            //    Canvas = MyCanvas,
+            //};
+            //MyCanvas.Children.Add(customSegment2);
 
             var customLine = new CustomLine(MyCanvas, new Point(4, 1), new Point(-1, -6));
             customLine.AddPoint(5, 5);
             customLine.AddPoint(7, 7);
             MyCanvas.Children.Add(customLine);
-
-
-            PreviewKeyUp += MyCanvas.OnKeyUp;
-            PreviewKeyDown += MyCanvas.OnKeyDown;
         }
 
         private void CenterWindowOnScreen()
