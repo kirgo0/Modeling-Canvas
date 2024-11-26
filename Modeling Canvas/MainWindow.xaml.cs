@@ -23,6 +23,8 @@ namespace Modeling_Canvas
         {
             InitializeComponent();
             CenterWindowOnScreen();
+            //var rect = new CustomRectangle(MyCanvas, new Point(-4, -4), new Point(2, 1));
+            //MyCanvas.Children.Add(rect);
             var customSegment = new CustomCircle(MyCanvas)
             {
                 Radius = 9,
@@ -67,6 +69,14 @@ namespace Modeling_Canvas
             Top = (screenHeight / 2) - (windowHeight / 2);
         }
 
+        public void AddControlToStackPanel(UIElement control)
+        {
+            ControlStack.Children.Add(control);
+        }
+        public void ClearControlStack()
+        {
+            ControlStack.Children.Clear();
+        }
     }
 
 }

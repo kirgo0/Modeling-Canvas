@@ -16,11 +16,12 @@
 
         <Grid Grid.Column="1" Panel.ZIndex="1" Background="White">
             <Grid.RowDefinitions>
-                <RowDefinition Height="55*"/>
-                <RowDefinition Height="144*"/>
-                <RowDefinition Height="585*"/>
+                <RowDefinition Height="23*"/>
+                <RowDefinition Height="59*"/>
+                <RowDefinition Height="246*"/>
             </Grid.RowDefinitions>
-            <Label x:Name="CurrentElementLabel" Content="Label" HorizontalAlignment="Center" Margin="0,55,0,0" VerticalAlignment="Top" Grid.RowSpan="2" Width="170" Height="162"/>
+            <Label x:Name="CurrentElementLabel" Content="Label" HorizontalAlignment="Center" VerticalAlignment="Center" Width="170" Height="157" Grid.Row="1"/>
+            <StackPanel x:Name="ControlStack" Grid.Row="2"/>
         </Grid>
     </Grid>
 </Window>

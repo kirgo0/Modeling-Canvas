@@ -45,9 +45,8 @@ namespace Modeling_Canvas.UIELements
 
         protected double _lastRotationDegrees { get; set; } = 0;
 
-        public DraggablePoint RotationPoint { get; set; }
-
         protected bool _isRotating { get; set; } = false;
+
         protected CustomElement(CustomCanvas canvas, bool hasAnchorPoint = true)
         {
             Canvas = canvas;
@@ -106,7 +105,7 @@ namespace Modeling_Canvas.UIELements
             return new Point(0,0);
         }
 
-        protected virtual void OnAnchorPointMove(Vector offset)
+        protected virtual void OnAnchorPointMove(DraggablePoint point, Vector offset)
         {
             OverrideAnchorPoint = true;
         }
@@ -146,6 +145,27 @@ namespace Modeling_Canvas.UIELements
                 );
         }
 
+        protected virtual void RenderControlPanel()
+        {
+            ClearControlPanel();
+        }
+
+        protected void AddElementToControlPanel(UIElement control)
+        {
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                mainWindow.AddControlToStackPanel(control);
+            }
+        }
+
+        protected void ClearControlPanel()
+        {
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                mainWindow.ClearControlStack();
+            }
+        }
+
         protected override void OnKeyDown(KeyEventArgs e)
         {
             if (e.Key == Key.E)
@@ -157,6 +177,7 @@ namespace Modeling_Canvas.UIELements
         }
 
         protected abstract void RotateElement(double degrees);
+        protected abstract void ScaleElement(Vector scaleVector, double ScaleFactor);
 
         #region logic for dragging elements
         protected override void OnMouseEnter(MouseEventArgs e)
@@ -184,15 +205,43 @@ namespace Modeling_Canvas.UIELements
             _lastMousePosition = e.GetPosition(Canvas);
             Keyboard.Focus(this);
             CaptureMouse();
+            RenderControlPanel();
         }
+
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
             if (_isDragging)
             {
                 Point currentMousePosition = e.GetPosition(Canvas);
-                Vector offset = currentMousePosition - _lastMousePosition;
-                MoveElement(offset);
+                if(Canvas.IsCtrlPressed && HasAnchorPoint)
+                {
+                    // Calculate the distance change vector relative to the anchor point
+                    Point anchorPosition = AnchorPoint.Position;
+                    Point lastMousePosition = Canvas.GetCanvasUnitCoordinates(_lastMousePosition);
+                    Point mousePosition = Canvas.GetCanvasMousePosition();
+
+                    Vector lastVector = lastMousePosition - anchorPosition;
+                    Vector currentVector = mousePosition - anchorPosition;
+
+                    // Calculate the scale factors based on the ratio of the current vector to the last vector
+                    double scaleX = currentVector.X / lastVector.X;
+                    double scaleY = currentVector.Y / lastVector.Y;
+
+                    // Ensure scale factors are valid
+                    if (double.IsInfinity(scaleX) || double.IsNaN(scaleX)) scaleX = 1;
+                    if (double.IsInfinity(scaleY) || double.IsNaN(scaleY)) scaleY = 1;
+
+                    double distanceToAnchor = (mousePosition - anchorPosition).Length;
+                    double lastDistanceToAnchor = (lastMousePosition - anchorPosition).Length;
+
+                    double scaleFactor = distanceToAnchor / lastDistanceToAnchor;
+                    ScaleElement(new Vector(scaleX, scaleY), scaleFactor);
+                } else
+                {
+                    Vector offset = currentMousePosition - _lastMousePosition;
+                    MoveElement(offset);
+                }
                 _lastMousePosition = currentMousePosition;
             }
             else if (_isRotating)
@@ -229,7 +278,6 @@ namespace Modeling_Canvas.UIELements
             {
                 AnchorPoint.MoveElement(offset);
             }
-            //InvalidateCanvas();
         }
         #endregion
 
@@ -269,6 +317,33 @@ namespace Modeling_Canvas.UIELements
             // Update point position
             return new Point(Math.Round(rotatedX, Canvas.RotationPrecision), Math.Round(rotatedY, Canvas.RotationPrecision));
         }
+
+        protected Point OffsetPoint(Point point, Vector offset)
+        {
+            return new Point(
+                point.X + offset.X / UnitSize,
+                point.Y - offset.Y / UnitSize
+                );
+        }
+
+        protected Point OffsetAndSpanPoint(Point point, Vector offset)
+        {
+            return new Point(
+                SnapValue(point.X + offset.X / UnitSize),
+                SnapValue(point.Y - offset.Y / UnitSize)
+            );
+        }
+
+        protected Point ScalePoint(Point point, Point anchor, Vector scaleVector)
+        {
+            // Apply scaling transformation
+            double newX = anchor.X + scaleVector.X * (point.X - anchor.X);
+            double newY = anchor.Y + scaleVector.Y * (point.Y - anchor.Y);
+            
+            // Update the point in the list
+            return new Point(newX, newY);
+        }
+
         protected double DegToRad(double deg) => Math.PI * deg / 180.0;
         protected double NormalizeAngle(double angle) => (angle % 360 + 360) % 360;
 

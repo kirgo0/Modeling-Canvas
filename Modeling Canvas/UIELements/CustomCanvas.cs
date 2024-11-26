@@ -10,7 +10,8 @@ namespace Modeling_Canvas.UIELements
     {
         public double XOffset { get; set; } = 0;
         public double YOffset { get; set; } = 0;
-
+        //public double ScalingFactorX { get; set; } = 2;
+        //public double ScalingFactorY { get; set; } = 2;
         public int RotationPrecision { get; set; } = 4;
         public double UnitSize
         {

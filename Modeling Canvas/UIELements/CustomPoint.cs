@@ -174,12 +174,6 @@ namespace Modeling_Canvas.UIELements
             context.LineTo(end, true, false);
         }
 
-
-        private double DegToRad(double deg)
-        {
-            return Math.PI * deg / 180.0;
-        }
-
         protected override Size MeasureOverride(Size availableSize)
         {
             return new Size(Radius, Radius);
@@ -202,5 +196,8 @@ namespace Modeling_Canvas.UIELements
             return $"Point\nX: {Position.X}\nY: {Position.Y}";
         }
 
+        protected override void ScaleElement(Vector scaleVector, double ScaleFactor)
+        {
+        }
     }
 }

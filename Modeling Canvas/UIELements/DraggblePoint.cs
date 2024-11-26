@@ -28,19 +28,19 @@ namespace Modeling_Canvas.UIELements
                 CreateCircleGeometry(new Point(0, 0), DragRadius, 100));
         }
 
-        public Action<Vector> OverrideMoveAction;
-        public Action<Vector> MoveAction;
+        public Action<DraggablePoint, Vector> OverrideMoveAction;
+        public Action<DraggablePoint, Vector> MoveAction;
 
         public override void MoveElement(Vector offset)
         {
             if (OverrideMoveAction is not null)
             {
-                OverrideMoveAction?.Invoke(offset);
+                OverrideMoveAction?.Invoke(this, offset);
                 return;
             }
 
             base.MoveElement(offset);
-            MoveAction?.Invoke(offset);
+            MoveAction?.Invoke(this, offset);
 
             if (Canvas.IsCtrlPressed || Canvas.IsSpacePressed)
             {
@@ -60,8 +60,6 @@ namespace Modeling_Canvas.UIELements
                     Position.Y - offset.Y / UnitSize
                     );
             }
-            // Update the circle's center position
-            //InvalidateCanvas();
         }
 
         public Point PixelPosition { get => new Point(Position.X * UnitSize, -Position.Y * UnitSize); }
@@ -71,6 +69,7 @@ namespace Modeling_Canvas.UIELements
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             MouseLeftButtonDownAction?.Invoke(e);
+            Keyboard.Focus(Canvas);
             e.Handled = true;
             base.OnMouseLeftButtonDown(e);
         }

@@ -12,11 +12,18 @@ namespace Modeling_Canvas.UIELements
         }
 
         public int Precision { get; set; } = 100; // Number of points for the circle
-        public double Radius { get; set; } = 5; // Default radius
+        private double _radius  = 5; 
+        public double Radius { 
+            get => _radius; 
+            set {
+                if (value <= 0.5) _radius = 0.5;
+                else _radius = value; 
+            }
+        }
         public double StartDegrees { get; set; } = 0; // Start angle in degrees
         public double EndDegrees { get; set; } = 360; // End angle in degrees
         public Point Center { get; set; } = new Point(1, 1);
-        public CustomPoint CenterPoint { get; set; }
+        public DraggablePoint CenterPoint { get; set; }
         public DraggablePoint RadiusPoint { get; set; }
         public DraggablePoint StartDegreesPoint { get; set; }
         public DraggablePoint EndDegreesPoint { get; set; }
@@ -29,7 +36,6 @@ namespace Modeling_Canvas.UIELements
         {
             return new Size((Radius * UnitSize + StrokeThickness) * 2, (Radius * UnitSize + StrokeThickness) * 2);
         }
-
         protected override void InitControls()
         {
             RadiusPoint = new DraggablePoint(Canvas)
@@ -65,7 +71,7 @@ namespace Modeling_Canvas.UIELements
             CenterPoint = new DraggablePoint(Canvas)
             {
                 Radius = 3,
-                OverrideMoveAction = MoveElement,
+                OverrideMoveAction = CenterPointMoveAction,
                 HasAnchorPoint = false
             };
             Canvas.Children.Add(CenterPoint);
@@ -106,7 +112,7 @@ namespace Modeling_Canvas.UIELements
             InvalidateCanvas();
         }
 
-        public virtual void RadiusPointMoveAction(Vector offset)
+        public virtual void RadiusPointMoveAction(DraggablePoint point, Vector offset)
         {
             if (SnappingEnabled)
             {
@@ -116,10 +122,8 @@ namespace Modeling_Canvas.UIELements
             {
                 Radius += offset.X / UnitSize;
             }
-            if (Radius <= 0.5) Radius = 0.5;
         }
-
-        public virtual void StartDegreesPointMoveAction(Vector offset)
+        public virtual void StartDegreesPointMoveAction(DraggablePoint point, Vector offset)
         {
             if (SnappingEnabled && Math.Abs(StartDegrees - EndDegrees) < 5)
             {
@@ -129,7 +133,7 @@ namespace Modeling_Canvas.UIELements
                 StartDegrees = Canvas.GetDegreesBetweenMouseAndPoint(Center);
             }
         }
-        public virtual void EndDegreesPointMoveAction(Vector offset)
+        public virtual void EndDegreesPointMoveAction(DraggablePoint point, Vector offset)
         {
             if (SnappingEnabled && Math.Abs(StartDegrees - EndDegrees) < 5)
             {
@@ -139,6 +143,10 @@ namespace Modeling_Canvas.UIELements
             {
                 EndDegrees = Canvas.GetDegreesBetweenMouseAndPoint(Center);
             }
+        }
+        public virtual void CenterPointMoveAction(DraggablePoint point, Vector offset)
+        {
+            MoveElement(offset);
         }
 
         private Geometry CreateCircleSegmentGeometry(Point center, double radius, double startDegrees, double endDegrees, int precision)
@@ -207,6 +215,11 @@ namespace Modeling_Canvas.UIELements
             NormalizeAngle(StartDegrees);
         }
 
+        protected override void ScaleElement(Vector scaleVector, double ScaleFactor)
+        {
+            Center = ScalePoint(Center, AnchorPoint.Position, scaleVector);
+            Radius *= ScaleFactor;
+        }
         public override string ToString()
         {
             return $"X: {Center.X} \nY: {Center.Y} \nRadius: {Radius}\nStart: {StartDegrees}\nEnd: {EndDegrees}";

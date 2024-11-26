@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Net.NetworkInformation;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -95,5 +96,35 @@ namespace Modeling_Canvas.UIELements
             InvalidateCanvas();
         }
 
+        protected override void RenderControlPanel()
+        {
+            base.RenderControlPanel();
+            var addPointButton = new Button
+            {
+                Content = "Add Point",
+                Width = 100,
+                Height = 30,
+                Margin = new Thickness(5)
+            };
+
+            addPointButton.Click += (s, e) =>
+            {
+                AddPoint(0, 0);
+            };
+            AddElementToControlPanel(addPointButton);
+        }
+
+        public override string ToString()
+        {
+            return $"Line\nPoints: {Points.Count}";
+        }
+
+        protected override void ScaleElement(Vector scaleVector, double ScaleFactor)
+        {
+            foreach(var point in Points)
+            {
+                point.Position = ScalePoint(point.Position, AnchorPoint.Position, scaleVector);
+            }
+        }
     }
 }
