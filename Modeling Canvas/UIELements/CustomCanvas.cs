@@ -10,8 +10,6 @@ namespace Modeling_Canvas.UIELements
     {
         public double XOffset { get; set; } = 0;
         public double YOffset { get; set; } = 0;
-        //public double ScalingFactorX { get; set; } = 2;
-        //public double ScalingFactorY { get; set; } = 2;
         public int RotationPrecision { get; set; } = 4;
         public double UnitSize
         {
@@ -57,7 +55,6 @@ namespace Modeling_Canvas.UIELements
             base.OnRender(dc);
             DrawCoordinateGrid(dc);
         }
-        public bool GridSnapping { get; set; } = false; // Enable grid snapping by default
         // Calculate grid lines for snapping
 
         protected override Size ArrangeOverride(Size arrangeSize)
@@ -149,10 +146,6 @@ namespace Modeling_Canvas.UIELements
             dc.DrawText(xLabel, new Point(width - xLabel.Width - 5, halfHeight - xLabel.Height - 5)); // X-axis label
             dc.DrawText(yLabel, new Point(halfWidth + 5, 5)); // Y-axis label
         }
-        public bool IsCtrlPressed { get; set; } = false;
-        public bool IsAltPressed { get; set; } = false;
-        public bool IsSpacePressed { get; set; } = false;
-        public bool IsLeftMouseButtonPressed { get; set; } = false;
 
         private Point previousMousePosition;
         public CustomCanvas()
@@ -163,46 +156,28 @@ namespace Modeling_Canvas.UIELements
         }
         public void OnKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+            if (e.Key == Key.Space)
             {
-                GridSnapping = true;
-            }
-            else if (e.Key == Key.LeftCtrl)
-            {
-                IsCtrlPressed = true;
-            }
-            else if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
-            {
-                IsAltPressed = true;
-            }
-            else if (e.Key == Key.Space)
-            {
-                IsSpacePressed = true;
                 Mouse.OverrideCursor = Cursors.Hand;
+            }
+            if (e.Key == Key.LeftCtrl)
+            {
+                Mouse.OverrideCursor = Cursors.SizeNESW;
             }
         }
 
         public void OnKeyUp(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
-            {
-                GridSnapping = false;
-            }
-            else if (e.Key == Key.LeftCtrl)
-            {
-                IsCtrlPressed = false;
-                IsAltPressed = false;
-            }
-            else if (e.Key == Key.Space)
-            {
-                IsSpacePressed = false;
-                Mouse.OverrideCursor = null;
-            }
+            Mouse.OverrideCursor = null;
+            //if (e.Key == Key.Space)
+            //{
+            //    Mouse.OverrideCursor = null;
+            //}
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            if (IsSpacePressed && IsLeftMouseButtonPressed)
+            if (InputManager.SpacePressed && InputManager.LeftMousePressed)
             {
                 var currentMousePosition = e.GetPosition(this);
                 var deltaX = currentMousePosition.X - previousMousePosition.X;
@@ -224,7 +199,6 @@ namespace Modeling_Canvas.UIELements
         {
             SelectedElements.Clear();
             InvalidateVisual();
-            IsLeftMouseButtonPressed = true;
             Keyboard.ClearFocus();
             Keyboard.Focus(this);
             previousMousePosition = e.GetPosition(this);
@@ -233,7 +207,6 @@ namespace Modeling_Canvas.UIELements
 
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
-            IsLeftMouseButtonPressed = false;
             Mouse.OverrideCursor = null;
             base.OnMouseLeftButtonUp(e);
         }
@@ -242,10 +215,10 @@ namespace Modeling_Canvas.UIELements
         {
             base.OnMouseWheel(e);
 
-            if (IsCtrlPressed)
+            if (InputManager.CtrlPressed)
             {
                 // Determine delta multiplier based on whether Alt is pressed
-                double deltaMultiplier = IsAltPressed ? 0.01 : 0.1;
+                double deltaMultiplier = InputManager.AltPressed ? 0.01 : 0.1;
 
                 if (e.Delta != 0)
                 {

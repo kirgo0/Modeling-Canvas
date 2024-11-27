@@ -37,15 +37,14 @@ namespace Modeling_Canvas.UIELements
         public CustomCanvas Canvas { get; set; }
         public double UnitSize { get => Canvas.UnitSize; }
 
-        protected bool _isDragging = false;
-
         protected Point _lastMousePosition;
         public bool AllowSnapping { get; set; } = true;
-        protected virtual bool SnappingEnabled { get => AllowSnapping ? Canvas.GridSnapping : false; }
+        protected virtual bool SnappingEnabled { get => AllowSnapping ? InputManager.ShiftPressed : false; }
 
         protected double _lastRotationDegrees { get; set; } = 0;
 
-        protected bool _isRotating { get; set; } = false;
+        protected bool _isDragging = false;
+        protected bool _isRotating = false;
 
         protected CustomElement(CustomCanvas canvas, bool hasAnchorPoint = true)
         {
@@ -125,9 +124,10 @@ namespace Modeling_Canvas.UIELements
         protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
         {
             base.OnMouseRightButtonUp(e);
-            if (HasAnchorPoint && _isRotating)
+            if (HasAnchorPoint)
             {
                 _isRotating = false;
+                _isDragging = false;
                 ReleaseMouseCapture();
             }
         }
@@ -176,9 +176,6 @@ namespace Modeling_Canvas.UIELements
             base.OnKeyDown(e);
         }
 
-        protected abstract void RotateElement(double degrees);
-        protected abstract void ScaleElement(Vector scaleVector, double ScaleFactor);
-
         #region logic for dragging elements
         protected override void OnMouseEnter(MouseEventArgs e)
         {
@@ -211,10 +208,16 @@ namespace Modeling_Canvas.UIELements
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
-            if (_isDragging)
+            var window = App.Current.MainWindow as MainWindow;
+            if (window != null)
+            {
+                window.CurrentElementLabel.Content = ToString();
+            }
+            if (_isDragging && !InputManager.RightMousePressed)
             {
                 Point currentMousePosition = e.GetPosition(Canvas);
-                if(Canvas.IsCtrlPressed && HasAnchorPoint)
+                // scale logic
+                if (InputManager.CtrlPressed && HasAnchorPoint)
                 {
                     // Calculate the distance change vector relative to the anchor point
                     Point anchorPosition = AnchorPoint.Position;
@@ -227,58 +230,75 @@ namespace Modeling_Canvas.UIELements
                     // Calculate the scale factors based on the ratio of the current vector to the last vector
                     double scaleX = currentVector.X / lastVector.X;
                     double scaleY = currentVector.Y / lastVector.Y;
+                    double distanceToAnchor = (mousePosition - anchorPosition).Length;
+                    double lastDistanceToAnchor = (lastMousePosition - anchorPosition).Length;
+                    double scaleFactor = distanceToAnchor / lastDistanceToAnchor;
+                    const double minVectorComponent = 0.01; // Minimal allowed value for vector components to avoid instability
+
+                    if (Math.Abs(lastVector.X) < minVectorComponent || Math.Abs(lastVector.Y) < minVectorComponent)
+                    {
+                        scaleX = 1.1;
+                        scaleY = 1.1;
+                    }
+                    else
+                    {
+                        scaleX = currentVector.X / lastVector.X;
+                        scaleY = currentVector.Y / lastVector.Y;
+                    }
 
                     // Ensure scale factors are valid
                     if (double.IsInfinity(scaleX) || double.IsNaN(scaleX)) scaleX = 1;
                     if (double.IsInfinity(scaleY) || double.IsNaN(scaleY)) scaleY = 1;
 
-                    double distanceToAnchor = (mousePosition - anchorPosition).Length;
-                    double lastDistanceToAnchor = (lastMousePosition - anchorPosition).Length;
+                    // Proportional scaling logic
+                    if (InputManager.ShiftPressed)
+                    {
+                        double uniformScale = (Math.Abs(scaleX) + Math.Abs(scaleY)) / 2;
+                        scaleX = Math.Sign(scaleX) * uniformScale;
+                        scaleY = Math.Sign(scaleY) * uniformScale;
+                    }
 
-                    double scaleFactor = distanceToAnchor / lastDistanceToAnchor;
-                    ScaleElement(new Vector(scaleX, scaleY), scaleFactor);
-                } else
+                    ScaleElement(AnchorPoint.Position, new Vector(scaleX, scaleY), scaleFactor);
+
+                }
+                // move logic
+                else
                 {
                     Vector offset = currentMousePosition - _lastMousePosition;
                     MoveElement(offset);
                 }
                 _lastMousePosition = currentMousePosition;
             }
-            else if (_isRotating)
+            // rotate logic
+            else if (_isRotating && !InputManager.AnyKeyButShiftPressed && !InputManager.LeftMousePressed)
             {
                 var angle = Canvas.GetDegreesBetweenMouseAndPoint(AnchorPoint.Position);
-                RotateElement(_lastRotationDegrees - angle);
+                RotateElement(AnchorPoint.Position, _lastRotationDegrees - angle);
                 _lastRotationDegrees = angle;
-            }
-            else
-            {
-                return;
-            }
-
-            var window = App.Current.MainWindow as MainWindow;
-            if (window != null)
-            {
-                window.CurrentElementLabel.Content = ToString();
             }
             InvalidateCanvas();
         }
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonUp(e);
-            if (_isDragging)
-            {
-                _isDragging = false;
-                ReleaseMouseCapture();
-            }
+            _isDragging = false;
+            _isRotating = false;
+            ReleaseMouseCapture();
         }
 
         public virtual void MoveElement(Vector offset)
         {
-            if (HasAnchorPoint)
+            if (HasAnchorPoint && OverrideAnchorPoint)
             {
                 AnchorPoint.MoveElement(offset);
+            } else
+            {
+                AnchorPoint.Position = GetAnchorDefaultPosition();
             }
         }
+        public abstract void RotateElement(Point anchorPoint, double degrees);
+        public abstract void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor);
+
         #endregion
 
         // Helper method to invalidate the parent canvas

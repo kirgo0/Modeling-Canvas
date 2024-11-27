@@ -187,7 +187,7 @@ namespace Modeling_Canvas.UIELements
         public override void MoveElement(Vector offset)
         {
         }
-        protected override void RotateElement(double degrees)
+        public override void RotateElement(Point anchorPoint, double degrees)
         {
         }
 
@@ -196,7 +196,7 @@ namespace Modeling_Canvas.UIELements
             return $"Point\nX: {Position.X}\nY: {Position.Y}";
         }
 
-        protected override void ScaleElement(Vector scaleVector, double ScaleFactor)
+        public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
         {
         }
     }

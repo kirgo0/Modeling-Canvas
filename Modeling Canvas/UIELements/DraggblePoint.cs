@@ -42,7 +42,7 @@ namespace Modeling_Canvas.UIELements
             base.MoveElement(offset);
             MoveAction?.Invoke(this, offset);
 
-            if (Canvas.IsCtrlPressed || Canvas.IsSpacePressed)
+            if (InputManager.CtrlPressed || InputManager.SpacePressed)
             {
                 return;
             }

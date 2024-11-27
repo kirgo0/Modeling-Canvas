@@ -10,7 +10,6 @@ namespace Modeling_Canvas.UIELements
         public CustomCircle(CustomCanvas canvas) : base(canvas)
         {
         }
-
         public int Precision { get; set; } = 100; // Number of points for the circle
         private double _radius  = 5; 
         public double Radius { 
@@ -80,13 +79,6 @@ namespace Modeling_Canvas.UIELements
 
         protected override void OnRender(DrawingContext drawingContext)
         {
-
-            AnchorVisibility = ShowControls;
-            CenterPoint.Visibility = ShowControls;
-            RadiusPoint.Visibility = ShowControls;
-            StartDegreesPoint.Visibility = ShowControls;
-            EndDegreesPoint.Visibility = ShowControls;
-
             UpdateUIControls();
 
             // Create and draw the circle segment geometry
@@ -102,7 +94,7 @@ namespace Modeling_Canvas.UIELements
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            if(!Canvas.IsSpacePressed)
+            if(!InputManager.SpacePressed)
             {
                 Canvas.SelectedElements.Clear();
                 Canvas.SelectedElements.Add(this);
@@ -125,7 +117,7 @@ namespace Modeling_Canvas.UIELements
         }
         public virtual void StartDegreesPointMoveAction(DraggablePoint point, Vector offset)
         {
-            if (SnappingEnabled && Math.Abs(StartDegrees - EndDegrees) < 5)
+            if (InputManager.ShiftPressed && Math.Abs(StartDegrees - EndDegrees) < 5)
             {
                 StartDegrees = EndDegrees;
             } else
@@ -135,7 +127,7 @@ namespace Modeling_Canvas.UIELements
         }
         public virtual void EndDegreesPointMoveAction(DraggablePoint point, Vector offset)
         {
-            if (SnappingEnabled && Math.Abs(StartDegrees - EndDegrees) < 5)
+            if (InputManager.ShiftPressed && Math.Abs(StartDegrees - EndDegrees) < 5)
             {
                 EndDegrees = StartDegrees;
             }
@@ -197,7 +189,8 @@ namespace Modeling_Canvas.UIELements
 
         public override void MoveElement(Vector offset)
         {
-            if (Canvas.IsCtrlPressed || Canvas.IsSpacePressed) return;
+            if (InputManager.AnyKeyButShiftPressed) return;
+
             Point newCenter = new Point(
                 Center.X + offset.X / UnitSize,
                 Center.Y - offset.Y / UnitSize);
@@ -206,18 +199,18 @@ namespace Modeling_Canvas.UIELements
             base.MoveElement(offset);
         }
 
-        protected override void RotateElement(double degrees)
+        public override void RotateElement(Point anchorPoint, double degrees)
         {
-            Center = RotatePoint(Center, AnchorPoint.Position, degrees);
+            Center = RotatePoint(Center, anchorPoint, degrees);
             EndDegrees -= degrees;
             StartDegrees -= degrees;
             NormalizeAngle(EndDegrees);
             NormalizeAngle(StartDegrees);
         }
 
-        protected override void ScaleElement(Vector scaleVector, double ScaleFactor)
+        public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
         {
-            Center = ScalePoint(Center, AnchorPoint.Position, scaleVector);
+            Center = ScalePoint(Center, anchorPoint, scaleVector);
             Radius *= ScaleFactor;
         }
         public override string ToString()
@@ -227,6 +220,12 @@ namespace Modeling_Canvas.UIELements
 
         private void UpdateUIControls()
         {
+            AnchorVisibility = ShowControls;
+            CenterPoint.Visibility = ShowControls;
+            RadiusPoint.Visibility = ShowControls;
+            StartDegreesPoint.Visibility = ShowControls;
+            EndDegreesPoint.Visibility = ShowControls;
+
             RadiusPoint.Position = new Point(Center.X + (Radius + 1) * Math.Cos(DegToRad(0)), Center.Y - Radius * Math.Sin(0));
             StartDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(DegToRad(StartDegrees)), Center.Y - Radius * Math.Sin(DegToRad(StartDegrees)));
             EndDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(DegToRad(EndDegrees)), Center.Y - Radius * Math.Sin(DegToRad(EndDegrees)));

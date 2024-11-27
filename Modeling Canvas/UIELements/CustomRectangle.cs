@@ -99,7 +99,7 @@ namespace Modeling_Canvas.UIELements
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            if (!Canvas.IsSpacePressed)
+            if (InputManager.SpacePressed)
             {
                 Canvas.SelectedElements.Clear();
                 Canvas.SelectedElements.Add(this);
@@ -110,24 +110,9 @@ namespace Modeling_Canvas.UIELements
         }
         protected void CornerPointMoveAction(DraggablePoint movedPoint, Vector offset)
         {
-
-            //var pointIndex = Points.IndexOf(movedPoint);
-            //DraggablePoint firstPoint;
-            //DraggablePoint thirdPoint;
-
-            //if (pointIndex % 2 == 0)
-            //{
-            //    firstPoint = Points[1];
-            //    thirdPoint = Points[3];
-            //}
-            //else
-            //{
-            //    firstPoint = Points[0];
-            //    thirdPoint = Points[2];
-            //}
             var firstPoint = Points.First(x => x.Position.X == movedPoint.Position.X && !x.Equals(movedPoint));
             var thirdPoint = Points.First(y => y.Position.Y == movedPoint.Position.Y && !y.Equals(movedPoint));
-            if (Canvas.IsCtrlPressed || Canvas.IsSpacePressed)
+            if (InputManager.CtrlPressed || InputManager.SpacePressed)
             {
                 return;
             }
@@ -142,14 +127,6 @@ namespace Modeling_Canvas.UIELements
             }
             firstPoint.Position = new Point(movedPoint.Position.X, firstPoint.Position.Y);
             thirdPoint.Position = new Point(thirdPoint.Position.X, movedPoint.Position.Y);
-        }
-
-        protected override void RotateElement(double degrees)
-        {
-            //foreach (var point in Points)
-            //{
-            //    point.Position = RotatePoint(point.Position, AnchorPoint.Position, degrees);
-            //}
         }
 
         public override void MoveElement(Vector offset)
@@ -168,14 +145,17 @@ namespace Modeling_Canvas.UIELements
             base.MoveElement(offset);
         }
 
+        public override void RotateElement(Point anchorPoint, double degrees)
+        {
+        }
+
+        public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
+        {
+        }
         public override string ToString()
         {
             return $"Rectange\nWidth: {RectWidth}\nHeight: {RectHeight}";
         }
 
-        protected override void ScaleElement(Vector scaleVector, double ScaleFactor)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -11,6 +11,8 @@ namespace Modeling_Canvas.UIELements
         public int PointsRadius { get; set; } = 5;
         public PointShape PointsShape { get; set; } = PointShape.Circle;
         public List<DraggablePoint> Points { get; } = new();
+
+        public bool IsClosed { get; set; } = true;
         public CustomLine(CustomCanvas canvas) : base(canvas)
         {
             StrokeThickness = 3;
@@ -27,16 +29,34 @@ namespace Modeling_Canvas.UIELements
         protected override void OnRender(DrawingContext drawingContext)
         {
             AnchorVisibility = ShowControls;
+
+            if (Points.Count < 2) return;
+
             foreach(var point in Points)
             {
                 point.Visibility = ShowControls;
+                point.Shape = PointShape.Circle;
             }
 
+            Points.First().Shape = PointShape.Square;
+            Points.Last().Shape = PointShape.Square;
+
             for (int i = 0; i < Points.Count-1; i++) {
-                drawingContext.DrawLine(new Pen(Stroke, StrokeThickness), Points[i].PixelPosition, Points[i + 1].PixelPosition);
-                drawingContext.DrawLine(new Pen(Brushes.Transparent, StrokeThickness + 10), Points[i].PixelPosition, Points[i + 1].PixelPosition);
+                DrawLine(drawingContext, Points[i].PixelPosition, Points[i + 1].PixelPosition);
             }
+
+            if (IsClosed)
+            {
+                DrawLine(drawingContext, Points.First().PixelPosition, Points.Last().PixelPosition);
+            }
+
             base.OnRender(drawingContext);
+        }
+
+        protected void DrawLine(DrawingContext drawingContext, Point p1, Point p2)
+        {
+            drawingContext.DrawLine(new Pen(Stroke, StrokeThickness), p1, p2);
+            drawingContext.DrawLine(new Pen(Brushes.Transparent, StrokeThickness + 10), p1, p2);
         }
         protected override Point GetAnchorDefaultPosition()
         {
@@ -70,23 +90,25 @@ namespace Modeling_Canvas.UIELements
 
         public override void MoveElement(Vector offset)
         {
+            AnchorPoint.AllowSnapping = false;
             foreach (var point in Points)
             {
                 point.MoveElement(offset);
             }
             base.MoveElement(offset);
+            AnchorPoint.AllowSnapping = true;
         }
-        protected override void RotateElement(double degrees)
+        public override void RotateElement(Point anchorPoint, double degrees)
         {
             foreach (var point in Points)
             {
-                point.Position = RotatePoint(point.Position, AnchorPoint.Position, degrees);
+                point.Position = RotatePoint(point.Position, anchorPoint, degrees);
             }
         }
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            if (!Canvas.IsSpacePressed)
+            if (!InputManager.SpacePressed)
             {
                 Canvas.SelectedElements.Clear();
                 Canvas.SelectedElements.Add(this);
@@ -119,11 +141,11 @@ namespace Modeling_Canvas.UIELements
             return $"Line\nPoints: {Points.Count}";
         }
 
-        protected override void ScaleElement(Vector scaleVector, double ScaleFactor)
+        public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
         {
             foreach(var point in Points)
             {
-                point.Position = ScalePoint(point.Position, AnchorPoint.Position, scaleVector);
+                point.Position = ScalePoint(point.Position, anchorPoint, scaleVector);
             }
         }
     }

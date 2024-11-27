@@ -57,6 +57,22 @@ namespace Modeling_Canvas
 
             //var rect = new CustomRectangle(MyCanvas, new Point(0, 0), 5, 5);
             //MyCanvas.Children.Add(rect);
+
+            //PreviewKeyDown += (o, e) => { 
+            //    InputManager.OnKeyAction(e, true);
+            //};
+            //PreviewKeyUp += (o, e) => { 
+            //    InputManager.OnKeyAction(e, false); 
+            //};
+
+            //PreviewMouseDown += (o, e) =>
+            //{
+            //    InputManager.OnMouseButtonAction(e, true);
+            //};
+            //PreviewMouseUp += (o, e) =>
+            //{
+            //    InputManager.OnMouseButtonAction(e, false);
+            //};
         }
 
         private void CenterWindowOnScreen()
@@ -77,6 +93,8 @@ namespace Modeling_Canvas
         {
             ControlStack.Children.Clear();
         }
+
+
     }
 
 }
