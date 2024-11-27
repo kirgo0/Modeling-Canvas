@@ -42,22 +42,17 @@ namespace Modeling_Canvas.UIELements
             Points.Last().Shape = PointShape.Square;
 
             for (int i = 0; i < Points.Count-1; i++) {
-                DrawLine(drawingContext, Points[i].PixelPosition, Points[i + 1].PixelPosition);
+                DrawLine(drawingContext, Points[i].PixelPosition, Points[i + 1].PixelPosition, 10);
             }
 
             if (IsClosed)
             {
-                DrawLine(drawingContext, Points.First().PixelPosition, Points.Last().PixelPosition);
+                DrawLine(drawingContext, Points.First().PixelPosition, Points.Last().PixelPosition, 10);
             }
 
             base.OnRender(drawingContext);
         }
 
-        protected void DrawLine(DrawingContext drawingContext, Point p1, Point p2)
-        {
-            drawingContext.DrawLine(new Pen(Stroke, StrokeThickness), p1, p2);
-            drawingContext.DrawLine(new Pen(Brushes.Transparent, StrokeThickness + 10), p1, p2);
-        }
         protected override Point GetAnchorDefaultPosition()
         {
             if (Points == null || !Points.Any()) return new Point(0,0);
@@ -69,6 +64,14 @@ namespace Modeling_Canvas.UIELements
             return new Point(centerX, centerY);
         }
 
+        public override Point GetTopLeftPosition()
+        {
+            return new Point(Points.Min(x => x.Position.X) - PointsRadius/UnitSize, Points.Max(y => y.Position.Y) + PointsRadius/UnitSize);
+        }
+        public override Point GetBottomRightPosition()
+        {
+            return new Point(Points.Max(x => x.Position.X) + PointsRadius / UnitSize, Points.Min(y => y.Position.Y) - PointsRadius / UnitSize);
+        }
         public void AddPoint(double x, double y)
         {
             var point = new DraggablePoint(Canvas, new Point(x, y))
@@ -90,13 +93,13 @@ namespace Modeling_Canvas.UIELements
 
         public override void MoveElement(Vector offset)
         {
-            AnchorPoint.AllowSnapping = false;
+            //AnchorPoint.AllowSnapping = false;
             foreach (var point in Points)
             {
                 point.MoveElement(offset);
             }
             base.MoveElement(offset);
-            AnchorPoint.AllowSnapping = true;
+            //AnchorPoint.AllowSnapping = true;
         }
         public override void RotateElement(Point anchorPoint, double degrees)
         {
@@ -138,7 +141,7 @@ namespace Modeling_Canvas.UIELements
 
         public override string ToString()
         {
-            return $"Line\nPoints: {Points.Count}";
+            return $"Line\nPoints: {Points.Count}\nTL: {GetTopLeftPosition()}\nBR: {GetBottomRightPosition()}";
         }
 
         public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)

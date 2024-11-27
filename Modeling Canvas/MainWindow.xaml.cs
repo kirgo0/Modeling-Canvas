@@ -32,10 +32,10 @@ namespace Modeling_Canvas
                 StrokeThickness = 3,
                 Precision = 100,
                 StartDegrees = 0, // Start at 45 degrees
-                EndDegrees = 70,
+                EndDegrees = 360,
                 Center = new Point(-2, 0), // End at 270 degrees
             };
-            MyCanvas.Children.Insert(0,customSegment);
+            //MyCanvas.Children.Insert(0,customSegment);
 
             //var customSegment2 = new CustomCircle(MyCanvas)
             //{
@@ -53,26 +53,17 @@ namespace Modeling_Canvas
             var customLine = new CustomLine(MyCanvas, new Point(4, 1), new Point(-1, -6));
             customLine.AddPoint(5, 5);
             customLine.AddPoint(7, 7);
-            MyCanvas.Children.Add(customLine);
+            //MyCanvas.Children.Add(customLine);
 
+            var group = new ElementsGroup(MyCanvas);
+            group.AddChild(customLine);
+            //group.AddChild(customLine);
+            group.AddChild(customSegment);
+            MyCanvas.Children.Add(group);
             //var rect = new CustomRectangle(MyCanvas, new Point(0, 0), 5, 5);
             //MyCanvas.Children.Add(rect);
 
-            //PreviewKeyDown += (o, e) => { 
-            //    InputManager.OnKeyAction(e, true);
-            //};
-            //PreviewKeyUp += (o, e) => { 
-            //    InputManager.OnKeyAction(e, false); 
-            //};
 
-            //PreviewMouseDown += (o, e) =>
-            //{
-            //    InputManager.OnMouseButtonAction(e, true);
-            //};
-            //PreviewMouseUp += (o, e) =>
-            //{
-            //    InputManager.OnMouseButtonAction(e, false);
-            //};
         }
 
         private void CenterWindowOnScreen()

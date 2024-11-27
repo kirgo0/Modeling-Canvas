@@ -92,6 +92,15 @@ namespace Modeling_Canvas.UIELements
             return Center;
         }
 
+        public override Point GetTopLeftPosition()
+        {
+            return new Point(Center.X - Radius - StrokeThickness / UnitSize, Center.Y + Radius + StrokeThickness / UnitSize);
+        }
+
+        public override Point GetBottomRightPosition()
+        {
+            return new Point(Center.X + Radius + StrokeThickness / UnitSize, Center.Y - Radius - StrokeThickness / UnitSize);
+        }
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             if(!InputManager.SpacePressed)
@@ -204,18 +213,14 @@ namespace Modeling_Canvas.UIELements
             Center = RotatePoint(Center, anchorPoint, degrees);
             EndDegrees -= degrees;
             StartDegrees -= degrees;
-            NormalizeAngle(EndDegrees);
-            NormalizeAngle(StartDegrees);
+            StartDegrees = NormalizeAngle(StartDegrees);
+            EndDegrees = NormalizeAngle(EndDegrees);
         }
 
         public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
         {
             Center = ScalePoint(Center, anchorPoint, scaleVector);
             Radius *= ScaleFactor;
-        }
-        public override string ToString()
-        {
-            return $"X: {Center.X} \nY: {Center.Y} \nRadius: {Radius}\nStart: {StartDegrees}\nEnd: {EndDegrees}";
         }
 
         private void UpdateUIControls()
@@ -231,7 +236,10 @@ namespace Modeling_Canvas.UIELements
             EndDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(DegToRad(EndDegrees)), Center.Y - Radius * Math.Sin(DegToRad(EndDegrees)));
             CenterPoint.Position = Center;
         }
-
+        public override string ToString()
+        {
+            return $"X: {Center.X} \nY: {Center.Y} \nRadius: {Radius}\nStart: {StartDegrees}\nEnd: {EndDegrees}\nTL: {GetTopLeftPosition()}\nBR: {GetBottomRightPosition()}";
+        }
 
     }
 }

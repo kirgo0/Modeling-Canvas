@@ -98,10 +98,12 @@ namespace Modeling_Canvas.UIELements
             }
 
             var calculatedFrequency = GridFrequency;
-            if (UnitSize < 25) calculatedFrequency = 25;
+            if (UnitSize < 25) calculatedFrequency = 5;
+            if (UnitSize < 15) calculatedFrequency = 10;
+            if (UnitSize < 10) calculatedFrequency = 10;
             if (UnitSize < 5) calculatedFrequency = 50;
-            //if (UnitSize < 10) NumberFrequency = 2;
-            //else if (UnitSize < 5) NumberFrequency = 5;
+            if (UnitSize < 1) calculatedFrequency = 250;
+            if (UnitSize < 0.2) calculatedFrequency = 500;
 
             // Vertical lines and coordinates
             for (double x = halfWidth; x < width; x += UnitSize * calculatedFrequency)
@@ -179,10 +181,6 @@ namespace Modeling_Canvas.UIELements
         public void OnKeyUp(object sender, KeyEventArgs e)
         {
             Mouse.OverrideCursor = null;
-            //if (e.Key == Key.Space)
-            //{
-            //    Mouse.OverrideCursor = null;
-            //}
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
@@ -229,12 +227,16 @@ namespace Modeling_Canvas.UIELements
             {
                 // Determine delta multiplier based on whether Alt is pressed
                 double deltaMultiplier = InputManager.AltPressed ? 0.01 : 0.1;
-
+                if (UnitSize < 10) deltaMultiplier = InputManager.AltPressed ? 0.004 : 0.01;
+                if (UnitSize < 5)
+                {
+                    deltaMultiplier = InputManager.AltPressed ? 0.0008 : 0.004; 
+                }
                 if (e.Delta != 0)
                 {
                     // Adjust UnitSize based on delta multiplier
-                    UnitSize += Math.Round(e.Delta * deltaMultiplier);
-                    if (UnitSize <= 0) UnitSize = 1;
+                    UnitSize += Math.Round(e.Delta * deltaMultiplier, 4);
+                    if (UnitSize < 0.1) UnitSize = 0.1;
                 }
             }
         }

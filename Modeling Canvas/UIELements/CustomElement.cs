@@ -7,10 +7,9 @@ namespace Modeling_Canvas.UIELements
 {
     public abstract class CustomElement : FrameworkElement
     {
-        public Brush Fill { get; set; } = Brushes.Transparent; // Default fill color
+        public Brush Fill { get; set; } = null; // Default fill color
         public Brush Stroke { get; set; } = Brushes.Black; // Default stroke color
         public double StrokeThickness { get; set; } = 1; // Default stroke thickness
-
         public Visibility ShowControls { get => Canvas.SelectedElements.Contains(this) ? Visibility.Visible : Visibility.Hidden; }
         public Visibility AnchorVisibility { get; set; } = Visibility.Hidden;
         public bool HasAnchorPoint { get; set; } = true;
@@ -67,7 +66,6 @@ namespace Modeling_Canvas.UIELements
             base.OnRender(drawingContext);
 
         }
-
         protected override void OnInitialized(EventArgs e)
         {
             base.OnInitialized(e);
@@ -104,6 +102,13 @@ namespace Modeling_Canvas.UIELements
             return new Point(0,0);
         }
 
+        public virtual Point GetTopLeftPosition() { 
+            return new Point(0,0);
+        }
+        public virtual Point GetBottomRightPosition()
+        {
+            return new Point(0, 0);
+        }
         protected virtual void OnAnchorPointMove(DraggablePoint point, Vector offset)
         {
             OverrideAnchorPoint = true;
@@ -213,10 +218,11 @@ namespace Modeling_Canvas.UIELements
             {
                 window.CurrentElementLabel.Content = ToString();
             }
+            // Move and scale logic
             if (_isDragging && !InputManager.RightMousePressed)
             {
                 Point currentMousePosition = e.GetPosition(Canvas);
-                // scale logic
+                // Scale logic
                 if (InputManager.CtrlPressed && HasAnchorPoint)
                 {
                     // Calculate the distance change vector relative to the anchor point
@@ -261,20 +267,25 @@ namespace Modeling_Canvas.UIELements
                     ScaleElement(AnchorPoint.Position, new Vector(scaleX, scaleY), scaleFactor);
 
                 }
-                // move logic
+                // Move logic
                 else
                 {
+                    Mouse.OverrideCursor = Cursors.SizeAll;
                     Vector offset = currentMousePosition - _lastMousePosition;
                     MoveElement(offset);
                 }
                 _lastMousePosition = currentMousePosition;
             }
-            // rotate logic
+            // Rotate logic
             else if (_isRotating && !InputManager.AnyKeyButShiftPressed && !InputManager.LeftMousePressed)
             {
                 var angle = Canvas.GetDegreesBetweenMouseAndPoint(AnchorPoint.Position);
                 RotateElement(AnchorPoint.Position, _lastRotationDegrees - angle);
                 _lastRotationDegrees = angle;
+            }
+            else 
+            {
+                Mouse.OverrideCursor = null;
             }
             InvalidateCanvas();
         }
@@ -367,5 +378,10 @@ namespace Modeling_Canvas.UIELements
         protected double DegToRad(double deg) => Math.PI * deg / 180.0;
         protected double NormalizeAngle(double angle) => (angle % 360 + 360) % 360;
 
+        protected void DrawLine(DrawingContext drawingContext, Point p1, Point p2, double transparentThickness)
+        {
+            drawingContext.DrawLine(new Pen(Stroke, StrokeThickness), p1, p2);
+            drawingContext.DrawLine(new Pen(Brushes.Transparent, StrokeThickness + transparentThickness), p1, p2);
+        }
     }
 }

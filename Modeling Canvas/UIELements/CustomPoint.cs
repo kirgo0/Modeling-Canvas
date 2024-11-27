@@ -84,6 +84,14 @@ namespace Modeling_Canvas.UIELements
             return geometry;
         }
 
+        public override Point GetTopLeftPosition()
+        {
+            return new Point(Position.X + Radius / UnitSize, Position.Y + Radius / UnitSize);
+        }
+        public override Point GetBottomRightPosition()
+        {
+            return new Point(Position.X - Radius / UnitSize, Position.Y - Radius / UnitSize);
+        }
         protected Geometry CreateCircleWithLinesGeometry(Point center, double radius, int precision, double lineLength)
         {
             var geometry = new StreamGeometry();

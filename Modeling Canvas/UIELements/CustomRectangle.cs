@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -77,6 +76,14 @@ namespace Modeling_Canvas.UIELements
         {
             return new Point(Points.Select(x => x.Position.X).Sum() / 4, Points.Select(y => y.Position.Y).Sum() / 4);
         }
+        public override Point GetTopLeftPosition()
+        {
+            return new Point(Points.Min(x => x.Position.X), Points.Max(y => y.Position.Y));
+        }
+        public override Point GetBottomRightPosition()
+        {
+            return new Point(Points.Max(x => x.Position.X), Points.Min(y => y.Position.Y));
+        }
 
         protected override void OnRender(DrawingContext drawingContext)
         {
@@ -106,7 +113,7 @@ namespace Modeling_Canvas.UIELements
                 e.Handled = true;
             }
             base.OnMouseLeftButtonDown(e);
-            InvalidateVisual();
+            //InvalidateVisual();
         }
         protected void CornerPointMoveAction(DraggablePoint movedPoint, Vector offset)
         {
