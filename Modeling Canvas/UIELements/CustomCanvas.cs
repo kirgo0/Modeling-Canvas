@@ -79,6 +79,7 @@ namespace Modeling_Canvas.UIELements
 
             return arrangeSize;
         }
+        public int NumberFrequency { get; set; } = 1; // Default frequency is 1
 
         protected void DrawCoordinateGrid(DrawingContext dc)
         {
@@ -96,56 +97,65 @@ namespace Modeling_Canvas.UIELements
                 return;
             }
 
-            var calculatedFrequncy = GridFrequency;
-            if (UnitSize < 5) calculatedFrequncy = 25;
+            var calculatedFrequency = GridFrequency;
+            if (UnitSize < 25) calculatedFrequency = 25;
+            if (UnitSize < 5) calculatedFrequency = 50;
+            //if (UnitSize < 10) NumberFrequency = 2;
+            //else if (UnitSize < 5) NumberFrequency = 5;
 
             // Vertical lines and coordinates
-            for (double x = halfWidth; x < width; x += UnitSize * calculatedFrequncy)
+            for (double x = halfWidth; x < width; x += UnitSize * calculatedFrequency)
             {
                 dc.DrawLine(gridPen, new Point(x, 0), new Point(x, height));
+                DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3), new Point(x, halfHeight), 15, false);
             }
-            for (double x = halfWidth; x > 0; x -= UnitSize * calculatedFrequncy)
+            for (double x = halfWidth; x > 0; x -= UnitSize * calculatedFrequency)
             {
                 dc.DrawLine(gridPen, new Point(x, 0), new Point(x, height));
+                DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3), new Point(x, halfHeight), 15, false);
             }
 
             // Horizontal lines and coordinates
-            for (double y = halfHeight; y < height; y += UnitSize * calculatedFrequncy)
+            for (double y = halfHeight; y < height; y += UnitSize * calculatedFrequency)
             {
                 dc.DrawLine(gridPen, new Point(0, y), new Point(width, y));
+                DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3), new Point(halfWidth, y), 15, true);
             }
-            for (double y = halfHeight; y > 0; y -= UnitSize * calculatedFrequncy)
+            for (double y = halfHeight; y > 0; y -= UnitSize * calculatedFrequency)
             {
                 dc.DrawLine(gridPen, new Point(0, y), new Point(width, y));
+                DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3), new Point(halfWidth, y), 15, true);
             }
 
             // Draw axes
             dc.DrawLine(axisPen, new Point(0, halfHeight), new Point(width, halfHeight)); // X-axis
             dc.DrawLine(axisPen, new Point(halfWidth, 0), new Point(halfWidth, height)); // Y-axis
-
-            // Draw labels
-            FormattedText xLabel = new FormattedText(
-                "X",
-                System.Globalization.CultureInfo.CurrentCulture,
-                FlowDirection.LeftToRight,
-                new Typeface("Arial"),
-                14,
-                Brushes.Black,
-                VisualTreeHelper.GetDpi(this).PixelsPerDip);
-
-            FormattedText yLabel = new FormattedText(
-                "Y",
-                System.Globalization.CultureInfo.CurrentCulture,
-                FlowDirection.LeftToRight,
-                new Typeface("Arial"),
-                14,
-                Brushes.Black,
-                VisualTreeHelper.GetDpi(this).PixelsPerDip);
-
-            // Position X and Y labels at the ends of the axes
-            dc.DrawText(xLabel, new Point(width - xLabel.Width - 5, halfHeight - xLabel.Height - 5)); // X-axis label
-            dc.DrawText(yLabel, new Point(halfWidth + 5, 5)); // Y-axis label
         }
+
+        private void DrawCoordinateLabel(DrawingContext dc, double value, Point position, double fontSize, bool isHorizontal)
+        {
+            if (value == 0 && isHorizontal && position.Y == ActualHeight / 2)
+                return;
+            if (value == 0 && !isHorizontal && position.X == ActualWidth / 2)
+                return;
+            if (NumberFrequency > 0 && (int)value % NumberFrequency == 0)
+            {
+                var yOffset = isHorizontal ? fontSize/2 : fontSize;
+                var xOffset = isHorizontal ? fontSize : fontSize/2;
+                var formattedText = new FormattedText(
+                    value.ToString(),
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    FlowDirection.LeftToRight,
+                    new Typeface("Arial"),
+                    fontSize,
+                    Brushes.Black,
+                    VisualTreeHelper.GetDpi(this).PixelsPerDip);
+
+                // Adjust position slightly to center the text on the grid line
+                dc.DrawText(formattedText, new Point(position.X + xOffset, position.Y + yOffset));
+            }
+        }
+
 
         private Point previousMousePosition;
         public CustomCanvas()
