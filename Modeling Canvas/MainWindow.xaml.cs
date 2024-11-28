@@ -22,10 +22,9 @@ namespace Modeling_Canvas
             MyCanvas.Children.Add(circle);
 
             PointExtensions.Canvas = MyCanvas;
-            
-            Keyboard.Focus(MyCanvas);
 
-
+            KeyDown += MyCanvas.OnKeyDown;
+            KeyUp += MyCanvas.OnKeyUp;
         }
 
         private void CenterWindowOnScreen()

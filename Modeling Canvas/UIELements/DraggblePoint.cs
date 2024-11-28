@@ -10,12 +10,10 @@ namespace Modeling_Canvas.UIELements
         public double DragRadius { get; set; } = 10;
         public DraggablePoint(CustomCanvas canvas) : base(canvas)
         {
-            Focusable = false;
         }
         public DraggablePoint(CustomCanvas canvas, Point position) : base(canvas)
         {
             Position = position;
-            Focusable = false;
         }
         protected override void OnRender(DrawingContext drawingContext)
         {
@@ -56,7 +54,6 @@ namespace Modeling_Canvas.UIELements
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             MouseLeftButtonDownAction?.Invoke(e);
-            Keyboard.Focus(Canvas);
             e.Handled = true;
             base.OnMouseLeftButtonDown(e);
         }

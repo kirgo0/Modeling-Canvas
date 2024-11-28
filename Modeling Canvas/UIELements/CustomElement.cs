@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Xceed.Wpf.Toolkit;
+using Xceed.Wpf.Toolkit.Primitives;
 
 namespace Modeling_Canvas.UIELements
 {
@@ -52,7 +53,6 @@ namespace Modeling_Canvas.UIELements
         protected CustomElement(CustomCanvas canvas, bool hasAnchorPoint = true)
         {
             Canvas = canvas;
-            Canvas.KeyDown += OnCanvasKeyDown;
             Focusable = false;
             FocusVisualStyle = null;
             HasAnchorPoint = hasAnchorPoint;
@@ -267,16 +267,6 @@ namespace Modeling_Canvas.UIELements
             }
         }
 
-        protected void OnCanvasKeyDown(object sender, KeyEventArgs e)
-        {
-            if (!Canvas.SelectedElements.Contains(this)) return;
-            if (e.Key == Key.E)
-            {
-                OverrideAnchorPoint = false;
-                InvalidateCanvas();
-            }
-        }
-
         protected override void OnMouseEnter(MouseEventArgs e)
         {
             base.OnMouseEnter(e);
@@ -358,6 +348,10 @@ namespace Modeling_Canvas.UIELements
                     Mouse.OverrideCursor = Cursors.SizeAll;
                     Vector offset = currentMousePosition - _lastMousePosition;
                     MoveElement(offset);
+                    //foreach (var element in Canvas.SelectedElements.Where(e => !e.Equals(this)))
+                    //{
+                    //    element.MoveElement(offset);
+                    //}
                 }
                 _lastMousePosition = currentMousePosition;
             }
@@ -377,18 +371,20 @@ namespace Modeling_Canvas.UIELements
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            base.OnMouseLeftButtonDown(e);
             if (!InputManager.SpacePressed && IsSelectable)
             {
-                Canvas.SelectedElements.Clear();
+                if (!InputManager.ShiftPressed && !Canvas.SelectedElements.Contains(this))
+                {
+                    Canvas.SelectedElements.Clear();
+                }
                 Canvas.SelectedElements.Add(this);
                 e.Handled = true;
             }
             _isDragging = true;
             _lastMousePosition = e.GetPosition(Canvas);
-            RenderControlPanel();
             CaptureMouse();
             InvalidateCanvas();
+            RenderControlPanel();
         }
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
@@ -404,7 +400,6 @@ namespace Modeling_Canvas.UIELements
             {
                 _isRotating = true;
                 _lastRotationDegrees = Canvas.GetDegreesBetweenMouseAndPoint(AnchorPoint.Position);
-                //Keyboard.Focus(this);
                 CaptureMouse();
             }
         }

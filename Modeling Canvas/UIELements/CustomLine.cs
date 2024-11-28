@@ -73,18 +73,22 @@ namespace Modeling_Canvas.UIELements
         {
             return new Point(Points.Max(x => x.Position.X) + PointsRadius / UnitSize, Points.Min(y => y.Position.Y) - PointsRadius / UnitSize);
         }
+
+        // helper add method
         public void AddPoint(double x, double y)
         {
             AddPoint(new Point(x, y));
         }
 
+        // main add method
         public void AddPoint(Point point)
         {
             var draggablepoint = new DraggablePoint(Canvas, point)
             {
                 Shape = PointsShape,
                 Radius = PointsRadius,
-                HasAnchorPoint = false
+                HasAnchorPoint = false,
+                IsSelectable = false
             };
             Points.Add(draggablepoint);
             Canvas.Children.Add(draggablepoint);

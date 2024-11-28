@@ -33,6 +33,14 @@ namespace Modeling_Canvas.UIELements
 
         public HashSet<CustomElement> SelectedElements { get; set; } = new();
 
+        private Point previousMousePosition;
+
+        protected override void OnRender(DrawingContext dc)
+        {
+            base.OnRender(dc);
+            DrawCoordinateGrid(dc);
+        }
+
         public Point GetCanvasUnitCoordinates(Point pixelCoordinates)
         {
             return new Point((pixelCoordinates.X - ActualWidth / 2 - XOffset) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y - YOffset) / UnitSize);
@@ -44,18 +52,11 @@ namespace Modeling_Canvas.UIELements
             var angleInDegrees = Math.Atan2(-(mousePosition.Y - point.Y), mousePosition.X - point.X) * (180 / Math.PI);
             return (angleInDegrees + 360) % 360;
         }
-
         public Point GetCanvasMousePosition()
         {
             var mouseOnCanvas = Mouse.GetPosition(this);
             return GetCanvasUnitCoordinates(mouseOnCanvas);
         }
-        protected override void OnRender(DrawingContext dc)
-        {
-            base.OnRender(dc);
-            DrawCoordinateGrid(dc);
-        }
-        // Calculate grid lines for snapping
 
         protected override Size ArrangeOverride(Size arrangeSize)
         {
@@ -158,14 +159,6 @@ namespace Modeling_Canvas.UIELements
             }
         }
 
-
-        private Point previousMousePosition;
-        public CustomCanvas()
-        {
-            // Hook mouse and key events
-            KeyDown += OnKeyDown;
-            KeyUp += OnKeyUp;
-        }
         public void OnKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Space)
@@ -176,12 +169,21 @@ namespace Modeling_Canvas.UIELements
             {
                 Mouse.OverrideCursor = Cursors.SizeNESW;
             }
+            if (e.Key == Key.E)
+            {
+                foreach(var element in SelectedElements)
+                {
+                    element.OverrideAnchorPoint = false;
+                }
+                InvalidateVisual();
+            }
         }
 
         public void OnKeyUp(object sender, KeyEventArgs e)
         {
             Mouse.OverrideCursor = null;
         }
+
         protected void ClearControlPanel()
         {
             if (Application.Current.MainWindow is MainWindow mainWindow)
@@ -256,7 +258,14 @@ namespace Modeling_Canvas.UIELements
             {
                 var position = Mouse.GetPosition(this);
                 var unitPosition = GetCanvasMousePosition();
+
+                var focusedElement = Keyboard.FocusedElement;
+                if (focusedElement is UIElement uiElement)
+                {
+                    mainWindow.MousePositionLabel.Content = $"X: {Math.Round(unitPosition.X, 2)} Y: {Math.Round(unitPosition.Y, 2)}\np.X: {Math.Round(position.X, 2)} p.Y: {Math.Round(position.Y, 2)}" + uiElement;
+                }
                 mainWindow.MousePositionLabel.Content = $"X: {Math.Round(unitPosition.X, 2)} Y: {Math.Round(unitPosition.Y, 2)}\np.X: {Math.Round(position.X, 2)} p.Y: {Math.Round(position.Y, 2)}";
+
             }
         }
 
