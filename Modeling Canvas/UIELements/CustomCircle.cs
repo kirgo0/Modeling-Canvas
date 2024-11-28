@@ -1,27 +1,32 @@
-﻿using System.Windows.Media;
+﻿using Modeling_Canvas.Extensions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Modeling_Canvas.UIELements
 {
-    public class CustomCircle : CustomElement 
+    public class CustomCircle : CustomElement
     {
         public CustomCircle(CustomCanvas canvas) : base(canvas)
         {
         }
         public int Precision { get; set; } = 100; // Number of points for the circle
-        private double _radius  = 5; 
-        public double Radius { 
-            get => _radius; 
-            set {
+        private double _radius = 5;
+        public double Radius
+        {
+            get => _radius;
+            set
+            {
                 if (value <= 0.5) _radius = 0.5;
-                else _radius = value; 
+                else _radius = value;
             }
         }
-        public double StartDegrees { get; set; } = 0; // Start angle in degrees
-        public double EndDegrees { get; set; } = 360; // End angle in degrees
-        public Point Center { get; set; } = new Point(1, 1);
+        public double StartDegrees { get; set; } = 0;
+        public double StartRadians { get => Helpers.DegToRad(StartDegrees); }
+        public double EndDegrees { get; set; } = 360;
+        public double EndRadians { get => Helpers.DegToRad(EndDegrees); }
+        public Point Center { get; set; } = new Point(0, 0);
         public DraggablePoint CenterPoint { get; set; }
         public DraggablePoint RadiusPoint { get; set; }
         public DraggablePoint StartDegreesPoint { get; set; }
@@ -46,6 +51,7 @@ namespace Modeling_Canvas.UIELements
                 HasAnchorPoint = false,
             };
             Canvas.Children.Add(RadiusPoint);
+            Panel.SetZIndex(RadiusPoint, Canvas.Children.Count + 1);
 
             StartDegreesPoint = new DraggablePoint(Canvas)
             {
@@ -56,6 +62,7 @@ namespace Modeling_Canvas.UIELements
                 HasAnchorPoint = false
             };
             Canvas.Children.Add(StartDegreesPoint);
+            Panel.SetZIndex(StartDegreesPoint, Canvas.Children.Count + 1);
 
             EndDegreesPoint = new DraggablePoint(Canvas)
             {
@@ -66,6 +73,7 @@ namespace Modeling_Canvas.UIELements
                 HasAnchorPoint = false
             };
             Canvas.Children.Add(EndDegreesPoint);
+            Panel.SetZIndex(EndDegreesPoint, Canvas.Children.Count + 1);
 
             CenterPoint = new DraggablePoint(Canvas)
             {
@@ -74,6 +82,7 @@ namespace Modeling_Canvas.UIELements
                 HasAnchorPoint = false
             };
             Canvas.Children.Add(CenterPoint);
+            Panel.SetZIndex(CenterPoint, Canvas.Children.Count + 1);
             base.InitControls();
         }
 
@@ -81,10 +90,17 @@ namespace Modeling_Canvas.UIELements
         {
             UpdateUIControls();
 
-            // Create and draw the circle segment geometry
-            var geometry = CreateCircleSegmentGeometry(new Point(0, 0), Radius * UnitSize, StartDegrees, EndDegrees, Precision);
-            drawingContext.DrawGeometry(Fill, new Pen(Stroke, StrokeThickness), geometry);
+            drawingContext.DrawCircleWithArcs(Fill, StrokePen, new Point(0, 0), Radius * UnitSize, StartDegrees, EndDegrees, Precision, 10);
+
             base.OnRender(drawingContext);
+        }
+
+        protected override void RenderControlPanel()
+        {
+            base.RenderControlPanel();
+            AddFillColorControls();
+            AddStrokeColorControls();
+            AddStrokeThicknessControls();
         }
 
         protected override Point GetAnchorDefaultPosition()
@@ -101,16 +117,12 @@ namespace Modeling_Canvas.UIELements
         {
             return new Point(Center.X + Radius + StrokeThickness / UnitSize, Center.Y - Radius - StrokeThickness / UnitSize);
         }
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
-        {
-            base.OnMouseLeftButtonDown(e);
-        }
 
         public virtual void RadiusPointMoveAction(DraggablePoint point, Vector offset)
         {
             if (SnappingEnabled)
             {
-                Radius = SnapValue(Radius + offset.X / UnitSize);
+                Radius = Helpers.SnapValue(Radius + offset.X / UnitSize);
             }
             else
             {
@@ -122,7 +134,8 @@ namespace Modeling_Canvas.UIELements
             if (InputManager.ShiftPressed && Math.Abs(StartDegrees - EndDegrees) < 5)
             {
                 StartDegrees = EndDegrees;
-            } else
+            }
+            else
             {
                 StartDegrees = Canvas.GetDegreesBetweenMouseAndPoint(Center);
             }
@@ -143,76 +156,27 @@ namespace Modeling_Canvas.UIELements
             MoveElement(offset);
         }
 
-        private Geometry CreateCircleSegmentGeometry(Point center, double radius, double startDegrees, double endDegrees, int precision)
-        {
-            var geometry = new StreamGeometry();
-
-            using (var context = geometry.Open())
-            {
-                double normalizedStart = NormalizeAngle(startDegrees);
-                double normalizedEnd = NormalizeAngle(endDegrees);
-
-                if (normalizedEnd <= normalizedStart)
-                {
-                    DrawArcSegment(context, center, radius, normalizedStart, 360, precision);
-                    DrawArcSegment(context, center, radius, 0, normalizedEnd, precision);
-                }
-                else
-                {
-                    DrawArcSegment(context, center, radius, normalizedStart, normalizedEnd, precision);
-                }
-            }
-
-            geometry.Freeze();
-            return geometry;
-        }
-
-        private void DrawArcSegment(StreamGeometryContext context, Point center, double radius, double startDegrees, double endDegrees, int precision)
-        {
-            double startRadians = DegToRad(startDegrees);
-            double endRadians = DegToRad(endDegrees);
-
-            double segmentStep = (endRadians - startRadians) / precision;
-
-            var startPoint = new Point(
-                center.X + radius * Math.Cos(startRadians),
-                center.Y + radius * Math.Sin(startRadians));
-            context.BeginFigure(startPoint, true, false);
-
-            for (int i = 1; i <= precision; i++)
-            {
-                double angle = startRadians + i * segmentStep;
-                var point = new Point(
-                    center.X + radius * Math.Cos(angle),
-                    center.Y + radius * Math.Sin(angle));
-                context.LineTo(point, true, false);
-            }
-        }
-
         public override void MoveElement(Vector offset)
         {
             if (InputManager.AnyKeyButShiftPressed) return;
 
-            Point newCenter = new Point(
-                Center.X + offset.X / UnitSize,
-                Center.Y - offset.Y / UnitSize);
+            Center = SnappingEnabled ? Center.OffsetAndSpanPoint(offset) : Center.OffsetPoint(offset);
 
-            Center = SnappingEnabled ? new Point(SnapValue(newCenter.X), SnapValue(newCenter.Y)) : newCenter;
             base.MoveElement(offset);
         }
 
         public override void RotateElement(Point anchorPoint, double degrees)
         {
-            Center = RotatePoint(Center, anchorPoint, degrees);
+            Center = Center.RotatePoint(anchorPoint, degrees);
             EndDegrees -= degrees;
             StartDegrees -= degrees;
-            StartDegrees = NormalizeAngle(StartDegrees);
-            EndDegrees = NormalizeAngle(EndDegrees);
+            StartDegrees = Helpers.NormalizeAngle(StartDegrees);
+            EndDegrees = Helpers.NormalizeAngle(EndDegrees);
         }
 
         public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
         {
-            Center = ScalePoint(Center, anchorPoint, scaleVector);
+            Center = Center.ScalePoint(anchorPoint, scaleVector);
             Radius *= ScaleFactor;
         }
 
@@ -224,9 +188,9 @@ namespace Modeling_Canvas.UIELements
             StartDegreesPoint.Visibility = ShowControls;
             EndDegreesPoint.Visibility = ShowControls;
 
-            RadiusPoint.Position = new Point(Center.X + (Radius + 1) * Math.Cos(DegToRad(0)), Center.Y - Radius * Math.Sin(0));
-            StartDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(DegToRad(StartDegrees)), Center.Y - Radius * Math.Sin(DegToRad(StartDegrees)));
-            EndDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(DegToRad(EndDegrees)), Center.Y - Radius * Math.Sin(DegToRad(EndDegrees)));
+            RadiusPoint.Position = new Point(Center.X + (Radius + 1) * Math.Cos(Helpers.DegToRad(0)), Center.Y - Radius * Math.Sin(0));
+            StartDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(StartRadians), Center.Y - Radius * Math.Sin(StartRadians));
+            EndDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(EndRadians), Center.Y - Radius * Math.Sin(EndRadians));
             CenterPoint.Position = Center;
         }
         public override string ToString()

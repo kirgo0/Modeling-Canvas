@@ -1,7 +1,10 @@
-﻿using System.Windows;
+﻿using System.Text.RegularExpressions;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
+using Xceed.Wpf.Toolkit;
 
 namespace Modeling_Canvas.UIELements
 {
@@ -10,6 +13,7 @@ namespace Modeling_Canvas.UIELements
         public Brush Fill { get; set; } = null; // Default fill color
         public Brush Stroke { get; set; } = Brushes.Black; // Default stroke color
         public double StrokeThickness { get; set; } = 1; // Default stroke thickness
+        public Pen StrokePen { get => new Pen(Stroke, StrokeThickness); }
         public Visibility ShowControls { get => Canvas.SelectedElements.Contains(this) ? Visibility.Visible : Visibility.Hidden; }
         public Visibility AnchorVisibility { get; set; } = Visibility.Hidden;
         public bool HasAnchorPoint { get; set; } = true;
@@ -18,7 +22,8 @@ namespace Modeling_Canvas.UIELements
         public bool OverrideAnchorPoint
         {
             get => HasAnchorPoint ? overrideAnchorPoint : false;
-            set {
+            set
+            {
                 if (HasAnchorPoint && !value)
                 {
                     AnchorPoint.Position = GetAnchorDefaultPosition();
@@ -40,8 +45,7 @@ namespace Modeling_Canvas.UIELements
         public bool AllowSnapping { get; set; } = true;
         protected virtual bool SnappingEnabled { get => AllowSnapping ? InputManager.ShiftPressed : false; }
 
-        protected double _lastRotationDegrees { get; set; } = 0;
-
+        protected double _lastRotationDegrees = 0;
         protected bool _isDragging = false;
         protected bool _isRotating = false;
 
@@ -58,7 +62,7 @@ namespace Modeling_Canvas.UIELements
         {
             if (HasAnchorPoint)
             {
-                if(!OverrideAnchorPoint)
+                if (!OverrideAnchorPoint)
                 {
                     AnchorPoint.Position = GetAnchorDefaultPosition();
                 }
@@ -98,14 +102,20 @@ namespace Modeling_Canvas.UIELements
                 Panel.SetZIndex(AnchorPoint, Panel.GetZIndex(this) + 1);
             }
         }
-
+        public virtual Point GetOriginPoint(Size arrangedSize)
+        {
+            return new Point(
+                arrangedSize.Width / 2,
+                arrangedSize.Height / 2
+                );
+        }
         protected virtual Point GetAnchorDefaultPosition()
         {
-            return new Point(0,0);
+            return new Point(0, 0);
         }
-
-        public virtual Point GetTopLeftPosition() { 
-            return new Point(0,0);
+        public virtual Point GetTopLeftPosition()
+        {
+            return new Point(0, 0);
         }
         public virtual Point GetBottomRightPosition()
         {
@@ -115,46 +125,130 @@ namespace Modeling_Canvas.UIELements
         {
             OverrideAnchorPoint = true;
         }
-
-        protected override void OnMouseRightButtonDown(MouseButtonEventArgs e)
-        {
-            base.OnMouseRightButtonDown(e);
-            if (HasAnchorPoint)
-            {
-                _isRotating = true;
-                _lastRotationDegrees = Canvas.GetDegreesBetweenMouseAndPoint(AnchorPoint.Position);
-                //Keyboard.Focus(this);
-                CaptureMouse();
-            }
-        }
-
-        protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
-        {
-            base.OnMouseRightButtonUp(e);
-            if (HasAnchorPoint)
-            {
-                _isRotating = false;
-                _isDragging = false;
-                ReleaseMouseCapture();
-            }
-        }
-
         protected virtual void OnPointMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             e.Handled = true;
         }
 
-        public virtual Point GetOriginPoint(Size arrangedSize)
-        {
-            return new Point(
-                arrangedSize.Width/2, 
-                arrangedSize.Height/2
-                );
-        }
-
         protected virtual void RenderControlPanel()
         {
             ClearControlPanel();
+            if (HasAnchorPoint)
+            {
+                AddAnchorControls();
+            }
+        }
+        private void AddAnchorControls()
+        {
+            // Create and add StackPanel for X position
+            var xPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
+
+            var label = new TextBlock { Text = "Anchor Point", VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+            AddElementToControlPanel(label);
+            var xLabel = new TextBlock { Text = "Position X:", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 5, 0) };
+            var xInput = new TextBox
+            {
+                Text = AnchorPoint.Position.X.ToString(),
+                Width = 100
+            };
+            xInput.PreviewTextInput += Helpers.NumberValidationTextBox;
+            xInput.TextChanged += (sender, e) =>
+            {
+                if (double.TryParse(xInput.Text, out double newX))
+                {
+                    OverrideAnchorPoint = true;
+                    AnchorPoint.Position = new Point(newX, AnchorPoint.Position.Y);
+                    InvalidateCanvas();
+                }
+            };
+
+            xPanel.Children.Add(xLabel);
+            xPanel.Children.Add(xInput);
+            AddElementToControlPanel(xPanel);
+
+            // Create and add StackPanel for Y position
+            var yPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
+
+            var yLabel = new TextBlock { Text = "Position Y:", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 5, 0) };
+            var yInput = new TextBox
+            {
+                Text = AnchorPoint.Position.Y.ToString(),
+                Width = 100
+            };
+            yInput.PreviewTextInput += Helpers.NumberValidationTextBox;
+            yInput.TextChanged += (sender, e) =>
+            {
+                if (double.TryParse(yInput.Text, out double newY))
+                {
+                    OverrideAnchorPoint = true;
+                    AnchorPoint.Position = new Point(AnchorPoint.Position.X, newY);
+                    InvalidateCanvas();
+                }
+            };
+
+            yPanel.Children.Add(yLabel);
+            yPanel.Children.Add(yInput);
+            AddElementToControlPanel(yPanel);
+        }
+        
+        protected virtual void AddFillColorControls()
+        {
+
+            // 1. Create controls for the Fill property using ColorPicker
+            var fillLabel = new TextBlock { Text = "Fill Color:" };
+            var fillColorPicker = new ColorPicker
+            {
+                SelectedColor = Fill is SolidColorBrush solidBrush ? solidBrush.Color : Colors.Transparent,
+                //ShowTabHeaders = false,
+                AdvancedTabHeader = string.Empty
+            };
+
+            fillColorPicker.SelectedColorChanged += (s, e) =>
+            {
+                Fill = new SolidColorBrush(fillColorPicker.SelectedColor ?? Colors.Transparent); // Update Fill
+                InvalidateVisual();
+            };
+            AddElementToControlPanel(fillLabel);
+            AddElementToControlPanel(fillColorPicker);
+        }
+
+        protected virtual void AddStrokeColorControls()
+        {
+            // 2. Create controls for the Stroke property using ColorPicker
+            var strokeLabel = new TextBlock { Text = "Stroke Color:" };
+            var strokeColorPicker = new ColorPicker
+            {
+                SelectedColor = Stroke is SolidColorBrush solidBrush2 ? solidBrush2.Color : Colors.Black,
+                ShowAvailableColors = false
+            };
+            strokeColorPicker.SelectedColorChanged += (s, e) =>
+            {
+                Stroke = new SolidColorBrush(strokeColorPicker.SelectedColor ?? Colors.Black); // Update Stroke
+                InvalidateVisual();
+            };
+            AddElementToControlPanel(strokeLabel);
+            AddElementToControlPanel(strokeColorPicker);
+        }
+
+        protected virtual void AddStrokeThicknessControls()
+        {
+            // 3. Create controls for StrokeThickness
+            var thicknessLabel = new TextBlock { Text = "Stroke Thickness:" };
+            var thicknessSlider = new Slider
+            {
+                Minimum = 1,
+                Maximum = 10,
+                Value = StrokeThickness,
+                TickFrequency = 0.1,
+                IsSnapToTickEnabled = true
+            };
+            thicknessSlider.ValueChanged += (s, e) =>
+            {
+                StrokeThickness = e.NewValue; // Update StrokeThickness
+                InvalidateVisual();
+            };
+            AddElementToControlPanel(thicknessLabel);
+            AddElementToControlPanel(thicknessSlider);
         }
 
         protected void AddElementToControlPanel(UIElement control)
@@ -181,10 +275,8 @@ namespace Modeling_Canvas.UIELements
                 OverrideAnchorPoint = false;
                 InvalidateCanvas();
             }
-            //base.OnKeyDown(e);
         }
 
-        #region logic for dragging elements
         protected override void OnMouseEnter(MouseEventArgs e)
         {
             base.OnMouseEnter(e);
@@ -203,22 +295,6 @@ namespace Modeling_Canvas.UIELements
                 window.CurrentElementLabel.Content = "";
             }
         }
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
-        {
-            base.OnMouseLeftButtonDown(e);
-            if (!InputManager.SpacePressed && IsSelectable)
-            {
-                Canvas.SelectedElements.Clear();
-                Canvas.SelectedElements.Add(this);
-                e.Handled = true;
-            }
-            _isDragging = true;
-            _lastMousePosition = e.GetPosition(Canvas);
-            RenderControlPanel();
-            CaptureMouse();
-            InvalidateCanvas();
-        }
-
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
@@ -292,10 +368,26 @@ namespace Modeling_Canvas.UIELements
                 RotateElement(AnchorPoint.Position, _lastRotationDegrees - angle);
                 _lastRotationDegrees = angle;
             }
-            else 
+            else
             {
                 Mouse.OverrideCursor = null;
             }
+            InvalidateCanvas();
+        }
+
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonDown(e);
+            if (!InputManager.SpacePressed && IsSelectable)
+            {
+                Canvas.SelectedElements.Clear();
+                Canvas.SelectedElements.Add(this);
+                e.Handled = true;
+            }
+            _isDragging = true;
+            _lastMousePosition = e.GetPosition(Canvas);
+            RenderControlPanel();
+            CaptureMouse();
             InvalidateCanvas();
         }
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
@@ -305,21 +397,41 @@ namespace Modeling_Canvas.UIELements
             _isRotating = false;
             ReleaseMouseCapture();
         }
+        protected override void OnMouseRightButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseRightButtonDown(e);
+            if (HasAnchorPoint)
+            {
+                _isRotating = true;
+                _lastRotationDegrees = Canvas.GetDegreesBetweenMouseAndPoint(AnchorPoint.Position);
+                //Keyboard.Focus(this);
+                CaptureMouse();
+            }
+        }
+        protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
+        {
+            base.OnMouseRightButtonUp(e);
+            if (HasAnchorPoint)
+            {
+                _isRotating = false;
+                _isDragging = false;
+                ReleaseMouseCapture();
+            }
+        }
 
         public virtual void MoveElement(Vector offset)
         {
             if (HasAnchorPoint && OverrideAnchorPoint)
             {
                 AnchorPoint.MoveElement(offset);
-            } else
+            }
+            else
             {
                 AnchorPoint.Position = GetAnchorDefaultPosition();
             }
         }
         public abstract void RotateElement(Point anchorPoint, double degrees);
         public abstract void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor);
-
-        #endregion
 
         // Helper method to invalidate the parent canvas
         public void InvalidateCanvas()
@@ -328,76 +440,5 @@ namespace Modeling_Canvas.UIELements
             Canvas.InvalidateVisual();
         }
 
-        protected double SnapValue(double value)
-        {
-            const double lowerThreshold = 0.1;
-            const double upperThreshold = 0.9;
-            const double toHalfLower = 0.45;
-            const double toHalfUpper = 0.55;
-
-            double integerPart = Math.Floor(value);
-            double fractionalPart = value - integerPart;
-
-            if (fractionalPart <= lowerThreshold) return integerPart;
-            if (fractionalPart >= upperThreshold) return integerPart + 1;
-            if (fractionalPart >= toHalfLower && fractionalPart <= toHalfUpper) return integerPart + 0.5;
-            return value;
-        }
-
-        protected Point RotatePoint(Point point1, Point point2, double degrees)
-        {
-            // Calculate rotation
-            double dx = point1.X - point2.X;
-            double dy = point1.Y - point2.Y;
-            double radians = DegToRad(degrees);
-
-            double rotatedX = Math.Cos(radians) * dx - Math.Sin(radians) * dy + point2.X;
-            double rotatedY = Math.Sin(radians) * dx + Math.Cos(radians) * dy + point2.Y;
-
-            // Update point position
-            return new Point(Math.Round(rotatedX, Canvas.RotationPrecision), Math.Round(rotatedY, Canvas.RotationPrecision));
-        }
-
-        protected Point OffsetPoint(Point point, Vector offset)
-        {
-            return new Point(
-                point.X + offset.X / UnitSize,
-                point.Y - offset.Y / UnitSize
-                );
-        }
-
-        protected Point OffsetAndSpanPoint(Point point, Vector offset)
-        {
-            return new Point(
-                SnapValue(point.X + offset.X / UnitSize),
-                SnapValue(point.Y - offset.Y / UnitSize)
-            );
-        }
-
-        protected Point ScalePoint(Point point, Point anchor, Vector scaleVector)
-        {
-            // Apply scaling transformation
-            double newX = anchor.X + scaleVector.X * (point.X - anchor.X);
-            double newY = anchor.Y + scaleVector.Y * (point.Y - anchor.Y);
-            
-            // Update the point in the list
-            return new Point(newX, newY);
-        }
-
-        protected double DegToRad(double deg) => Math.PI * deg / 180.0;
-        protected double NormalizeAngle(double angle) => (angle % 360 + 360) % 360;
-
-        protected void DrawLine(DrawingContext drawingContext, Point p1, Point p2, double transparentThickness)
-        {
-            var pen = new Pen(Stroke, StrokeThickness);
-            drawingContext.DrawLine(pen, p1, p2);
-            drawingContext.DrawLine(new Pen(Brushes.Transparent, StrokeThickness + transparentThickness), p1, p2);
-        }
-
-        protected void DrawDashedLine(DrawingContext drawingContext, Pen pen, Point p1, Point p2, double transparentThickness)
-        {
-            drawingContext.DrawLine(pen, p1, p2);
-            drawingContext.DrawLine(new Pen(Brushes.Transparent, StrokeThickness + transparentThickness), p1, p2);
-        }
     }
 }

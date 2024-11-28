@@ -1,7 +1,6 @@
-﻿using System.Windows.Input;
-using System.Windows.Media;
+﻿using Modeling_Canvas.Extensions;
 using System.Windows;
-using System.Windows.Controls;
+using System.Windows.Media;
 
 
 namespace Modeling_Canvas.UIELements
@@ -11,13 +10,15 @@ namespace Modeling_Canvas.UIELements
         public double Radius { get; set; } = 10;
         public PointShape Shape { get; set; } = PointShape.Circle;
 
+        public int PositionPrecision { get; set; } = 3;
+
         private Point _position;
         public Point Position
         {
             get => _position;
             set
             {
-                _position = value;
+                _position = new Point(Math.Round(value.X, PositionPrecision), Math.Round(value.Y, PositionPrecision));
                 InvalidateVisual();
             }
         }
@@ -32,57 +33,22 @@ namespace Modeling_Canvas.UIELements
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
+
             var semiTransparentFill = Fill.Clone();
             semiTransparentFill.Opacity = Opacity;
 
-            switch(Shape)
+            switch (Shape)
             {
                 case PointShape.Circle:
-                    drawingContext.DrawGeometry(semiTransparentFill, new Pen(Stroke, StrokeThickness),
-                        CreateCircleGeometry(new Point(0, 0), Radius, 100));
+                    drawingContext.DrawCircle(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100);
                     break;
                 case PointShape.Square:
-                    drawingContext.DrawGeometry(semiTransparentFill, new Pen(Stroke, StrokeThickness),
-                        CreateSquareWithLinesGeometry(new Point(0, 0), Radius*2, 2));
+                    drawingContext.DrawSquare(semiTransparentFill, StrokePen, new Point(0, 0), Radius * 2);
                     break;
                 case PointShape.Anchor:
-                    drawingContext.DrawGeometry(semiTransparentFill, new Pen(Stroke, StrokeThickness),
-                        CreateCircleWithLinesGeometry(new Point(0, 0), Radius, 100, 5));
+                    drawingContext.DrawAnchorPoint(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100, 5);
                     break;
             }
-        }
-
-        protected Geometry CreateCircleGeometry(Point center, double radius, int precision)
-        {
-            var geometry = new StreamGeometry();
-
-            using (var context = geometry.Open())
-            {
-                // Calculate the step size for each segment in radians
-                double segmentStep = (2 * Math.PI) / precision;
-
-                // Calculate the start point
-                var startPoint = new Point(
-                    center.X + radius * Math.Cos(0),
-                    center.Y + radius * Math.Sin(0)
-                    );
-
-                context.BeginFigure(startPoint, true, true); // Is filled, Is closed
-
-                // Add points for the segments
-                for (int i = 1; i <= precision; i++)
-                {
-                    double angle = i * segmentStep; // Angle in radians
-                    var point = new Point(
-                        center.X + radius * Math.Cos(angle),
-                        center.Y + radius * Math.Sin(angle));
-
-                    context.LineTo(point, true, false); // Line to the calculated point
-                }
-            }
-
-            geometry.Freeze(); // Freeze for performance
-            return geometry;
         }
 
         public override Point GetTopLeftPosition()
@@ -92,95 +58,6 @@ namespace Modeling_Canvas.UIELements
         public override Point GetBottomRightPosition()
         {
             return new Point(Position.X - Radius / UnitSize, Position.Y - Radius / UnitSize);
-        }
-        protected Geometry CreateCircleWithLinesGeometry(Point center, double radius, int precision, double lineLength)
-        {
-            var geometry = new StreamGeometry();
-
-            using (var context = geometry.Open())
-            {
-                // Calculate the step size for each segment in radians
-                double segmentStep = (2 * Math.PI) / precision;
-
-                // Calculate the start point of the circle
-                var startPoint = new Point(
-                    center.X + radius * Math.Cos(0),
-                    center.Y + radius * Math.Sin(0));
-
-                context.BeginFigure(startPoint, true, true); // Is filled, Is closed
-
-                // Add points for the circle
-                for (int i = 1; i <= precision; i++)
-                {
-                    double angle = i * segmentStep; // Angle in radians
-                    var point = new Point(
-                        center.X + radius * Math.Cos(angle),
-                        center.Y + radius * Math.Sin(angle));
-
-                    context.LineTo(point, true, false); // Line to the calculated point
-                }
-
-                // Draw the short lines at 0, 90, 180, and 270 degrees
-                double[] angles = { 0, Math.PI / 2, Math.PI, 3 * Math.PI / 2 }; // Angles in radians
-                foreach (var angle in angles)
-                {
-                    // Calculate the start and end points of the line
-                    var lineStart = new Point(
-                        center.X + radius * Math.Cos(angle),
-                        center.Y + radius * Math.Sin(angle));
-
-                    var lineEnd = new Point(
-                        center.X + (radius + lineLength) * Math.Cos(angle),
-                        center.Y + (radius + lineLength) * Math.Sin(angle));
-
-                    // Move to the start of the line and draw it
-                    context.BeginFigure(lineStart, false, false);
-                    context.LineTo(lineEnd, true, false);
-                }
-            }
-
-            geometry.Freeze(); // Freeze for performance
-            return geometry;
-        }
-
-        protected Geometry CreateSquareWithLinesGeometry(Point center, double sideLength, double lineLength)
-        {
-            var geometry = new StreamGeometry();
-
-            using (var context = geometry.Open())
-            {
-                // Half the side length for easier calculations
-                double halfSide = sideLength / 2;
-
-                // Calculate the corners of the square
-                var topLeft = new Point(center.X - halfSide, center.Y - halfSide);
-                var topRight = new Point(center.X + halfSide, center.Y - halfSide);
-                var bottomRight = new Point(center.X + halfSide, center.Y + halfSide);
-                var bottomLeft = new Point(center.X - halfSide, center.Y + halfSide);
-
-                // Begin the square path
-                context.BeginFigure(topLeft, true, true); // Is filled, Is closed
-                context.LineTo(topRight, true, false);
-                context.LineTo(bottomRight, true, false);
-                context.LineTo(bottomLeft, true, false);
-                context.LineTo(topLeft, true, false); // Close the square
-
-                // Draw the short lines at the middle of each side
-                var midTop = new Point(center.X, center.Y - halfSide);
-                var midRight = new Point(center.X + halfSide, center.Y);
-                var midBottom = new Point(center.X, center.Y + halfSide);
-                var midLeft = new Point(center.X - halfSide, center.Y);
-            }
-
-            geometry.Freeze(); // Freeze for performance
-            return geometry;
-        }
-
-        // Helper method to draw a line
-        private void DrawLine(StreamGeometryContext context, Point start, Point end)
-        {
-            context.BeginFigure(start, false, false);
-            context.LineTo(end, true, false);
         }
 
         protected override Size MeasureOverride(Size availableSize)

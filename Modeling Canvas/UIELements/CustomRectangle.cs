@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using Modeling_Canvas.Extensions;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -96,12 +97,10 @@ namespace Modeling_Canvas.UIELements
 
             for (int i = 0; i < 3; i++)
             {
-                drawingContext.DrawLine(new Pen(Stroke, StrokeThickness), Points[i].PixelPosition, Points[i + 1].PixelPosition);
-                drawingContext.DrawLine(new Pen(Brushes.Transparent, StrokeThickness + 10), Points[i].PixelPosition, Points[i + 1].PixelPosition);
+                drawingContext.DrawLine(StrokePen, Points[i].PixelPosition, Points[i + 1].PixelPosition, 10);
             }
 
-            drawingContext.DrawLine(new Pen(Stroke, StrokeThickness), Points[0].PixelPosition, Points[3].PixelPosition);
-            drawingContext.DrawLine(new Pen(Brushes.Transparent, StrokeThickness + 10), Points[1].PixelPosition, Points[3].PixelPosition);
+            drawingContext.DrawLine(StrokePen, Points[0].PixelPosition, Points[3].PixelPosition, 10);
         }
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
@@ -126,11 +125,11 @@ namespace Modeling_Canvas.UIELements
 
             if (SnappingEnabled)
             {
-                movedPoint.Position = OffsetAndSpanPoint(movedPoint.Position, offset);
+                movedPoint.Position = movedPoint.Position.OffsetAndSpanPoint(offset);
             }
             else
             {
-                movedPoint.Position = OffsetPoint(movedPoint.Position, offset);
+                movedPoint.Position = movedPoint.Position.OffsetPoint(offset);
             }
             firstPoint.Position = new Point(movedPoint.Position.X, firstPoint.Position.Y);
             thirdPoint.Position = new Point(thirdPoint.Position.X, movedPoint.Position.Y);
@@ -142,11 +141,11 @@ namespace Modeling_Canvas.UIELements
             {
                 if (SnappingEnabled)
                 {
-                    point.Position = OffsetAndSpanPoint(point.Position, offset);
+                    point.Position = point.Position.OffsetAndSpanPoint(offset);
                 }
                 else
                 {
-                    point.Position = OffsetPoint(point.Position, offset);
+                    point.Position = point.Position.OffsetPoint(offset);
                 }
             }
             base.MoveElement(offset);

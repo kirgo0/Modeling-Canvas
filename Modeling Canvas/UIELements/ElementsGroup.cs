@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using Modeling_Canvas.Extensions;
+using System.Windows;
 using System.Windows.Media;
 
 namespace Modeling_Canvas.UIELements
@@ -10,7 +11,7 @@ namespace Modeling_Canvas.UIELements
         public double RectPadding { get; set; } = 0.5;
         public List<CustomElement> Children { get; set; } = new();
 
-        private Point _topLeftPosition = new Point(0,0);
+        private Point _topLeftPosition = new Point(0, 0);
         private Point _bottomRightPosition = new Point(0, 0);
 
         public ElementsGroup(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
@@ -23,23 +24,20 @@ namespace Modeling_Canvas.UIELements
 
         protected override Point GetAnchorDefaultPosition()
         {
-            return new Point((_topLeftPosition.X + _bottomRightPosition.X)/2, (_topLeftPosition.Y + _bottomRightPosition.Y)/2);
+            return new Point((_topLeftPosition.X + _bottomRightPosition.X) / 2, (_topLeftPosition.Y + _bottomRightPosition.Y) / 2);
         }
 
         public override Point GetOriginPoint(Size arrangedSize)
         {
             List<Point> tlPoints = new List<Point>();
-            //List<Point> brPoints = new List<Point>();
             foreach (var child in Children)
             {
                 tlPoints.Add(child.GetTopLeftPosition());
-                //brPoints.Add(child.GetBottomRightPosition());
             }
             var topLeftPoint = new Point(tlPoints.Min(x => x.X), tlPoints.Max(y => y.Y));
-            //var bottomRight = brPoints.OrderByDescending(y => y.Y).ThenBy(x => x.X).FirstOrDefault();
             return new Point(arrangedSize.Width / 2 + (topLeftPoint.X * UnitSize - RectPadding * UnitSize), arrangedSize.Height / 2 - (topLeftPoint.Y * UnitSize + RectPadding * UnitSize));
         }
-        protected override void OnRender(DrawingContext drawingContext)
+        protected override void OnRender(DrawingContext dc)
         {
             CalculateRectPoints();
             var width = Math.Abs(_bottomRightPosition.X - _topLeftPosition.X) * UnitSize + RectPadding * 2 * UnitSize;
@@ -53,14 +51,14 @@ namespace Modeling_Canvas.UIELements
                 DashStyle = new DashStyle(new double[] { 10 }, 10)
             };
             // Top
-            DrawDashedLine(drawingContext, pen, new Point(x, y), new Point(x + width, y), 20);
+            dc.DrawDashedLine(pen, new Point(x, y), new Point(x + width, y), 20);
             // Left
-            DrawDashedLine(drawingContext, pen, new Point(x, y), new Point(x, y + height), 20);
+            dc.DrawDashedLine(pen, new Point(x, y), new Point(x, y + height), 20);
             // Right
-            DrawDashedLine(drawingContext, pen, new Point(x + width, y), new Point(x + width, y + height), 20);
+            dc.DrawDashedLine(pen, new Point(x + width, y), new Point(x + width, y + height), 20);
             // Bottom
-            DrawDashedLine(drawingContext, pen, new Point(x, y + height), new Point(x + width, y + height), 20);
-            base.OnRender(drawingContext);
+            dc.DrawDashedLine(pen, new Point(x, y + height), new Point(x + width, y + height), 20);
+            base.OnRender(dc);
         }
 
         protected override void InitControls()
@@ -80,6 +78,13 @@ namespace Modeling_Canvas.UIELements
             }
             _topLeftPosition = new Point(tlPoints.Min(x => x.X), tlPoints.Max(y => y.Y));
             _bottomRightPosition = new Point(brPoints.Max(x => x.X), brPoints.Min(y => y.Y));
+        }
+
+        protected override void RenderControlPanel()
+        {
+            base.RenderControlPanel();
+            AddStrokeColorControls();
+            AddStrokeThicknessControls();
         }
 
         public void AddChild(CustomElement child)
@@ -102,14 +107,15 @@ namespace Modeling_Canvas.UIELements
         public override void MoveElement(Vector offset)
         {
             base.MoveElement(offset);
-            foreach(var child in Children) {
+            foreach (var child in Children)
+            {
                 child.MoveElement(offset);
             }
         }
 
         public override void RotateElement(Point anchorPoint, double degrees)
         {
-            foreach(var child in Children)
+            foreach (var child in Children)
             {
                 child.RotateElement(AnchorPoint.Position, degrees);
             }

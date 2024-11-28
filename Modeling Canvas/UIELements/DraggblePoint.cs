@@ -1,6 +1,7 @@
+using Modeling_Canvas.Extensions;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows;
 
 namespace Modeling_Canvas.UIELements
 {
@@ -22,10 +23,8 @@ namespace Modeling_Canvas.UIELements
             base.OnRender(drawingContext);
 
             // Create an invisible drag zone
-            var transparentFill = Brushes.Transparent;
 
-            drawingContext.DrawGeometry(transparentFill, new Pen(Stroke, 0),
-                CreateCircleGeometry(new Point(0, 0), DragRadius, 100));
+            drawingContext.DrawCircle(Brushes.Transparent, new Pen(Stroke, 0), new Point(0, 0), DragRadius, 100);
         }
 
         public Action<DraggablePoint, Vector> OverrideMoveAction;
@@ -47,19 +46,7 @@ namespace Modeling_Canvas.UIELements
                 return;
             }
 
-            if (SnappingEnabled)
-            {
-                Position = new Point(
-                    SnapValue(Position.X + offset.X / UnitSize),
-                    SnapValue(Position.Y - offset.Y / UnitSize)
-                    );
-            } else
-            {
-                Position = new Point(
-                    Position.X + offset.X / UnitSize,
-                    Position.Y - offset.Y / UnitSize
-                    );
-            }
+            Position = SnappingEnabled ? Position.OffsetAndSpanPoint(offset) : Position.OffsetPoint(offset);
         }
 
         public Point PixelPosition { get => new Point(Position.X * UnitSize, -Position.Y * UnitSize); }

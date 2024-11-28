@@ -1,4 +1,4 @@
-﻿using System.Net.NetworkInformation;
+﻿using Modeling_Canvas.Extensions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -22,17 +22,17 @@ namespace Modeling_Canvas.UIELements
         {
             StrokeThickness = 2;
             Stroke = Brushes.Cyan;
-            AddPoint(firstPoint.X, firstPoint.Y);
-            AddPoint(secondPoint.X, secondPoint.Y);
+            AddPoint(firstPoint);
+            AddPoint(secondPoint);
         }
 
-        protected override void OnRender(DrawingContext drawingContext)
+        protected override void OnRender(DrawingContext dc)
         {
             AnchorVisibility = ShowControls;
 
             if (Points.Count < 2) return;
 
-            foreach(var point in Points)
+            foreach (var point in Points)
             {
                 point.Visibility = ShowControls;
                 point.Shape = PointShape.Circle;
@@ -41,21 +41,22 @@ namespace Modeling_Canvas.UIELements
             Points.First().Shape = PointShape.Square;
             Points.Last().Shape = PointShape.Square;
 
-            for (int i = 0; i < Points.Count-1; i++) {
-                DrawLine(drawingContext, Points[i].PixelPosition, Points[i + 1].PixelPosition, 10);
+            for (int i = 0; i < Points.Count - 1; i++)
+            {
+                dc.DrawLine(StrokePen, Points[i].PixelPosition, Points[i + 1].PixelPosition, 10);
             }
 
             if (IsClosed)
             {
-                DrawLine(drawingContext, Points.First().PixelPosition, Points.Last().PixelPosition, 10);
+                dc.DrawLine(StrokePen, Points.First().PixelPosition, Points.Last().PixelPosition, 10);
             }
 
-            base.OnRender(drawingContext);
+            base.OnRender(dc);
         }
 
         protected override Point GetAnchorDefaultPosition()
         {
-            if (Points == null || !Points.Any()) return new Point(0,0);
+            if (Points == null || !Points.Any()) return new Point(0, 0);
 
             // Calculate the average of X and Y coordinates
             double centerX = Points.Average(p => p.Position.X);
@@ -66,7 +67,7 @@ namespace Modeling_Canvas.UIELements
 
         public override Point GetTopLeftPosition()
         {
-            return new Point(Points.Min(x => x.Position.X) - PointsRadius/UnitSize, Points.Max(y => y.Position.Y) + PointsRadius/UnitSize);
+            return new Point(Points.Min(x => x.Position.X) - PointsRadius / UnitSize, Points.Max(y => y.Position.Y) + PointsRadius / UnitSize);
         }
         public override Point GetBottomRightPosition()
         {
@@ -74,38 +75,42 @@ namespace Modeling_Canvas.UIELements
         }
         public void AddPoint(double x, double y)
         {
-            var point = new DraggablePoint(Canvas, new Point(x, y))
-            {
-                Shape = PointsShape,
-                Radius = PointsRadius
-            };
-            Points.Add(point);
-            Canvas.Children.Add(point);
-            Panel.SetZIndex(point, Canvas.Children.Count+1);
+            AddPoint(new Point(x, y));
         }
 
         public void AddPoint(Point point)
         {
-            var draggablepoint = new DraggablePoint(Canvas, point);
+            var draggablepoint = new DraggablePoint(Canvas, point)
+            {
+                Shape = PointsShape,
+                Radius = PointsRadius,
+                HasAnchorPoint = false
+            };
             Points.Add(draggablepoint);
             Canvas.Children.Add(draggablepoint);
+            Panel.SetZIndex(draggablepoint, Canvas.Children.Count + 1);
         }
 
         public override void MoveElement(Vector offset)
         {
-            //AnchorPoint.AllowSnapping = false;
             foreach (var point in Points)
             {
                 point.MoveElement(offset);
             }
             base.MoveElement(offset);
-            //AnchorPoint.AllowSnapping = true;
         }
         public override void RotateElement(Point anchorPoint, double degrees)
         {
             foreach (var point in Points)
             {
-                point.Position = RotatePoint(point.Position, anchorPoint, degrees);
+                point.Position = point.Position.RotatePoint(anchorPoint, degrees);
+            }
+        }
+        public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
+        {
+            foreach (var point in Points)
+            {
+                point.Position = point.Position.ScalePoint(anchorPoint, scaleVector);
             }
         }
 
@@ -130,19 +135,14 @@ namespace Modeling_Canvas.UIELements
                 AddPoint(0, 0);
             };
             AddElementToControlPanel(addPointButton);
+            AddStrokeColorControls();
+            AddStrokeThicknessControls();
         }
 
         public override string ToString()
         {
-            return $"Line\nPoints: {Points.Count}\nTL: {GetTopLeftPosition()}\nBR: {GetBottomRightPosition()}";
+            return $"Line\nPoints: {Points.Count}";
         }
 
-        public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
-        {
-            foreach(var point in Points)
-            {
-                point.Position = ScalePoint(point.Position, anchorPoint, scaleVector);
-            }
-        }
     }
 }

@@ -1,7 +1,7 @@
-﻿using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows;
+﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Modeling_Canvas.UIELements
 {
@@ -53,7 +53,7 @@ namespace Modeling_Canvas.UIELements
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-            DrawCoordinateGrid(dc); 
+            DrawCoordinateGrid(dc);
         }
         // Calculate grid lines for snapping
 
@@ -132,7 +132,7 @@ namespace Modeling_Canvas.UIELements
             // Draw axes
             dc.DrawLine(axisPen, new Point(0, halfHeight), new Point(width, halfHeight)); // X-axis
             dc.DrawLine(axisPen, new Point(halfWidth, 0), new Point(halfWidth, height)); // Y-axis
-            
+
 
         }
 
@@ -142,8 +142,8 @@ namespace Modeling_Canvas.UIELements
                 return;
             if (NumberFrequency > 0 && (int)value % NumberFrequency == 0)
             {
-                var yOffset = isHorizontal ? fontSize/2 : fontSize;
-                var xOffset = isHorizontal ? fontSize : fontSize/2;
+                var yOffset = isHorizontal ? fontSize / 2 : fontSize;
+                var xOffset = isHorizontal ? fontSize : fontSize / 2;
                 var formattedText = new FormattedText(
                     value.ToString(),
                     System.Globalization.CultureInfo.CurrentCulture,
@@ -237,7 +237,7 @@ namespace Modeling_Canvas.UIELements
                 if (UnitSize < 10) deltaMultiplier = InputManager.AltPressed ? 0.004 : 0.01;
                 if (UnitSize < 5)
                 {
-                    deltaMultiplier = InputManager.AltPressed ? 0.0008 : 0.004; 
+                    deltaMultiplier = InputManager.AltPressed ? 0.0008 : 0.004;
                 }
                 if (e.Delta != 0)
                 {
