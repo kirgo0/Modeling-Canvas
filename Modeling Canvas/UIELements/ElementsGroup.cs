@@ -5,13 +5,25 @@ namespace Modeling_Canvas.UIELements
 {
     public class ElementsGroup : CustomElement
     {
+        public static int Counter { get; set; } = 1;
+        public string Name { get; set; } = string.Empty;
         public double RectPadding { get; set; } = 0.5;
         public List<CustomElement> Children { get; set; } = new();
 
+        private Point _topLeftPosition = new Point(0,0);
+        private Point _bottomRightPosition = new Point(0, 0);
+
         public ElementsGroup(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
-            StrokeThickness = 2;
+            StrokeThickness = 1;
             AnchorVisibility = Visibility.Visible;
+            Name = $"Group {Counter}";
+            Counter++;
+        }
+
+        protected override Point GetAnchorDefaultPosition()
+        {
+            return new Point((_topLeftPosition.X + _bottomRightPosition.X)/2, (_topLeftPosition.Y + _bottomRightPosition.Y)/2);
         }
 
         public override Point GetOriginPoint(Size arrangedSize)
@@ -29,35 +41,45 @@ namespace Modeling_Canvas.UIELements
         }
         protected override void OnRender(DrawingContext drawingContext)
         {
-            List<Point> tlPoints = new List<Point>();  
-            List<Point> brPoints = new List<Point>();  
+            CalculateRectPoints();
+            var width = Math.Abs(_bottomRightPosition.X - _topLeftPosition.X) * UnitSize + RectPadding * 2 * UnitSize;
+            var height = Math.Abs(_topLeftPosition.Y - _bottomRightPosition.Y) * UnitSize + RectPadding * 2 * UnitSize;
+            var x = 0;
+            var y = 0;
+
+            var pen = new Pen(Stroke, StrokeThickness)
+            {
+                DashCap = PenLineCap.Round,
+                DashStyle = new DashStyle(new double[] { 10 }, 10)
+            };
+            // Top
+            DrawDashedLine(drawingContext, pen, new Point(x, y), new Point(x + width, y), 20);
+            // Left
+            DrawDashedLine(drawingContext, pen, new Point(x, y), new Point(x, y + height), 20);
+            // Right
+            DrawDashedLine(drawingContext, pen, new Point(x + width, y), new Point(x + width, y + height), 20);
+            // Bottom
+            DrawDashedLine(drawingContext, pen, new Point(x, y + height), new Point(x + width, y + height), 20);
+            base.OnRender(drawingContext);
+        }
+
+        protected override void InitControls()
+        {
+            base.InitControls();
+            AnchorPoint.Stroke = Brushes.BlueViolet;
+        }
+
+        protected virtual void CalculateRectPoints()
+        {
+            List<Point> tlPoints = new List<Point>();
+            List<Point> brPoints = new List<Point>();
             foreach (var child in Children)
             {
                 tlPoints.Add(child.GetTopLeftPosition());
                 brPoints.Add(child.GetBottomRightPosition());
             }
-            var topLeftPoint = new Point(tlPoints.Min(x => x.X), tlPoints.Max(y => y.Y));
-            var bottomRight = new Point(brPoints.Max(x => x.X), brPoints.Min(y => y.Y));
-
-            var width = Math.Abs(bottomRight.X - topLeftPoint.X) * UnitSize + RectPadding * 2 * UnitSize;
-            var height = Math.Abs(topLeftPoint.Y - bottomRight.Y) * UnitSize + RectPadding * 2 * UnitSize;
-            //Rect rectangle = new Rect(0, 0, width, height); // Position (50, 50) and size (200x100)
-            //drawingContext.DrawRectangle(null, new Pen(Stroke, StrokeThickness), rectangle);
-            var x = 0;
-            var y = 0;
-            // Top
-            DrawLine(drawingContext, new Point(x, y), new Point(x + width, y), 20);
-            // Left
-            DrawLine(drawingContext, new Point(x, y), new Point(x, y + height), 20);
-            // Right
-            DrawLine(drawingContext, new Point(x + width, y), new Point(x + width, y + height), 20);
-            // Bottom
-            DrawLine(drawingContext, new Point(x, y + height), new Point(x + width, y + height), 20);
-            //drawingContext.DrawLine(new Pen(Stroke, StrokeThickness),);
-            //drawingContext.DrawLine(new Pen(Stroke, StrokeThickness), );
-            //drawingContext.DrawLine(new Pen(Stroke, StrokeThickness), new Point(x + width, y), new Point(x + width, y + height));
-            //drawingContext.DrawLine(new Pen(Stroke, StrokeThickness), );
-            base.OnRender(drawingContext);
+            _topLeftPosition = new Point(tlPoints.Min(x => x.X), tlPoints.Max(y => y.Y));
+            _bottomRightPosition = new Point(brPoints.Max(x => x.X), brPoints.Min(y => y.Y));
         }
 
         public void AddChild(CustomElement child)
@@ -99,6 +121,11 @@ namespace Modeling_Canvas.UIELements
             {
                 child.ScaleElement(AnchorPoint.Position, scaleVector, ScaleFactor);
             }
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

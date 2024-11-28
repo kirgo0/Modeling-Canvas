@@ -19,7 +19,7 @@ namespace Modeling_Canvas.UIELements
         {
             get => HasAnchorPoint ? overrideAnchorPoint : false;
             set {
-                if (!value)
+                if (HasAnchorPoint && !value)
                 {
                     AnchorPoint.Position = GetAnchorDefaultPosition();
                 }
@@ -32,7 +32,7 @@ namespace Modeling_Canvas.UIELements
             get => HasAnchorPoint ? anchorPoint : null;
             set => anchorPoint = value;
         }
-
+        public bool IsSelectable { get; set; } = true;
         public CustomCanvas Canvas { get; set; }
         public double UnitSize { get => Canvas.UnitSize; }
 
@@ -48,7 +48,8 @@ namespace Modeling_Canvas.UIELements
         protected CustomElement(CustomCanvas canvas, bool hasAnchorPoint = true)
         {
             Canvas = canvas;
-            Focusable = true;
+            Canvas.KeyDown += OnCanvasKeyDown;
+            Focusable = false;
             FocusVisualStyle = null;
             HasAnchorPoint = hasAnchorPoint;
         }
@@ -87,7 +88,8 @@ namespace Modeling_Canvas.UIELements
                     Shape = PointShape.Anchor,
                     MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
                     MoveAction = OnAnchorPointMove,
-                    OverrideToStringAction = (e) => {
+                    OverrideToStringAction = (e) =>
+                    {
                         return $"Anchor point\nX: {e.Position.X}\nY: {e.Position.Y}";
                     }
                 };
@@ -121,7 +123,7 @@ namespace Modeling_Canvas.UIELements
             {
                 _isRotating = true;
                 _lastRotationDegrees = Canvas.GetDegreesBetweenMouseAndPoint(AnchorPoint.Position);
-                Keyboard.Focus(this);
+                //Keyboard.Focus(this);
                 CaptureMouse();
             }
         }
@@ -171,14 +173,15 @@ namespace Modeling_Canvas.UIELements
             }
         }
 
-        protected override void OnKeyDown(KeyEventArgs e)
+        protected void OnCanvasKeyDown(object sender, KeyEventArgs e)
         {
+            if (!Canvas.SelectedElements.Contains(this)) return;
             if (e.Key == Key.E)
             {
                 OverrideAnchorPoint = false;
                 InvalidateCanvas();
             }
-            base.OnKeyDown(e);
+            //base.OnKeyDown(e);
         }
 
         #region logic for dragging elements
@@ -203,11 +206,17 @@ namespace Modeling_Canvas.UIELements
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonDown(e);
+            if (!InputManager.SpacePressed && IsSelectable)
+            {
+                Canvas.SelectedElements.Clear();
+                Canvas.SelectedElements.Add(this);
+                e.Handled = true;
+            }
             _isDragging = true;
             _lastMousePosition = e.GetPosition(Canvas);
-            Keyboard.Focus(this);
-            CaptureMouse();
             RenderControlPanel();
+            CaptureMouse();
+            InvalidateCanvas();
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
@@ -380,7 +389,14 @@ namespace Modeling_Canvas.UIELements
 
         protected void DrawLine(DrawingContext drawingContext, Point p1, Point p2, double transparentThickness)
         {
-            drawingContext.DrawLine(new Pen(Stroke, StrokeThickness), p1, p2);
+            var pen = new Pen(Stroke, StrokeThickness);
+            drawingContext.DrawLine(pen, p1, p2);
+            drawingContext.DrawLine(new Pen(Brushes.Transparent, StrokeThickness + transparentThickness), p1, p2);
+        }
+
+        protected void DrawDashedLine(DrawingContext drawingContext, Pen pen, Point p1, Point p2, double transparentThickness)
+        {
+            drawingContext.DrawLine(pen, p1, p2);
             drawingContext.DrawLine(new Pen(Brushes.Transparent, StrokeThickness + transparentThickness), p1, p2);
         }
     }

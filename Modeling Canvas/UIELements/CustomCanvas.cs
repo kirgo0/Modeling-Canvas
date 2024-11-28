@@ -53,7 +53,7 @@ namespace Modeling_Canvas.UIELements
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-            DrawCoordinateGrid(dc);
+            DrawCoordinateGrid(dc); 
         }
         // Calculate grid lines for snapping
 
@@ -132,13 +132,13 @@ namespace Modeling_Canvas.UIELements
             // Draw axes
             dc.DrawLine(axisPen, new Point(0, halfHeight), new Point(width, halfHeight)); // X-axis
             dc.DrawLine(axisPen, new Point(halfWidth, 0), new Point(halfWidth, height)); // Y-axis
+            
+
         }
 
         private void DrawCoordinateLabel(DrawingContext dc, double value, Point position, double fontSize, bool isHorizontal)
         {
-            if (value == 0 && isHorizontal && position.Y == ActualHeight / 2)
-                return;
-            if (value == 0 && !isHorizontal && position.X == ActualWidth / 2)
+            if (value == 0)
                 return;
             if (NumberFrequency > 0 && (int)value % NumberFrequency == 0)
             {
@@ -182,6 +182,13 @@ namespace Modeling_Canvas.UIELements
         {
             Mouse.OverrideCursor = null;
         }
+        protected void ClearControlPanel()
+        {
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                mainWindow.ClearControlStack();
+            }
+        }
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
@@ -201,14 +208,14 @@ namespace Modeling_Canvas.UIELements
                 InvalidateVisual();
             }
             base.OnMouseMove(e);
+            UpdateMouseLabel();
         }
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             SelectedElements.Clear();
             InvalidateVisual();
-            Keyboard.ClearFocus();
-            Keyboard.Focus(this);
+            ClearControlPanel();
             previousMousePosition = e.GetPosition(this);
             base.OnMouseLeftButtonDown(e);
         }
@@ -237,7 +244,19 @@ namespace Modeling_Canvas.UIELements
                     // Adjust UnitSize based on delta multiplier
                     UnitSize += Math.Round(e.Delta * deltaMultiplier, 4);
                     if (UnitSize < 0.1) UnitSize = 0.1;
+                    if (UnitSize > 5) UnitSize = Math.Round(UnitSize);
                 }
+                UpdateMouseLabel();
+            }
+        }
+
+        public void UpdateMouseLabel()
+        {
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                var position = Mouse.GetPosition(this);
+                var unitPosition = GetCanvasMousePosition();
+                mainWindow.MousePositionLabel.Content = $"X: {Math.Round(unitPosition.X, 2)} Y: {Math.Round(unitPosition.Y, 2)}\np.X: {Math.Round(position.X, 2)} p.Y: {Math.Round(position.Y, 2)}";
             }
         }
 

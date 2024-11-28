@@ -23,46 +23,9 @@ namespace Modeling_Canvas
         {
             InitializeComponent();
             CenterWindowOnScreen();
-            //var rect = new CustomRectangle(MyCanvas, new Point(-4, -4), new Point(2, 1));
-            //MyCanvas.Children.Add(rect);
-            var customSegment = new CustomCircle(MyCanvas)
-            {
-                Radius = 9,
-                Stroke = Brushes.DarkGreen,
-                StrokeThickness = 3,
-                Precision = 100,
-                StartDegrees = 0, // Start at 45 degrees
-                EndDegrees = 360,
-                Center = new Point(-2, 0), // End at 270 degrees
-            };
-            //MyCanvas.Children.Insert(0,customSegment);
 
-            //var customSegment2 = new CustomCircle(MyCanvas)
-            //{
-            //    Radius = 9,
-            //    Stroke = Brushes.Red,
-            //    StrokeThickness = 3,
-            //    Precision = 100,
-            //    StartDegrees = 0, // Start at 45 degrees
-            //    EndDegrees = 90,
-            //    Center = new Point(-2, 0), // End at 270 degrees
-            //    Canvas = MyCanvas,
-            //};
-            //MyCanvas.Children.Add(customSegment2);
-
-            var customLine = new CustomLine(MyCanvas, new Point(4, 1), new Point(-1, -6));
-            customLine.AddPoint(5, 5);
-            customLine.AddPoint(7, 7);
-            //MyCanvas.Children.Add(customLine);
-
-            var group = new ElementsGroup(MyCanvas);
-            group.AddChild(customLine);
-            //group.AddChild(customLine);
-            group.AddChild(customSegment);
-            MyCanvas.Children.Add(group);
-            //var rect = new CustomRectangle(MyCanvas, new Point(0, 0), 5, 5);
-            //MyCanvas.Children.Add(rect);
-
+            InitFigure();
+            Keyboard.Focus(MyCanvas);
 
         }
 
@@ -85,6 +48,49 @@ namespace Modeling_Canvas
             ControlStack.Children.Clear();
         }
 
+        public void InitFigure()
+        {
+            var group = new ElementsGroup(MyCanvas);
+            var line1 = new CustomLine(MyCanvas);
+            line1.AddPoint(6, 0);
+            line1.AddPoint(3, 5.2);
+            line1.AddPoint(-3, 5.2);
+            line1.AddPoint(-6, 0);
+            line1.AddPoint(-3, -5.2);
+            line1.AddPoint(3, -5.2);
+            group.AddChild(line1);
+
+            var line2 = new CustomLine(MyCanvas);
+            line2.AddPoint(-9, 3);
+            line2.AddPoint(-11, 4.5);
+            line2.AddPoint(-9, 7);
+            line2.AddPoint(-7, 5.5);
+            line2.AddPoint(-1.5, 9);
+            line2.AddPoint(-1.5, 11.5);
+
+            line2.AddPoint(1.5, 11.5);
+            line2.AddPoint(1.5, 9);
+            line2.AddPoint(7, 5.5);
+            line2.AddPoint(9, 7);
+            line2.AddPoint(11, 4.5);
+            line2.AddPoint(9, 3);
+
+            line2.AddPoint(9, -3);
+            line2.AddPoint(11, -4.5);
+            line2.AddPoint(9, -7);
+            line2.AddPoint(7, -5.5);
+            line2.AddPoint(1.5, -9);
+            line2.AddPoint(1.5, - 11.5);
+
+            line2.AddPoint(-1.5, -11.5);
+            line2.AddPoint(-1.5, -9);
+            line2.AddPoint(-7, -5.5);
+            line2.AddPoint(-9, -7);
+            line2.AddPoint(-11, -4.5);
+            line2.AddPoint(-9, -3);
+            group.AddChild(line2);
+            MyCanvas.Children.Add(group);
+        }
 
     }
 

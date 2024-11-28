@@ -26,6 +26,7 @@ namespace Modeling_Canvas.UIELements
         {
             Fill = Brushes.Black;
             StrokeThickness = 0;
+            IsSelectable = false;
         }
 
         protected override void OnRender(DrawingContext drawingContext)

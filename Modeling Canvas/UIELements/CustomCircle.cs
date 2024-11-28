@@ -103,14 +103,7 @@ namespace Modeling_Canvas.UIELements
         }
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            if(!InputManager.SpacePressed)
-            {
-                Canvas.SelectedElements.Clear();
-                Canvas.SelectedElements.Add(this);
-                e.Handled = true;
-            }
             base.OnMouseLeftButtonDown(e);
-            InvalidateCanvas();
         }
 
         public virtual void RadiusPointMoveAction(DraggablePoint point, Vector offset)
