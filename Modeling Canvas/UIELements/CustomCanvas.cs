@@ -74,13 +74,24 @@ namespace Modeling_Canvas.UIELements
             {
                 DrawCoordinateGrid(dc);
             }
-        }
-
+        } 
         public Point GetCanvasUnitCoordinates(Point pixelCoordinates)
         {
+            if (!AffineParams.IsDefaults) pixelCoordinates = pixelCoordinates.ReverseAffineTransformation(AffineParams);
             return new Point((pixelCoordinates.X - ActualWidth / 2 - XOffset) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y - YOffset) / UnitSize);
         }
 
+        public void ResetOffests()
+        {
+            XOffset = 0;
+            YOffset = 0;
+            InvalidateVisual();
+        }
+        public void ResetScaling()
+        {
+            UnitSize = 40;
+            InvalidateVisual();
+        }
         public double GetDegreesBetweenMouseAndPoint(Point point)
         {
             var mousePosition = GetCanvasMousePosition();
@@ -105,6 +116,10 @@ namespace Modeling_Canvas.UIELements
                 {
                     var point = element.GetOriginPoint(arrangeSize);
                     var pointWithOffset = new Point(point.X + XOffset, point.Y - YOffset);
+                    if (!AffineParams.IsDefaults)
+                    {
+                        pointWithOffset = pointWithOffset.ApplyAffineTransformation(AffineParams);
+                    }
                     // Arrange the element
                     element.Arrange(new Rect(pointWithOffset, element.DesiredSize));
                     element.InvalidateVisual();

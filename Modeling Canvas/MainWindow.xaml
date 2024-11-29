@@ -15,7 +15,7 @@
             <ColumnDefinition Width="169*"/>
         </Grid.ColumnDefinitions>
 
-        <local:CustomCanvas x:Name="MyCanvas" Focusable="True" Background="White" UnitSize="5 " Panel.ZIndex="0" Grid.Column="0">
+        <local:CustomCanvas x:Name="MyCanvas" Focusable="True" Background="White" Panel.ZIndex="0" Grid.Column="0">
         </local:CustomCanvas>
         <Label x:Name="MousePositionLabel" Content="X: Y:&#xD;&#xA;Pixels: " HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="109" Height="50" Panel.ZIndex="5" HorizontalContentAlignment="Right"/>
 
@@ -38,7 +38,10 @@
                 </TabControl.Resources>
 
                 <TabItem Header="Normal">
-                    <Grid Background="#FFE5E5E5"/>
+                    <Grid Background="#FFE5E5E5">
+                        <Button Focusable="False" Content="Reset Offsets" HorizontalAlignment="Center" VerticalAlignment="Top" Width="77" Click="ResetOffsets" Margin="0,27,0,0"/>
+                        <Button Focusable="False" Content="Reset Scaling" HorizontalAlignment="Center" VerticalAlignment="Top" Width="77" Click="ResetScaling" Margin="0,81,0,0"/>
+                    </Grid>
                 </TabItem>
                 <TabItem Header="Affine">
                     <Grid Background="#FFE5E5E5">

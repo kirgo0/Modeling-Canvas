@@ -53,8 +53,8 @@ namespace Modeling_Canvas.Models
         }
 
         public bool IsDefaults { get => 
-                Xx == 0 && Xy == 0 && Ox == 0 &&
-                Yy == 0 && Yx == 0 && Oy == 0; 
+                Xx == 1 && Xy == 0 && Ox == 0 &&
+                Yy == 1 && Yx == 0 && Oy == 0; 
         }
 
         public void Reset()

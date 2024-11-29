@@ -86,13 +86,22 @@ namespace Modeling_Canvas.UIELements
             base.InitControls();
         }
 
-        protected override void OnRender(DrawingContext drawingContext)
+        protected override void OnRender(DrawingContext dc)
         {
             UpdateUIControls();
+            base.OnRender(dc);
+        }
 
-            drawingContext.DrawCircleWithArcs(Fill, StrokePen, new Point(0, 0), Radius * UnitSize, StartDegrees, EndDegrees, Precision, 10);
+        protected override void DefaultRender(DrawingContext dc)
+        {
+            dc.DrawCircleWithArcs(Fill, StrokePen, new Point(0, 0), Radius * UnitSize, StartDegrees, EndDegrees, Precision, 10);
+            base.DefaultRender(dc);
+        }
 
-            base.OnRender(drawingContext);
+        protected override void AffineRender(DrawingContext dc)
+        {
+            dc.DrawAffineCircleWithArcs(Fill, StrokePen, new Point(0, 0), Radius * UnitSize, StartDegrees, EndDegrees, Precision, Canvas.AffineParams, 10);
+            base.AffineRender(dc);
         }
 
         protected override void RenderControlPanel()

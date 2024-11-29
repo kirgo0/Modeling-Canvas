@@ -40,7 +40,11 @@ namespace Modeling_Canvas.UIELements
 
             Points.First().Shape = PointShape.Square;
             Points.Last().Shape = PointShape.Square;
+            base.OnRender(dc);
+        }
 
+        protected override void DefaultRender(DrawingContext dc)
+        {
             for (int i = 0; i < Points.Count - 1; i++)
             {
                 dc.DrawLine(StrokePen, Points[i].PixelPosition, Points[i + 1].PixelPosition, 10);
@@ -51,8 +55,23 @@ namespace Modeling_Canvas.UIELements
                 dc.DrawLine(StrokePen, Points.First().PixelPosition, Points.Last().PixelPosition, 10);
             }
 
-            base.OnRender(dc);
+            base.DefaultRender(dc);
         }
+
+        protected override void AffineRender(DrawingContext dc)
+        {
+            for (int i = 0; i < Points.Count - 1; i++)
+            {
+                dc.DrawAffineLine(StrokePen, Points[i].PixelPosition, Points[i + 1].PixelPosition, Canvas.AffineParams, 10);
+            }
+
+            if (IsClosed)
+            {
+                dc.DrawAffineLine(StrokePen, Points.First().PixelPosition, Points.Last().PixelPosition, Canvas.AffineParams, 10);
+            }
+            base.AffineRender(dc);
+        }
+
 
         protected override Point GetAnchorDefaultPosition()
         {

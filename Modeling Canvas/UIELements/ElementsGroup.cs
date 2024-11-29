@@ -9,6 +9,15 @@ namespace Modeling_Canvas.UIELements
         public static int Counter { get; set; } = 1;
         public string Name { get; set; } = string.Empty;
         public double RectPadding { get; set; } = 0.5;
+
+        public Pen DashedPen { get =>
+                new Pen(Stroke, StrokeThickness)
+                {
+                    DashCap = PenLineCap.Round,
+                    DashStyle = new DashStyle(new double[] { 10 }, 10)
+                };
+        }
+
         public List<CustomElement> Children { get; set; } = new();
 
         private Point _topLeftPosition = new Point(0, 0);
@@ -37,28 +46,47 @@ namespace Modeling_Canvas.UIELements
             var topLeftPoint = new Point(tlPoints.Min(x => x.X), tlPoints.Max(y => y.Y));
             return new Point(arrangedSize.Width / 2 + (topLeftPoint.X * UnitSize - RectPadding * UnitSize), arrangedSize.Height / 2 - (topLeftPoint.Y * UnitSize + RectPadding * UnitSize));
         }
+
         protected override void OnRender(DrawingContext dc)
         {
             CalculateRectPoints();
+            base.OnRender(dc);
+        }
+
+        protected override void DefaultRender(DrawingContext dc)
+        {
             var width = Math.Abs(_bottomRightPosition.X - _topLeftPosition.X) * UnitSize + RectPadding * 2 * UnitSize;
             var height = Math.Abs(_topLeftPosition.Y - _bottomRightPosition.Y) * UnitSize + RectPadding * 2 * UnitSize;
             var x = 0;
             var y = 0;
 
-            var pen = new Pen(Stroke, StrokeThickness)
-            {
-                DashCap = PenLineCap.Round,
-                DashStyle = new DashStyle(new double[] { 10 }, 10)
-            };
             // Top
-            dc.DrawDashedLine(pen, new Point(x, y), new Point(x + width, y), 20);
+            dc.DrawDashedLine(DashedPen, new Point(x, y), new Point(x + width, y), 20);
             // Left
-            dc.DrawDashedLine(pen, new Point(x, y), new Point(x, y + height), 20);
+            dc.DrawDashedLine(DashedPen, new Point(x, y), new Point(x, y + height), 20);
             // Right
-            dc.DrawDashedLine(pen, new Point(x + width, y), new Point(x + width, y + height), 20);
+            dc.DrawDashedLine(DashedPen, new Point(x + width, y), new Point(x + width, y + height), 20);
             // Bottom
-            dc.DrawDashedLine(pen, new Point(x, y + height), new Point(x + width, y + height), 20);
-            base.OnRender(dc);
+            dc.DrawDashedLine(DashedPen, new Point(x, y + height), new Point(x + width, y + height), 20);
+            base.DefaultRender(dc);
+        }
+
+        protected override void AffineRender(DrawingContext dc)
+        {
+            var width = Math.Abs(_bottomRightPosition.X - _topLeftPosition.X) * UnitSize + RectPadding * 2 * UnitSize;
+            var height = Math.Abs(_topLeftPosition.Y - _bottomRightPosition.Y) * UnitSize + RectPadding * 2 * UnitSize;
+            var x = 0;
+            var y = 0;
+
+            // Top
+            dc.DrawAffineDashedLine(DashedPen, new Point(x, y), new Point(x + width, y), Canvas.AffineParams, 20);
+            // Left
+            dc.DrawAffineDashedLine(DashedPen, new Point(x, y), new Point(x, y + height), Canvas.AffineParams, 20);
+            // Right
+            dc.DrawAffineDashedLine(DashedPen, new Point(x + width, y), new Point(x + width, y + height), Canvas.AffineParams, 20);
+            // Bottom
+            dc.DrawAffineDashedLine(DashedPen, new Point(x, y + height), new Point(x + width, y + height), Canvas.AffineParams, 20);
+            base.AffineRender(dc);
         }
 
         protected override void InitControls()

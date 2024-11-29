@@ -89,18 +89,35 @@ namespace Modeling_Canvas.UIELements
         protected override void OnRender(DrawingContext drawingContext)
         {
             AnchorVisibility = ShowControls;
-            base.OnRender(drawingContext);
             foreach (var point in Points)
             {
                 point.Visibility = ShowControls;
             }
+            base.OnRender(drawingContext);
 
+        }
+
+        protected override void DefaultRender(DrawingContext dc)
+        {
             for (int i = 0; i < 3; i++)
             {
-                drawingContext.DrawLine(StrokePen, Points[i].PixelPosition, Points[i + 1].PixelPosition, 10);
+                dc.DrawLine(StrokePen, Points[i].PixelPosition, Points[i + 1].PixelPosition, 10);
             }
 
-            drawingContext.DrawLine(StrokePen, Points[0].PixelPosition, Points[3].PixelPosition, 10);
+            dc.DrawLine(StrokePen, Points[0].PixelPosition, Points[3].PixelPosition, 10);
+            base.DefaultRender(dc);
+        }
+
+        protected override void AffineRender(DrawingContext dc)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                dc.DrawAffineLine(StrokePen, Points[i].PixelPosition, Points[i + 1].PixelPosition, Canvas.AffineParams, 10);
+            }
+
+            dc.DrawAffineLine(StrokePen, Points[0].PixelPosition, Points[3].PixelPosition, Canvas.AffineParams, 10);
+            base.DefaultRender(dc);
+            base.AffineRender(dc);
         }
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
@@ -112,7 +129,6 @@ namespace Modeling_Canvas.UIELements
                 e.Handled = true;
             }
             base.OnMouseLeftButtonDown(e);
-            //InvalidateVisual();
         }
         protected void CornerPointMoveAction(DraggablePoint movedPoint, Vector offset)
         {

@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using Modeling_Canvas.Extensions;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -58,7 +59,18 @@ namespace Modeling_Canvas.UIELements
             HasAnchorPoint = hasAnchorPoint;
         }
 
-        protected override void OnRender(DrawingContext drawingContext)
+        protected override void OnRender(DrawingContext dc)
+        {
+            if(Canvas.AffineParams.IsDefaults)
+            {
+                DefaultRender(dc);
+            } else if(!Canvas.AffineParams.IsDefaults)
+            {
+                AffineRender(dc);
+            }
+
+        }
+        protected virtual void DefaultRender(DrawingContext dc)
         {
             if (HasAnchorPoint)
             {
@@ -68,9 +80,20 @@ namespace Modeling_Canvas.UIELements
                 }
                 AnchorPoint.Visibility = AnchorVisibility;
             }
-            base.OnRender(drawingContext);
-
         }
+
+        protected virtual void AffineRender(DrawingContext dc)
+        {
+            if (HasAnchorPoint)
+            {
+                if (!OverrideAnchorPoint)
+                {
+                    AnchorPoint.Position = GetAnchorDefaultPosition();
+                }
+                AnchorPoint.Visibility = AnchorVisibility;
+            }
+        }
+
         protected override void OnInitialized(EventArgs e)
         {
             base.OnInitialized(e);
@@ -347,7 +370,12 @@ namespace Modeling_Canvas.UIELements
                 {
                     Mouse.OverrideCursor = Cursors.SizeAll;
                     Vector offset = currentMousePosition - _lastMousePosition;
+                    if(!Canvas.AffineParams.IsDefaults)
+                    {
+                        offset = currentMousePosition.ReverseAffineTransformation(Canvas.AffineParams) - _lastMousePosition.ReverseAffineTransformation(Canvas.AffineParams);
+                    }
                     MoveElement(offset);
+
                     //foreach (var element in Canvas.SelectedElements.Where(e => !e.Equals(this)))
                     //{
                     //    element.MoveElement(offset);

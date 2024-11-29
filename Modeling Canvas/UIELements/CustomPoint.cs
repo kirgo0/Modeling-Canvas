@@ -30,9 +30,9 @@ namespace Modeling_Canvas.UIELements
             IsSelectable = false;
         }
 
-        protected override void OnRender(DrawingContext drawingContext)
+        protected override void DefaultRender(DrawingContext dc)
         {
-            base.OnRender(drawingContext);
+            base.DefaultRender(dc);
 
             var semiTransparentFill = Fill.Clone();
             semiTransparentFill.Opacity = Opacity;
@@ -40,13 +40,34 @@ namespace Modeling_Canvas.UIELements
             switch (Shape)
             {
                 case PointShape.Circle:
-                    drawingContext.DrawCircle(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100);
+                    dc.DrawCircle(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100);
                     break;
                 case PointShape.Square:
-                    drawingContext.DrawSquare(semiTransparentFill, StrokePen, new Point(0, 0), Radius * 2);
+                    dc.DrawSquare(semiTransparentFill, StrokePen, new Point(0, 0), Radius * 2);
                     break;
                 case PointShape.Anchor:
-                    drawingContext.DrawAnchorPoint(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100, 5);
+                    dc.DrawAnchorPoint(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100, 5);
+                    break;
+            }
+        }
+
+        protected override void AffineRender(DrawingContext dc)
+        {
+            base.AffineRender(dc);
+
+            var semiTransparentFill = Fill.Clone();
+            semiTransparentFill.Opacity = Opacity;
+
+            switch (Shape)
+            {
+                case PointShape.Circle:
+                    dc.DrawAffineCircle(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100, Canvas.AffineParams);
+                    break;
+                case PointShape.Square:
+                    dc.DrawAffineSquare(semiTransparentFill, StrokePen, new Point(0, 0), Radius * 2, Canvas.AffineParams);
+                    break;
+                case PointShape.Anchor:
+                    dc.DrawAffineAnchorPoint(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100, 5, Canvas.AffineParams);
                     break;
             }
         }

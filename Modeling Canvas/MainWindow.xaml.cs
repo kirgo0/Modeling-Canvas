@@ -17,15 +17,16 @@ namespace Modeling_Canvas
             InitializeComponent();
             CenterWindowOnScreen();
 
-            //InitFigure();
+            InitFigure();
 
-            //var circle = new CustomCircle(MyCanvas);
-            //MyCanvas.Children.Add(circle);
+            var circle = new CustomCircle(MyCanvas);
+            MyCanvas.Children.Add(circle);
 
             PointExtensions.Canvas = MyCanvas;
 
             KeyDown += MyCanvas.OnKeyDown;
-            KeyUp += MyCanvas.OnKeyUp; 
+            KeyUp += MyCanvas.OnKeyUp;
+            ResetScaling(null, null);
         }
 
         private void CenterWindowOnScreen()
@@ -97,6 +98,15 @@ namespace Modeling_Canvas
             Helpers.NumberValidationTextBox(sender, e);
         }
 
+        private void ResetOffsets(object sender, RoutedEventArgs e)
+        {
+            MyCanvas.ResetOffests();
+        }
+
+        private void ResetScaling(object sender, RoutedEventArgs e)
+        {
+            MyCanvas.ResetScaling();
+        }
     }
 
 }

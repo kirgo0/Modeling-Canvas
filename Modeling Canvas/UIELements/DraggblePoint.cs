@@ -15,14 +15,12 @@ namespace Modeling_Canvas.UIELements
         {
             Position = position;
         }
-        protected override void OnRender(DrawingContext drawingContext)
+
+        protected override void DefaultRender(DrawingContext dc)
         {
-            // Draw point
-            base.OnRender(drawingContext);
+            base.DefaultRender(dc);
+            dc.DrawCircle(Brushes.Transparent, new Pen(Stroke, 0), new Point(0, 0), DragRadius, 100);
 
-            // Create an invisible drag zone
-
-            drawingContext.DrawCircle(Brushes.Transparent, new Pen(Stroke, 0), new Point(0, 0), DragRadius, 100);
         }
 
         public Action<DraggablePoint, Vector> OverrideMoveAction;
