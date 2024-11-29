@@ -49,8 +49,8 @@ namespace Modeling_Canvas.Extensions
         public static Point ApplyAffineTransformation(this Point point, AffineModel affine)
         {
             double Xx = affine.Xx;
-            double Xy = affine.Xy;
-            double Yx = affine.Yx;
+            double Xy = -affine.Xy;
+            double Yx = -affine.Yx;
             double Yy = affine.Yy;
             double Ox = affine.Ox;
             double Oy = affine.Oy;
@@ -62,8 +62,8 @@ namespace Modeling_Canvas.Extensions
         public static Point ReverseAffineTransformation(this Point transformedPoint, AffineModel affine)
         {
             double Xx = affine.Xx;
-            double Xy = affine.Xy;
-            double Yx = affine.Yx;
+            double Xy = -affine.Xy;
+            double Yx = -affine.Yx;
             double Yy = affine.Yy;
             double Ox = affine.Ox;
             double Oy = affine.Oy;

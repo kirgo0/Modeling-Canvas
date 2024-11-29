@@ -55,7 +55,7 @@
                             <TextBox Text="{Binding ElementName=MyCanvas, Path=AffineParams.Xx, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource FloatConverter}}" 
                      HorizontalAlignment="Left" Margin="38,15,0,0" VerticalAlignment="Top" Width="86"/>
 
-                            <Label Content="Yx" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                            <Label Content="Xy" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             <TextBox Text="{Binding ElementName=MyCanvas, Path=AffineParams.Yx, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource FloatConverter}}" 
                      HorizontalAlignment="Left" Margin="38,0,0,0" VerticalAlignment="Center" Width="86"/>
 
@@ -63,7 +63,7 @@
                             <TextBox Text="{Binding ElementName=MyCanvas, Path=AffineParams.Ox, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource FloatConverter}}" 
                      HorizontalAlignment="Left" Margin="38,69,0,0" VerticalAlignment="Top" Width="86"/>
 
-                            <Label Content="Xy" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Grid.Column="1"/>
+                            <Label Content="Yx" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Grid.Column="1"/>
                             <TextBox Text="{Binding ElementName=MyCanvas, Path=AffineParams.Xy, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource FloatConverter}}" 
                      HorizontalAlignment="Left" Margin="39,15,0,0" VerticalAlignment="Top" Width="86" Grid.Column="1"/>
 
