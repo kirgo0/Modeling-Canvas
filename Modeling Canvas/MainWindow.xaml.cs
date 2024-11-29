@@ -1,4 +1,5 @@
-﻿using Modeling_Canvas.Extensions;
+﻿using Modeling_Canvas.Commands;
+using Modeling_Canvas.Extensions;
 using Modeling_Canvas.UIELements;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -16,15 +17,15 @@ namespace Modeling_Canvas
             InitializeComponent();
             CenterWindowOnScreen();
 
-            InitFigure();
+            //InitFigure();
 
-            var circle = new CustomCircle(MyCanvas);
-            MyCanvas.Children.Add(circle);
+            //var circle = new CustomCircle(MyCanvas);
+            //MyCanvas.Children.Add(circle);
 
             PointExtensions.Canvas = MyCanvas;
 
             KeyDown += MyCanvas.OnKeyDown;
-            KeyUp += MyCanvas.OnKeyUp;
+            KeyUp += MyCanvas.OnKeyUp; 
         }
 
         private void CenterWindowOnScreen()

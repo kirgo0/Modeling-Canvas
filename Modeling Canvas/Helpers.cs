@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using System.Windows;
 using System.Windows.Input;
 
 namespace Modeling_Canvas
@@ -27,9 +28,9 @@ namespace Modeling_Canvas
         {
 
             // Regex to allow numbers, optional "-" at the start, and one "." or ","
-            Regex regex = new Regex(@"^[-]?[0-9]*[.,]?[0-9]*$");
+            //Regex regex = new Regex(@"^[-]?[0-9]*[.,]?[0-9]*$");
 
-            e.Handled = !regex.IsMatch(e.Text);
+            //e.Handled = !regex.IsMatch(e.Text);
         }
 
     }

@@ -1,4 +1,8 @@
-﻿using System.Windows;
+﻿using Modeling_Canvas.Commands;
+using Modeling_Canvas.Extensions;
+using Modeling_Canvas.Models;
+using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -6,11 +10,30 @@ using System.Windows.Media;
 namespace Modeling_Canvas.UIELements
 {
 
-    public class CustomCanvas : Canvas
+    public class CustomCanvas : Canvas, INotifyPropertyChanged
     {
         public double XOffset { get; set; } = 0;
         public double YOffset { get; set; } = 0;
-        public int RotationPrecision { get; set; } = 4;
+        public int RotationPrecision { get; set; } = 4; 
+        private AffineModel _affineParams = new AffineModel();
+        public AffineModel AffineParams
+        {
+            get => _affineParams;
+            set { _affineParams = value; OnPropertyChanged(nameof(AffineParams)); }
+        }
+
+        private ProjectiveModel _projectiveParams = new ProjectiveModel();
+        public ProjectiveModel ProjectiveParams
+        {
+            get => _projectiveParams;
+            set { _projectiveParams = value; OnPropertyChanged(nameof(ProjectiveParams)); }
+        }
+
+        public ICommand InvalidateCanvasCommand { get; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
         public double UnitSize
         {
             get => (double)GetValue(UnitSizeProperty);
@@ -35,10 +58,22 @@ namespace Modeling_Canvas.UIELements
 
         private Point previousMousePosition;
 
+        public CustomCanvas()
+        {
+            InvalidateCanvasCommand = new RelayCommand(_ => InvalidateVisual());
+        }
+
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-            DrawCoordinateGrid(dc);
+            if(!AffineParams.IsDefaults)
+            {
+                var p = AffineParams;
+                DrawAffineCoordinateGrid(dc);
+            } else
+            {
+                DrawCoordinateGrid(dc);
+            }
         }
 
         public Point GetCanvasUnitCoordinates(Point pixelCoordinates)
@@ -137,6 +172,186 @@ namespace Modeling_Canvas.UIELements
 
         }
 
+        protected void DrawCoordinateGrid(DrawingContext dc, double Xx, double Xy, double Yx, double Yy, double Ox, double Oy)
+        {
+            double width = ActualWidth;
+            double height = ActualHeight;
+            double halfWidth = width / 2 + XOffset;
+            double halfHeight = height / 2 - YOffset;
+
+            Pen gridPen = new Pen(Brushes.Black, 0.1);
+            Pen axisPen = new Pen(Brushes.Black, 2);
+
+            if (UnitSize < 0 || GridFrequency < 0) return;
+
+            var calculatedFrequency = GridFrequency;
+            if (UnitSize < 25) calculatedFrequency = 5;
+            if (UnitSize < 15) calculatedFrequency = 10;
+            if (UnitSize < 10) calculatedFrequency = 10;
+            if (UnitSize < 5) calculatedFrequency = 50;
+            if (UnitSize < 1) calculatedFrequency = 250;
+            if (UnitSize < 0.2) calculatedFrequency = 500;
+
+            // Vertical grid lines
+            for (double x = halfWidth; x < width; x += UnitSize * calculatedFrequency)
+            {
+                var p1 = new Point(x, 0).ApplyAffineTransformation(AffineParams);
+                var p2 = new Point(x, height).ApplyAffineTransformation(AffineParams);
+                dc.DrawLine(gridPen, p1, p2);
+
+                DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3),
+                    new Point(x, halfHeight).ApplyAffineTransformation(AffineParams), 15, false);
+            }
+
+            for (double x = halfWidth; x > 0; x -= UnitSize * calculatedFrequency)
+            {
+                var p1 = new Point(x, 0).ApplyAffineTransformation(AffineParams);
+                var p2 = new Point(x, height).ApplyAffineTransformation(AffineParams);
+                dc.DrawLine(gridPen, p1, p2);
+
+                DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3),
+                    new Point(x, halfHeight).ApplyAffineTransformation(AffineParams), 15, false);
+            }
+
+            // Horizontal grid lines
+            for (double y = halfHeight; y < height; y += UnitSize * calculatedFrequency)
+            {
+                var p1 = new Point(0, y).ApplyAffineTransformation(AffineParams);
+                var p2 = new Point(width, y).ApplyAffineTransformation(AffineParams);
+                dc.DrawLine(gridPen, p1, p2);
+
+                DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3),
+                    new Point(halfWidth, y).ApplyAffineTransformation(AffineParams), 15, true);
+            }
+
+            for (double y = halfHeight; y > 0; y -= UnitSize * calculatedFrequency)
+            {
+                var p1 = new Point(0, y).ApplyAffineTransformation(AffineParams);
+                var p2 = new Point(width, y).ApplyAffineTransformation(AffineParams);
+                dc.DrawLine(gridPen, p1, p2);
+
+                DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3),
+                    new Point(halfWidth, y).ApplyAffineTransformation(AffineParams), 15, true);
+            }
+
+            // Draw axes with transformation
+            dc.DrawLine(axisPen,
+                new Point(0, halfHeight).ApplyAffineTransformation(AffineParams),
+                new Point(width, halfHeight).ApplyAffineTransformation(AffineParams));
+
+            dc.DrawLine(axisPen,
+                new Point(halfWidth, 0).ApplyAffineTransformation(AffineParams),
+                new Point(halfWidth, height).ApplyAffineTransformation(AffineParams));
+        }
+        protected void DrawAffineCoordinateGrid(DrawingContext dc)
+        {
+
+            //Ox = 0;
+            //Oy = 0;
+
+            double width = ActualWidth;
+            double height = ActualHeight;
+            double halfWidth = width / 2 + XOffset;
+            double halfHeight = height / 2 - YOffset;
+
+            Pen gridPen = new Pen(Brushes.Black, 0.2);
+            Pen axisPen = new Pen(Brushes.Black, 2);
+
+            if (UnitSize < 0 || GridFrequency < 0) return;
+
+            var calculatedFrequency = GridFrequency;
+            if (UnitSize < 25) calculatedFrequency = 5;
+            if (UnitSize < 15) calculatedFrequency = 10;
+            if (UnitSize < 10) calculatedFrequency = 10;
+            if (UnitSize < 5) calculatedFrequency = 50;
+            if (UnitSize < 1) calculatedFrequency = 250;
+            if (UnitSize < 0.2) calculatedFrequency = 500;
+
+            // Transform the canvas corners
+            //var corners = new[]
+            //{
+            //    new Point(0, 0).ApplyAffineTransformation(AffineParams),
+            //    new Point(width, 0).ApplyAffineTransformation(AffineParams),
+            //    new Point(0, height).ApplyAffineTransformation(AffineParams),
+            //    new Point(width, height).ApplyAffineTransformation(AffineParams),
+            //};
+            var corners = new[]
+            {
+                new Point(0, 0).ReverseAffineTransformation(AffineParams),
+                new Point(width, 0).ReverseAffineTransformation(AffineParams),
+                new Point(0, height).ReverseAffineTransformation(AffineParams),
+                new Point(width, height).ReverseAffineTransformation(AffineParams),
+            };
+
+            // Calculate bounds of the transformed canvas
+            double minX = corners.Min(c => c.X);
+            double maxX = corners.Max(c => c.X);
+            double minY = corners.Min(c => c.Y);
+            double maxY = corners.Max(c => c.Y);
+
+            //if (Xy > 0) minX -= corners.OrderBy(c => c.X).ToArray()[1].X * Xy;
+            //var b = corners.OrderByDescending(c => c.X).ToArray();
+            //if (Xy < 0) maxX += corners.OrderByDescending(c => c.X).ToArray()[1].X * Xy;
+            //var c = corners.OrderBy(c => c.Y).ToArray();
+            //if (Yx > 0) minY -= corners.OrderBy(c => c.Y).ToArray()[1].Y * Yx;
+            //var a = corners.OrderByDescending(c => c.Y).ToArray();
+            //if (Yx < 0) maxY += corners.OrderByDescending(c => c.Y).ToArray()[1].Y * Yx;
+
+            //Ox = halfWidth - (maxX - minX) / 2;
+            //Oy = halfHeight - (maxY - minY) / 2;
+
+            // Draw vertical grid lines
+            for (double x = halfWidth; x < maxX; x += UnitSize * calculatedFrequency)
+            {
+                var p1 = new Point(x, minY).ApplyAffineTransformation(AffineParams);
+                var p2 = new Point(x, maxY).ApplyAffineTransformation(AffineParams);
+                dc.DrawLine(gridPen, p1, p2);
+
+                DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3),
+                    new Point(x, halfHeight).ApplyAffineTransformation(AffineParams), 15, false);
+            }
+            for (double x = halfWidth; x > minX; x -= UnitSize * calculatedFrequency)
+            {
+                var p1 = new Point(x, minY).ApplyAffineTransformation(AffineParams);
+                var p2 = new Point(x, maxY).ApplyAffineTransformation(AffineParams);
+                dc.DrawLine(gridPen, p1, p2);
+
+                DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3),
+                    new Point(x, halfHeight).ApplyAffineTransformation(AffineParams), 15, false);
+            }
+
+            // Draw horizontal grid lines
+            for (double y = halfHeight; y < maxY; y += UnitSize * calculatedFrequency)
+            {
+                var p1 = new Point(minX, y).ApplyAffineTransformation(AffineParams);
+                var p2 = new Point(maxX, y).ApplyAffineTransformation(AffineParams);
+                dc.DrawLine(gridPen, p1, p2);
+
+                DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3),
+                    new Point(halfWidth, y).ApplyAffineTransformation(AffineParams), 15, true);
+            }
+
+            for (double y = halfHeight; y > minY; y -= UnitSize * calculatedFrequency)
+            {
+                var p1 = new Point(minX, y).ApplyAffineTransformation(AffineParams);
+                var p2 = new Point(maxX, y).ApplyAffineTransformation(AffineParams);
+                dc.DrawLine(gridPen, p1, p2);
+
+                DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3),
+                    new Point(halfWidth, y).ApplyAffineTransformation(AffineParams), 15, true);
+            }
+
+            // Draw axes with transformation
+            dc.DrawLine(axisPen,
+                new Point(minX, halfHeight).ApplyAffineTransformation(AffineParams),
+                new Point(maxX, halfHeight).ApplyAffineTransformation(AffineParams));
+
+            dc.DrawLine(axisPen,
+                new Point(halfWidth, minY).ApplyAffineTransformation(AffineParams),
+                new Point(halfWidth, maxY).ApplyAffineTransformation(AffineParams));
+        }
+
+
         private void DrawCoordinateLabel(DrawingContext dc, double value, Point position, double fontSize, bool isHorizontal)
         {
             if (value == 0)
@@ -158,6 +373,7 @@ namespace Modeling_Canvas.UIELements
                 dc.DrawText(formattedText, new Point(position.X + xOffset, position.Y + yOffset));
             }
         }
+
 
         public void OnKeyDown(object sender, KeyEventArgs e)
         {
@@ -199,6 +415,14 @@ namespace Modeling_Canvas.UIELements
                 var currentMousePosition = e.GetPosition(this);
                 var deltaX = currentMousePosition.X - previousMousePosition.X;
                 var deltaY = currentMousePosition.Y - previousMousePosition.Y;
+
+                if(!AffineParams.IsDefaults)
+                {
+                    var cmpA = currentMousePosition.ReverseAffineTransformation(AffineParams);
+                    var pmpA = previousMousePosition.ReverseAffineTransformation(AffineParams);
+                    deltaX = cmpA.X - pmpA.X;
+                    deltaY = cmpA.Y - pmpA.Y;
+                }
 
                 // Update offsets
                 XOffset += deltaX;

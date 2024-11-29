@@ -1,4 +1,5 @@
-﻿using Modeling_Canvas.UIELements;
+﻿using Modeling_Canvas.Models;
+using Modeling_Canvas.UIELements;
 using System.Windows;
 
 namespace Modeling_Canvas.Extensions
@@ -44,6 +45,51 @@ namespace Modeling_Canvas.Extensions
 
             // Update the point in the list
             return new Point(newX, newY);
+        }
+        public static Point ApplyAffineTransformation(this Point point, AffineModel affine)
+        {
+            double Xx = affine.Xx;
+            double Xy = affine.Xy;
+            double Yx = affine.Yx;
+            double Yy = affine.Yy;
+            double Ox = affine.Ox;
+            double Oy = affine.Oy;
+            return new Point(
+                Xx * point.X + Xy * point.Y + Ox,
+                Yx * point.X + Yy * point.Y + Oy
+            );
+        }
+        public static Point ReverseAffineTransformation(this Point transformedPoint, AffineModel affine)
+        {
+            double Xx = affine.Xx;
+            double Xy = affine.Xy;
+            double Yx = affine.Yx;
+            double Yy = affine.Yy;
+            double Ox = affine.Ox;
+            double Oy = affine.Oy;
+            // Calculate the determinant of the 2x2 matrix
+            double determinant = Xx * Yy - Xy * Yx;
+
+            //if (Math.Abs(determinant) < 1e-10) // Check for near-zero determinant
+            //{
+            //    throw new InvalidOperationException("The affine transformation matrix is not invertible.");
+            //}
+
+            // Compute the inverse of the 2x2 matrix
+            double invXx = Yy / determinant;
+            double invXy = -Xy / determinant;
+            double invYx = -Yx / determinant;
+            double invYy = Xx / determinant;
+
+            // Adjust the offset
+            double invOx = -(invXx * Ox + invXy * Oy);
+            double invOy = -(invYx * Ox + invYy * Oy);
+
+            // Apply the inverse transformation to the point
+            return new Point(
+                invXx * transformedPoint.X + invXy * transformedPoint.Y + invOx,
+                invYx * transformedPoint.X + invYy * transformedPoint.Y + invOy
+            );
         }
     }
 }
