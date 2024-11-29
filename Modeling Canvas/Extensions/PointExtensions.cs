@@ -49,8 +49,8 @@ namespace Modeling_Canvas.Extensions
         public static Point ApplyAffineTransformation(this Point point, AffineModel affine)
         {
             double Xx = affine.Xx;
-            double Xy = affine.Xy;
-            double Yx = affine.Yx;
+            double Xy = -affine.Xy;
+            double Yx = -affine.Yx;
             double Yy = affine.Yy;
             double Ox = affine.Ox;
             double Oy = affine.Oy;
@@ -62,18 +62,13 @@ namespace Modeling_Canvas.Extensions
         public static Point ReverseAffineTransformation(this Point transformedPoint, AffineModel affine)
         {
             double Xx = affine.Xx;
-            double Xy = affine.Xy;
-            double Yx = affine.Yx;
+            double Xy = -affine.Xy;
+            double Yx = -affine.Yx;
             double Yy = affine.Yy;
             double Ox = affine.Ox;
             double Oy = affine.Oy;
             // Calculate the determinant of the 2x2 matrix
             double determinant = Xx * Yy - Xy * Yx;
-
-            //if (Math.Abs(determinant) < 1e-10) // Check for near-zero determinant
-            //{
-            //    throw new InvalidOperationException("The affine transformation matrix is not invertible.");
-            //}
 
             // Compute the inverse of the 2x2 matrix
             double invXx = Yy / determinant;

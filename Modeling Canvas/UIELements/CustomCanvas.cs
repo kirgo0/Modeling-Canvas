@@ -246,9 +246,6 @@ namespace Modeling_Canvas.UIELements
         protected void DrawAffineCoordinateGrid(DrawingContext dc)
         {
 
-            //Ox = 0;
-            //Oy = 0;
-
             double width = ActualWidth;
             double height = ActualHeight;
             double halfWidth = width / 2 + XOffset;
@@ -267,14 +264,6 @@ namespace Modeling_Canvas.UIELements
             if (UnitSize < 1) calculatedFrequency = 250;
             if (UnitSize < 0.2) calculatedFrequency = 500;
 
-            // Transform the canvas corners
-            //var corners = new[]
-            //{
-            //    new Point(0, 0).ApplyAffineTransformation(AffineParams),
-            //    new Point(width, 0).ApplyAffineTransformation(AffineParams),
-            //    new Point(0, height).ApplyAffineTransformation(AffineParams),
-            //    new Point(width, height).ApplyAffineTransformation(AffineParams),
-            //};
             var corners = new[]
             {
                 new Point(0, 0).ReverseAffineTransformation(AffineParams),
@@ -288,17 +277,6 @@ namespace Modeling_Canvas.UIELements
             double maxX = corners.Max(c => c.X);
             double minY = corners.Min(c => c.Y);
             double maxY = corners.Max(c => c.Y);
-
-            //if (Xy > 0) minX -= corners.OrderBy(c => c.X).ToArray()[1].X * Xy;
-            //var b = corners.OrderByDescending(c => c.X).ToArray();
-            //if (Xy < 0) maxX += corners.OrderByDescending(c => c.X).ToArray()[1].X * Xy;
-            //var c = corners.OrderBy(c => c.Y).ToArray();
-            //if (Yx > 0) minY -= corners.OrderBy(c => c.Y).ToArray()[1].Y * Yx;
-            //var a = corners.OrderByDescending(c => c.Y).ToArray();
-            //if (Yx < 0) maxY += corners.OrderByDescending(c => c.Y).ToArray()[1].Y * Yx;
-
-            //Ox = halfWidth - (maxX - minX) / 2;
-            //Oy = halfHeight - (maxY - minY) / 2;
 
             // Draw vertical grid lines
             for (double x = halfWidth; x < maxX; x += UnitSize * calculatedFrequency)
