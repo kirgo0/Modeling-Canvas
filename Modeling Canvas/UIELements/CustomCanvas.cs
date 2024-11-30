@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Xceed.Wpf.Toolkit.Primitives;
 
 namespace Modeling_Canvas.UIELements
 {
@@ -93,7 +94,6 @@ namespace Modeling_Canvas.UIELements
 
         public Point GetCanvasUnitCoordinates(Point pixelCoordinates)
         {
-            pixelCoordinates = new Point((pixelCoordinates.X - ActualWidth / 2 - XOffset) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y - YOffset) / UnitSize);
             if (RenderMode is RenderMode.Affine)
             {
                 pixelCoordinates = pixelCoordinates.ReverseAffineTransformation(AffineParams);
@@ -102,6 +102,7 @@ namespace Modeling_Canvas.UIELements
             {
                 pixelCoordinates = pixelCoordinates.ReverseProjectiveTransformation(ProjectiveParams);
             }
+            pixelCoordinates = new Point((pixelCoordinates.X - ActualWidth / 2 - XOffset) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y - YOffset) / UnitSize);
             return pixelCoordinates;
         }
 
@@ -219,7 +220,6 @@ namespace Modeling_Canvas.UIELements
         }
         protected void DrawAffineCoordinateGrid(DrawingContext dc)
         {
-
             double width = ActualWidth;
             double height = ActualHeight;
             double halfWidth = width / 2 + XOffset;
@@ -317,10 +317,10 @@ namespace Modeling_Canvas.UIELements
 
             var corners = new[]
             {
-                new Point(0, 0).ReverseProjectiveTransformation(ProjectiveParams),
-                new Point(width, 0).ReverseProjectiveTransformation(ProjectiveParams),
-                new Point(0, height).ReverseProjectiveTransformation(ProjectiveParams),
-                new Point(width, height).ReverseProjectiveTransformation(ProjectiveParams),
+                new Point(0, 0).ReverseAffineTransformation(AffineParams),
+                new Point(width, 0).ReverseAffineTransformation(AffineParams),
+                new Point(0, height).ReverseAffineTransformation(AffineParams),
+                new Point(width, height).ReverseAffineTransformation(AffineParams),
             };
 
             // Calculate bounds of the transformed canvas
@@ -332,51 +332,38 @@ namespace Modeling_Canvas.UIELements
             // Vertical lines and labels
             for (double x = halfWidth; x < width; x += UnitSize * calculatedFrequency)
             {
-                var start = new Point(x, minY).ApplyProjectiveTransformation(ProjectiveParams);
-                var end = new Point(x, maxY).ApplyProjectiveTransformation(ProjectiveParams);
+                var start = new Point(x, 0).ApplyProjectiveTransformation(ProjectiveParams);
+                var end = new Point(x, height).ApplyProjectiveTransformation(ProjectiveParams);
                 dc.DrawLine(gridPen, start, end);
-                DrawCoordinateLabel(dc, 
-                    Math.Round((x - halfWidth) / UnitSize, 3), 
-                    new Point(x, halfHeight).ApplyProjectiveTransformation(ProjectiveParams), 15, false);
+                DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3), new Point(x, halfHeight).ApplyProjectiveTransformation(ProjectiveParams), 15, false);
             }
             for (double x = halfWidth; x > 0; x -= UnitSize * calculatedFrequency)
             {
-                var start = new Point(x, minY).ApplyProjectiveTransformation(ProjectiveParams);
-                var end = new Point(x, maxY).ApplyProjectiveTransformation(ProjectiveParams);
+                var start = new Point(x, 0).ApplyProjectiveTransformation(ProjectiveParams);
+                var end = new Point(x, height).ApplyProjectiveTransformation(ProjectiveParams);
                 dc.DrawLine(gridPen, start, end);
-                DrawCoordinateLabel(dc, 
-                    Math.Round((x - halfWidth) / UnitSize, 3), 
-                    new Point(x, halfHeight).ApplyProjectiveTransformation(ProjectiveParams), 15, false);
+                DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3), new Point(x, halfHeight).ApplyProjectiveTransformation(ProjectiveParams), 15, false);
             }
 
             // Horizontal lines and labels
             for (double y = halfHeight; y < height; y += UnitSize * calculatedFrequency)
             {
-                var start = new Point(minX, y).ApplyProjectiveTransformation(ProjectiveParams);
-                var end = new Point(maxX, y).ApplyProjectiveTransformation(ProjectiveParams);
+                var start = new Point(0, y).ApplyProjectiveTransformation(ProjectiveParams);
+                var end = new Point(width, y).ApplyProjectiveTransformation(ProjectiveParams);
                 dc.DrawLine(gridPen, start, end);
-                DrawCoordinateLabel(dc, 
-                    Math.Round(-(y - halfHeight) / UnitSize, 3), 
-                    new Point(halfWidth, y).ApplyProjectiveTransformation(ProjectiveParams), 15, true);
+                DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3), new Point(halfWidth, y).ApplyProjectiveTransformation(ProjectiveParams), 15, true);
             }
             for (double y = halfHeight; y > 0; y -= UnitSize * calculatedFrequency)
             {
-                var start = new Point(minX, y).ApplyProjectiveTransformation(ProjectiveParams);
-                var end = new Point(maxX, y).ApplyProjectiveTransformation(ProjectiveParams);
+                var start = new Point(0, y).ApplyProjectiveTransformation(ProjectiveParams);
+                var end = new Point(width, y).ApplyProjectiveTransformation(ProjectiveParams);
                 dc.DrawLine(gridPen, start, end);
-                DrawCoordinateLabel(dc, 
-                    Math.Round(-(y - halfHeight) / UnitSize, 3), 
-                    new Point(halfWidth, y).ApplyProjectiveTransformation(ProjectiveParams), 15, true);
+                DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3), new Point(halfWidth, y).ApplyProjectiveTransformation(ProjectiveParams), 15, true);
             }
 
-            // X-axis
-            dc.DrawLine(axisPen, 
-                new Point(minX, halfHeight).ApplyProjectiveTransformation(ProjectiveParams), 
-                new Point(maxX, halfHeight).ApplyProjectiveTransformation(ProjectiveParams));
-            // Y-axis
-            dc.DrawLine(axisPen,
-                new Point(halfWidth, minY).ApplyProjectiveTransformation(ProjectiveParams), 
-                new Point(halfWidth, maxY).ApplyProjectiveTransformation(ProjectiveParams)); 
+            // Axes
+            dc.DrawLine(axisPen, new Point(0, halfHeight).ApplyProjectiveTransformation(ProjectiveParams), new Point(width, halfHeight).ApplyProjectiveTransformation(ProjectiveParams)); // X-axis
+            dc.DrawLine(axisPen, new Point(halfWidth, 0).ApplyProjectiveTransformation(ProjectiveParams), new Point(halfWidth, height).ApplyProjectiveTransformation(ProjectiveParams)); // Y-axis
         }
 
         private void DrawCoordinateLabel(DrawingContext dc, double value, Point position, double fontSize, bool isHorizontal)
@@ -449,7 +436,8 @@ namespace Modeling_Canvas.UIELements
                     var pmpA = previousMousePosition.ReverseAffineTransformation(AffineParams);
                     deltaX = cmpA.X - pmpA.X;
                     deltaY = cmpA.Y - pmpA.Y;
-                } else if(RenderMode is RenderMode.Projective)
+                }
+                else if (RenderMode is RenderMode.Projective)
                 {
 
                 }

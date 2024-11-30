@@ -128,14 +128,6 @@ namespace Modeling_Canvas.UIELements
         public virtual Point GetOriginPoint(Size arrangedSize)
         {
             return new Point(arrangedSize.Width / 2, arrangedSize.Height / 2);
-            //if (Canvas.RenderMode == RenderMode.Default)
-            //{
-            //    return new Point(arrangedSize.Width/2,arrangedSize.Height/2);
-            //} else if(Canvas.RenderMode == RenderMode.Affine)
-            //{
-            //    return new Point(0, 0);
-            //}
-            //return new Point(0, 0);
         }
         protected virtual Point GetAnchorDefaultPosition()
         {
@@ -375,7 +367,7 @@ namespace Modeling_Canvas.UIELements
                 {
                     Mouse.OverrideCursor = Cursors.SizeAll;
                     Vector offset = currentMousePosition - _lastMousePosition;
-                    if(!Canvas.AffineParams.IsDefaults)
+                    if(Canvas.RenderMode is RenderMode.Affine)
                     {
                         offset = currentMousePosition.ReverseAffineTransformation(Canvas.AffineParams) - _lastMousePosition.ReverseAffineTransformation(Canvas.AffineParams);
                     }

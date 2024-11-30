@@ -1,6 +1,7 @@
 ﻿using Modeling_Canvas.Models;
 using Modeling_Canvas.UIELements;
 using System.Windows;
+using System.Windows.Media.Media3D;
 
 namespace Modeling_Canvas.Extensions
 {
@@ -48,30 +49,24 @@ namespace Modeling_Canvas.Extensions
         }
         public static Point ApplyAffineTransformation(this Point point, AffineModel affine)
         {
-            //point = new Point(point.X, affine.CanvasHeight - point.Y);
-            point = new Point(point.X, point.Y);
             double Xx = affine.Xx;
-            double Xy = affine.Xy;
-            double Yx = affine.Yx;
+            double Xy = -affine.Xy;
+            double Yx = -affine.Yx;
             double Yy = affine.Yy;
             double Ox = affine.Ox;
             double Oy = affine.Oy;
-            //return new Point(
-            //    Xx * point.X + Yx * point.Y + Ox,
-            //    affine.CanvasHeight - (Xy * point.X + Yy * point.Y + Oy)
-            //);
+
             return new Point(
                 Xx * point.X + Yx * point.Y + Ox,
                 Xy * point.X + Yy * point.Y + Oy
             );
         }
         public static Point ReverseAffineTransformation(this Point transformedPoint, AffineModel affine)
-        {
-            //transformedPoint = new Point(transformedPoint.X, affine.CanvasHeight - transformedPoint.Y);   
+        { 
             transformedPoint = new Point(transformedPoint.X, transformedPoint.Y);   
             double Xx = affine.Xx;
-            double Xy = affine.Yx;
-            double Yx = affine.Xy;
+            double Xy = -affine.Yx;
+            double Yx = -affine.Xy;
             double Yy = affine.Yy;
             double Ox = affine.Ox;
             double Oy = affine.Oy;
@@ -89,10 +84,7 @@ namespace Modeling_Canvas.Extensions
             double invOy = -(invYx * Ox + invYy * Oy);
 
             // Apply the inverse transformation to the point
-            //return new Point(
-            //    invXx * transformedPoint.X + invXy * transformedPoint.Y + invOx,
-            //    affine.CanvasHeight - (invYx * transformedPoint.X + invYy * transformedPoint.Y + invOy)
-            //);
+
             return new Point(
                 invXx * transformedPoint.X + invXy * transformedPoint.Y + invOx,
                 invYx * transformedPoint.X + invYy * transformedPoint.Y + invOy
@@ -101,7 +93,6 @@ namespace Modeling_Canvas.Extensions
 
         public static Point ApplyProjectiveTransformation(this Point point, ProjectiveModel projective)
         {
-            //double x = point.X, y = projective.CanvasHeight - point.Y;
             double x = point.X, y = point.Y;
             double w = projective.wX * x + projective.wY * y + projective.wO;
             if (w == 0) return new Point(0, 0); // Avoid division by zero
@@ -112,11 +103,52 @@ namespace Modeling_Canvas.Extensions
             //return new Point(tx, projective.CanvasHeight - ty);
             return new Point(tx, ty);
         }
+        public static Point ReverseProjectiveTransformation2(this Point point, ProjectiveModel projective)
+        {
+            double x = point.X, y = point.Y;
+
+            // Compute the determinant of the matrix
+            double determinant =
+                projective.Xx * (projective.Yy * projective.wO - projective.Yx * projective.wY) -
+                projective.Yx * (projective.Xy * projective.wO - projective.Xx * projective.wY) +
+                projective.wX * (projective.Xy * projective.Yx - projective.Xx * projective.Yy);
+
+            if (determinant == 0)
+                throw new InvalidOperationException("Projective transformation matrix is non-invertible.");
+
+            // Compute the inverse of the projective transformation matrix
+            double invXx = (projective.Yy * projective.wO - projective.Yx * projective.wY) / determinant;
+            double invYx = (projective.Yx * projective.wX - projective.Xx * projective.wO) / determinant;
+            double invwX = (projective.Xx * projective.wY - projective.Xy * projective.Yx) / determinant;
+
+            double invXy = (projective.wX * projective.Yy - projective.Xy * projective.wO) / determinant;
+            double invYy = (projective.Xx * projective.wO - projective.Yx * projective.wX) / determinant;
+            double invwY = (projective.Xy * projective.Yx - projective.Xx * projective.Yy) / determinant;
+
+            double invOx = (projective.Xy * (projective.Yx * projective.wY - projective.Yy * projective.wX) +
+                            projective.Xx * (projective.Yy * projective.wO - projective.Yx * projective.wY) -
+                            projective.Yx * (projective.Xy * projective.wO - projective.Xx * projective.wY)) / determinant;
+
+            double invOy = (projective.Xx * (projective.Yy * projective.wO - projective.Yx * projective.wY) -
+                            projective.Yy * (projective.Xy * projective.wO - projective.Xx * projective.wY) +
+                            projective.Xy * (projective.Yx * projective.wX - projective.Yy * projective.wX)) / determinant;
+
+            double invwO = (projective.Xx * (projective.Yy * projective.wY - projective.Yx * projective.wX) +
+                            projective.Yx * (projective.Xy * projective.wO - projective.Xx * projective.wY) -
+                            projective.wX * (projective.Xy * projective.Yx - projective.Xx * projective.Yy)) / determinant;
+
+            // Apply the inverse transformation
+            double w = invwX * x + invwY * y + invwO;
+            if (w == 0) return new Point(0, 0); // Avoid division by zero
+
+            double originalX = (invXx * x + invYx * y + invOx) / w;
+            double originalY = (invXy * x + invYy * y + invOy) / w;
+
+            return new Point(originalX, originalY);
+        }
 
         public static Point ReverseProjectiveTransformation(this Point canvasPoint, ProjectiveModel projective)
         {
-            // Extract projective transformation parameters
-            //canvasPoint = new Point(canvasPoint.X, projective.CanvasHeight - canvasPoint.Y);
             canvasPoint = new Point(canvasPoint.X, canvasPoint.Y);
             double xx = projective.Xx;
             double yx = projective.Yx;
@@ -167,6 +199,40 @@ namespace Modeling_Canvas.Extensions
             //return new Point(x, projective.CanvasHeight - y);
             return new Point(x, y);
         }
+
+        //public static Point ReverseProjectiveTransformation(this Point transformedPoint, ProjectiveModel projective)
+        //{
+        //    double Xx = projective.Xx;
+        //    double Xy = projective.Xy;
+        //    double Ox = projective.Ox;
+        //    double Yx = projective.Yx;
+        //    double Yy = projective.Yy;
+        //    double Oy = projective.Oy;
+        //    double Wx = projective.wX;
+        //    double Wy = projective.wY;
+        //    double Wo = projective.wO;
+
+        //    // Invert the matrix for projective transformation
+        //    double determinant = Xx * (Yy * Wo - Oy * Wy) - Xy * (Yx * Wo - Oy * Wx) + Ox * (Yx * Wy - Yy * Wx);
+
+        //    double invXx = (Yy * Wo - Oy * Wy) / determinant;
+        //    double invXy = (Ox * Wy - Xy * Wo) / determinant;
+        //    double invOx = (Xy * Oy - Ox * Yy) / determinant;
+        //    double invYx = (Oy * Wx - Yx * Wo) / determinant;
+        //    double invYy = (Xx * Wo - Ox * Wx) / determinant;
+        //    double invOy = (Ox * Yx - Xx * Oy) / determinant;
+        //    double invWx = (Yx * Wy - Yy * Wx) / determinant;
+        //    double invWy = (Xy * Wx - Xx * Wy) / determinant;
+        //    double invWo = (Xx * Yy - Xy * Yx) / determinant;
+
+        //    double w = invWx * transformedPoint.X + invWy * transformedPoint.Y + invWo;
+        //    double x = (invXx * transformedPoint.X + invXy * transformedPoint.Y + invOx) / w;
+        //    double y = (invYx * transformedPoint.X + invYy * transformedPoint.Y + invOy) / w;
+
+        //    return new Point(x, y);
+        //}
+
+
 
     }
 }
