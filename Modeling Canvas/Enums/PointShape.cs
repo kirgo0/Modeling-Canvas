@@ -1,4 +1,4 @@
-﻿namespace Modeling_Canvas.UIELements
+﻿namespace Modeling_Canvas.Enums
 {
     public enum PointShape
     {

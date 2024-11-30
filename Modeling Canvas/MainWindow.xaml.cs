@@ -1,8 +1,11 @@
 ﻿using Modeling_Canvas.Commands;
+using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
 using Modeling_Canvas.UIELements;
+using System.Security.Policy;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace Modeling_Canvas
@@ -27,6 +30,14 @@ namespace Modeling_Canvas
             KeyDown += MyCanvas.OnKeyDown;
             KeyUp += MyCanvas.OnKeyUp;
             ResetScaling(null, null);
+
+            DrawModeControlTab.SelectionChanged += ChangeRenderMode;
+            
+            MyCanvas.SizeChanged += (s, e) =>
+            {
+                MyCanvas.AffineParams.CanvasHeight = MyCanvas.ActualHeight;
+                MyCanvas.ProjectiveParams.CanvasHeight = MyCanvas.ActualHeight;
+            };
         }
 
         private void CenterWindowOnScreen()
@@ -106,6 +117,14 @@ namespace Modeling_Canvas
         private void ResetScaling(object sender, RoutedEventArgs e)
         {
             MyCanvas.ResetScaling();
+        }
+
+        private void ChangeRenderMode(object sender, SelectionChangedEventArgs e)
+        {
+            if (DefaultTab.IsSelected) MyCanvas.RenderMode = RenderMode.Default;
+            else if (AffineTab.IsSelected) MyCanvas.RenderMode = RenderMode.Affine;
+            else if (ProjectiveTab.IsSelected) MyCanvas.RenderMode = RenderMode.Projective;
+            
         }
     }
 

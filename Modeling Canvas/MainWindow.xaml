@@ -37,13 +37,13 @@
                     </Style>
                 </TabControl.Resources>
 
-                <TabItem Header="Normal">
+                <TabItem x:Name="DefaultTab" Header="Default">
                     <Grid Background="#FFE5E5E5">
                         <Button Focusable="False" Content="Reset Offsets" HorizontalAlignment="Center" VerticalAlignment="Top" Width="77" Click="ResetOffsets" Margin="0,27,0,0"/>
                         <Button Focusable="False" Content="Reset Scaling" HorizontalAlignment="Center" VerticalAlignment="Top" Width="77" Click="ResetScaling" Margin="0,81,0,0"/>
                     </Grid>
                 </TabItem>
-                <TabItem Header="Affine">
+                <TabItem x:Name="AffineTab" Header="Affine">
                     <Grid Background="#FFE5E5E5">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -83,7 +83,7 @@
                         </Grid>
                     </Grid>
                 </TabItem>
-                <TabItem Header="Projective" Margin="-2,-2,-2,0">
+                <TabItem x:Name="ProjectiveTab" Header="Projective" Margin="-2,-2,-2,0">
                     <Grid Background="#FFE5E5E5">
                         <Grid RenderTransformOrigin="0.468,0.494">
                             <Grid.RowDefinitions>

@@ -1,12 +1,10 @@
-﻿using Modeling_Canvas.Extensions;
-using System.Text.RegularExpressions;
+﻿using Modeling_Canvas.Enums;
+using Modeling_Canvas.Extensions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes;
 using Xceed.Wpf.Toolkit;
-using Xceed.Wpf.Toolkit.Primitives;
 
 namespace Modeling_Canvas.UIELements
 {
@@ -61,12 +59,14 @@ namespace Modeling_Canvas.UIELements
 
         protected override void OnRender(DrawingContext dc)
         {
-            if(Canvas.AffineParams.IsDefaults)
+            switch(Canvas.RenderMode)
             {
-                DefaultRender(dc);
-            } else if(!Canvas.AffineParams.IsDefaults)
-            {
-                AffineRender(dc);
+                case RenderMode.Default:
+                    DefaultRender(dc);
+                    break;
+                case RenderMode.Affine:
+                    AffineRender(dc);
+                    break;
             }
 
         }
@@ -127,10 +127,15 @@ namespace Modeling_Canvas.UIELements
         }
         public virtual Point GetOriginPoint(Size arrangedSize)
         {
-            return new Point(
-                arrangedSize.Width / 2,
-                arrangedSize.Height / 2
-                );
+            return new Point(arrangedSize.Width / 2, arrangedSize.Height / 2);
+            //if (Canvas.RenderMode == RenderMode.Default)
+            //{
+            //    return new Point(arrangedSize.Width/2,arrangedSize.Height/2);
+            //} else if(Canvas.RenderMode == RenderMode.Affine)
+            //{
+            //    return new Point(0, 0);
+            //}
+            //return new Point(0, 0);
         }
         protected virtual Point GetAnchorDefaultPosition()
         {

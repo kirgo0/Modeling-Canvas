@@ -46,6 +46,8 @@ namespace Modeling_Canvas.Models
             set { _oy = value; OnPropertyChanged(nameof(Oy)); }
         }
 
+        public double CanvasHeight { get; set; }
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {
@@ -65,6 +67,11 @@ namespace Modeling_Canvas.Models
             Yy = 1; 
             Yx = 0; 
             Oy = 0;
+        }
+
+        public override string ToString()
+        {
+            return $"Xx:{Xx}|Xy:{Xy}|Yx:{Yx}|Yy:{Yy}|Ox:{Ox}|Oy:{Oy}";
         }
     }
 }

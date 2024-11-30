@@ -48,22 +48,30 @@ namespace Modeling_Canvas.Extensions
         }
         public static Point ApplyAffineTransformation(this Point point, AffineModel affine)
         {
+            //point = new Point(point.X, affine.CanvasHeight - point.Y);
+            point = new Point(point.X, point.Y);
             double Xx = affine.Xx;
-            double Xy = -affine.Xy;
-            double Yx = -affine.Yx;
+            double Xy = affine.Xy;
+            double Yx = affine.Yx;
             double Yy = affine.Yy;
             double Ox = affine.Ox;
             double Oy = affine.Oy;
+            //return new Point(
+            //    Xx * point.X + Yx * point.Y + Ox,
+            //    affine.CanvasHeight - (Xy * point.X + Yy * point.Y + Oy)
+            //);
             return new Point(
-                Xx * point.X + Xy * point.Y + Ox,
-                Yx * point.X + Yy * point.Y + Oy
+                Xx * point.X + Yx * point.Y + Ox,
+                Xy * point.X + Yy * point.Y + Oy
             );
         }
         public static Point ReverseAffineTransformation(this Point transformedPoint, AffineModel affine)
         {
+            //transformedPoint = new Point(transformedPoint.X, affine.CanvasHeight - transformedPoint.Y);   
+            transformedPoint = new Point(transformedPoint.X, transformedPoint.Y);   
             double Xx = affine.Xx;
-            double Xy = -affine.Xy;
-            double Yx = -affine.Yx;
+            double Xy = affine.Yx;
+            double Yx = affine.Xy;
             double Yy = affine.Yy;
             double Ox = affine.Ox;
             double Oy = affine.Oy;
@@ -81,10 +89,84 @@ namespace Modeling_Canvas.Extensions
             double invOy = -(invYx * Ox + invYy * Oy);
 
             // Apply the inverse transformation to the point
+            //return new Point(
+            //    invXx * transformedPoint.X + invXy * transformedPoint.Y + invOx,
+            //    affine.CanvasHeight - (invYx * transformedPoint.X + invYy * transformedPoint.Y + invOy)
+            //);
             return new Point(
                 invXx * transformedPoint.X + invXy * transformedPoint.Y + invOx,
                 invYx * transformedPoint.X + invYy * transformedPoint.Y + invOy
             );
         }
+
+        public static Point ApplyProjectiveTransformation(this Point point, ProjectiveModel projective)
+        {
+            //double x = point.X, y = projective.CanvasHeight - point.Y;
+            double x = point.X, y = point.Y;
+            double w = projective.wX * x + projective.wY * y + projective.wO;
+            if (w == 0) return new Point(0, 0); // Avoid division by zero
+
+            double tx = (projective.Xx * x + projective.Yx * y + projective.Ox) / w;
+            double ty = (projective.Xy * x + projective.Yy * y + projective.Oy) / w;
+
+            //return new Point(tx, projective.CanvasHeight - ty);
+            return new Point(tx, ty);
+        }
+
+        public static Point ReverseProjectiveTransformation(this Point canvasPoint, ProjectiveModel projective)
+        {
+            // Extract projective transformation parameters
+            //canvasPoint = new Point(canvasPoint.X, projective.CanvasHeight - canvasPoint.Y);
+            canvasPoint = new Point(canvasPoint.X, canvasPoint.Y);
+            double xx = projective.Xx;
+            double yx = projective.Yx;
+            double ox = projective.Ox;
+            double xy = projective.Xy;
+            double yy = projective.Yy;
+            double oy = projective.Oy;
+            double wx = projective.wX;
+            double wy = projective.wY;
+            double wo = projective.wO;
+
+            // The equation is:
+            // canvasX = (xx * x + yx * y + ox) / (wx * x + wy * y + wo)
+            // canvasY = (xy * x + yy * y + oy) / (wx * x + wy * y + wo)
+            // To reverse it, we solve for x and y.
+
+            // Let canvasX = u, canvasY = v
+            double u = canvasPoint.X;
+            double v = canvasPoint.Y;
+
+            // Set up the system of equations:
+            // u * (wx * x + wy * y + wo) = xx * x + yx * y + ox
+            // v * (wx * x + wy * y + wo) = xy * x + yy * y + oy
+
+            // Rearrange into:
+            // (xx - u * wx) * x + (yx - u * wy) * y = u * wo - ox
+            // (xy - v * wx) * x + (yy - v * wy) * y = v * wo - oy
+
+            // Coefficients for the system of linear equations:
+            double a1 = xx - u * wx;
+            double b1 = yx - u * wy;
+            double c1 = u * wo - ox;
+
+            double a2 = xy - v * wx;
+            double b2 = yy - v * wy;
+            double c2 = v * wo - oy;
+
+            // Solve the 2x2 system of linear equations using the determinant method:
+            double determinant = a1 * b2 - a2 * b1;
+
+            //if (Math.Abs(determinant) < 1e-10)
+            //    throw new InvalidOperationException("The system of equations is singular and cannot be solved.");
+
+            // Calculate the original point (x, y)
+            double x = (c1 * b2 - c2 * b1) / determinant;
+            double y = (a1 * c2 - a2 * c1) / determinant;
+
+            //return new Point(x, projective.CanvasHeight - y);
+            return new Point(x, y);
+        }
+
     }
 }
