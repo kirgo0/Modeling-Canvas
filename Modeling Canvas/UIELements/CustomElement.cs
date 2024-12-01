@@ -18,7 +18,7 @@ namespace Modeling_Canvas.UIELements
             get => _strokePen is null ? new Pen(Stroke, StrokeThickness) : _strokePen;
             set => _strokePen = value; 
         }
-        public Visibility ShowControls { get => Canvas.SelectedElements.Contains(this) ? Visibility.Visible : Visibility.Hidden; }
+        public virtual Visibility ShowControls { get => Canvas.SelectedElements.Contains(this) ? Visibility.Visible : Visibility.Hidden; }
         public Visibility AnchorVisibility { get; set; } = Visibility.Hidden;
         public bool HasAnchorPoint { get; set; } = true;
 
@@ -397,16 +397,21 @@ namespace Modeling_Canvas.UIELements
             InvalidateCanvas();
         }
 
+        protected virtual void OnElementSelected(MouseButtonEventArgs e)
+        {
+            if (!InputManager.ShiftPressed && !Canvas.SelectedElements.Contains(this))
+            {
+                Canvas.SelectedElements.Clear();
+            }
+            Canvas.SelectedElements.Add(this);
+            e.Handled = true;
+        }
+
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             if (!InputManager.SpacePressed && IsSelectable)
             {
-                if (!InputManager.ShiftPressed && !Canvas.SelectedElements.Contains(this))
-                {
-                    Canvas.SelectedElements.Clear();
-                }
-                Canvas.SelectedElements.Add(this);
-                e.Handled = true;
+                OnElementSelected(e);
             }
             _isDragging = true;
             _lastMousePosition = e.GetPosition(Canvas);

@@ -34,6 +34,10 @@ namespace Modeling_Canvas.UIELements
 
         public override Point GetOriginPoint(Size arrangedSize)
         {
+            if(Canvas.RenderMode is Enums.RenderMode.Projective)
+            {
+                return new Point(-Canvas.XOffset, Canvas.YOffset);
+            }
             return new Point(arrangedSize.Width / 2 + UnitSize * Center.X, arrangedSize.Height / 2 - UnitSize * Center.Y);
         }
         protected override Size MeasureOverride(Size availableSize)
@@ -106,7 +110,8 @@ namespace Modeling_Canvas.UIELements
 
         protected override void ProjectiveRender(DrawingContext dc)
         {
-            dc.DrawProjectiveCircleWithArcs(Fill, StrokePen, new Point(0, 0), Radius * UnitSize, StartDegrees, EndDegrees, Precision, Canvas.ProjectiveParams, 10);
+            var center = new Point(Canvas.ActualWidth / 2 + Center.X * UnitSize, Canvas.ActualHeight / 2 - Center.Y * UnitSize).AddCanvasOffsets();
+            dc.DrawProjectiveCircleWithArcs(Fill, StrokePen, center, Radius * UnitSize, StartDegrees, EndDegrees, Precision, Canvas.ProjectiveParams, 10);
             base.ProjectiveRender(dc);
         }
 

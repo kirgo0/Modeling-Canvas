@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Xceed.Wpf.Toolkit.Primitives;
 
 namespace Modeling_Canvas.UIELements
 {
@@ -166,10 +165,7 @@ namespace Modeling_Canvas.UIELements
             if (UnitSize < 25) calculatedFrequency = 5;
             if (UnitSize < 15) calculatedFrequency = 10;
             if (UnitSize < 10) calculatedFrequency = 10;
-            if (UnitSize < 5) calculatedFrequency = 50;
-            if (UnitSize < 1) calculatedFrequency = 250;
-            if (UnitSize < 0.2) calculatedFrequency = 500;
-            return calculatedFrequency;
+             return calculatedFrequency;
         }
 
         protected void DrawCoordinateGrid(DrawingContext dc)

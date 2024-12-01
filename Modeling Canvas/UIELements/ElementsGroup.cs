@@ -1,5 +1,6 @@
 ﻿using Modeling_Canvas.Extensions;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Modeling_Canvas.UIELements
@@ -10,6 +11,7 @@ namespace Modeling_Canvas.UIELements
         public string Name { get; set; } = string.Empty;
         public double RectPadding { get; set; } = 0.5;
 
+        public override Visibility ShowControls => AnyItemIsSelected ? Visibility.Visible : Visibility.Hidden;
         public Pen DashedPen { get =>
                 new Pen(Stroke, StrokeThickness)
                 {
@@ -20,37 +22,36 @@ namespace Modeling_Canvas.UIELements
 
         public List<CustomElement> Children { get; set; } = new();
 
+        public bool AnyItemIsSelected { get => Canvas.SelectedElements.Intersect(Children).Any(); }
+
         private Point _topLeftPosition = new Point(0, 0);
         private Point _bottomRightPosition = new Point(0, 0);
 
         public ElementsGroup(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas)
         {
-            StrokeThickness = 3;
+            StrokeThickness = 2;
             Stroke = Brushes.Gray;
             AnchorVisibility = Visibility.Visible;
             Name = $"Group {Counter}";
             StrokePen = DashedPen;
             AddPoint(new Point(0, 0));
-            AddPoint(new Point(0, 1));
-            AddPoint(new Point(1, 0));
-            AddPoint(new Point(1, 1));
+            AddPoint(new Point(0, 0));
+            AddPoint(new Point(0, 0));
+            AddPoint(new Point(0, 0));
         }
 
         protected override void OnRender(DrawingContext dc)
         {
-            StrokePen = DashedPen;
-            Points[0].Position = new Point(_topLeftPosition.X, _topLeftPosition.Y);
-            Points[1].Position = new Point(_bottomRightPosition.X, _topLeftPosition.Y);
-            Points[2].Position = new Point(_bottomRightPosition.X, _bottomRightPosition.Y);
-            Points[3].Position = new Point(_topLeftPosition.X, _bottomRightPosition.Y);
+            var a = Canvas.SelectedElements.Intersect(Children).ToList();
             CalculateRectPoints();
+            StrokePen = DashedPen;
             base.OnRender(dc);
+            Visibility = ShowControls;
         }
 
 
         public override void AddPoint(double x, double y)
         {
-            //base.AddPoint(x, y);
         }
         protected override void InitControls()
         {
@@ -69,11 +70,15 @@ namespace Modeling_Canvas.UIELements
             }
             _topLeftPosition = new Point(tlPoints.Min(x => x.X), tlPoints.Max(y => y.Y));
             _bottomRightPosition = new Point(brPoints.Max(x => x.X), brPoints.Min(y => y.Y));
+
+            Points[0].Position = new Point(_topLeftPosition.X, _topLeftPosition.Y);
+            Points[1].Position = new Point(_bottomRightPosition.X, _topLeftPosition.Y);
+            Points[2].Position = new Point(_bottomRightPosition.X, _bottomRightPosition.Y);
+            Points[3].Position = new Point(_topLeftPosition.X, _bottomRightPosition.Y);
         }
 
         protected override void RenderControlPanel()
         {
-            //base.RenderControlPanel();
             ClearControlPanel();
             AddStrokeColorControls();
             AddStrokeThicknessControls();
@@ -94,6 +99,18 @@ namespace Modeling_Canvas.UIELements
             {
                 Children.Remove(child);
             }
+        }
+
+        protected override void OnElementSelected(MouseButtonEventArgs e)
+        {
+            if (!InputManager.ShiftPressed && !Canvas.SelectedElements.Contains(this) && ! AnyItemIsSelected)
+            {
+                Canvas.SelectedElements.Clear();
+            } else if(!Canvas.SelectedElements.Contains(this))
+            {
+                Canvas.SelectedElements.Add(this);
+            }
+            e.Handled = true;
         }
 
         public override void MoveElement(Vector offset)
@@ -120,8 +137,6 @@ namespace Modeling_Canvas.UIELements
                 child.ScaleElement(AnchorPoint.Position, scaleVector, ScaleFactor);
             }
         }
-
-        
 
         public override string ToString()
         {
