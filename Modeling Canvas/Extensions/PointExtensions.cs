@@ -8,6 +8,12 @@ namespace Modeling_Canvas.Extensions
     public static class PointExtensions
     {
         public static CustomCanvas Canvas { get; set; }
+
+        public static Point AddCanvasOffsets(this Point p)
+        {
+            return new Point(p.X + Canvas.XOffset, p.Y - Canvas.YOffset);
+        }
+
         public static Point RotatePoint(this Point point1, Point point2, double degrees)
         {
             // Calculate rotation

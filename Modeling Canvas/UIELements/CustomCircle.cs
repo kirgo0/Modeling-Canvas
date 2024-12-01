@@ -104,6 +104,12 @@ namespace Modeling_Canvas.UIELements
             base.AffineRender(dc);
         }
 
+        protected override void ProjectiveRender(DrawingContext dc)
+        {
+            dc.DrawProjectiveCircleWithArcs(Fill, StrokePen, new Point(0, 0), Radius * UnitSize, StartDegrees, EndDegrees, Precision, Canvas.ProjectiveParams, 10);
+            base.ProjectiveRender(dc);
+        }
+
         protected override void RenderControlPanel()
         {
             base.RenderControlPanel();

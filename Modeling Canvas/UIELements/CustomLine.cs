@@ -12,11 +12,10 @@ namespace Modeling_Canvas.UIELements
         public int PointsRadius { get; set; } = 5;
         public PointShape PointsShape { get; set; } = PointShape.Circle;
         public List<DraggablePoint> Points { get; } = new();
-
         public bool IsClosed { get; set; } = true;
         public CustomLine(CustomCanvas canvas) : base(canvas)
         {
-            StrokeThickness = 3;
+            StrokeThickness = 2;
             Stroke = Brushes.Cyan;
         }
         public CustomLine(CustomCanvas canvas, Point firstPoint, Point secondPoint) : base(canvas)
@@ -48,12 +47,14 @@ namespace Modeling_Canvas.UIELements
         {
             for (int i = 0; i < Points.Count - 1; i++)
             {
-                dc.DrawLine(StrokePen, Points[i].PixelPosition, Points[i + 1].PixelPosition, 10);
+                var p1 = Points[i].CanvasPixelPosition;
+                var p2 = Points[i + 1].CanvasPixelPosition;
+                dc.DrawLine(StrokePen, p1, p2, 10);
             }
 
             if (IsClosed)
             {
-                dc.DrawLine(StrokePen, Points.First().PixelPosition, Points.Last().PixelPosition, 10);
+                dc.DrawLine(StrokePen, Points.First().CanvasPixelPosition, Points.Last().CanvasPixelPosition, 10);
             }
 
             base.DefaultRender(dc);
@@ -63,16 +64,48 @@ namespace Modeling_Canvas.UIELements
         {
             for (int i = 0; i < Points.Count - 1; i++)
             {
-                dc.DrawAffineLine(StrokePen, Points[i].PixelPosition, Points[i + 1].PixelPosition, Canvas.AffineParams, 10);
+                var p1 = Points[i].CanvasPixelPosition;
+                var p2 = Points[i + 1].CanvasPixelPosition;
+                dc.DrawAffineLine(StrokePen, p1, p2, Canvas.AffineParams, 10);
             }
 
             if (IsClosed)
             {
-                dc.DrawAffineLine(StrokePen, Points.First().PixelPosition, Points.Last().PixelPosition, Canvas.AffineParams, 10);
+                dc.DrawAffineLine(StrokePen, Points.First().CanvasPixelPosition, Points.Last().CanvasPixelPosition, Canvas.AffineParams, 10);
             }
             base.AffineRender(dc);
         }
 
+        protected override void ProjectiveRender(DrawingContext dc)
+        {
+            for (int i = 0; i < Points.Count - 1; i++)
+            {
+                var p1 = Points[i].CanvasPixelPosition.AddCanvasOffsets();
+                var p2 = Points[i + 1].CanvasPixelPosition.AddCanvasOffsets();
+                dc.DrawProjectiveLine(StrokePen, p1, p2, Canvas.ProjectiveParams, 10);
+            }
+
+            if (IsClosed)
+            {
+                dc.DrawProjectiveLine(StrokePen, 
+                    Points.First().CanvasPixelPosition.AddCanvasOffsets(), 
+                    Points.Last().CanvasPixelPosition.AddCanvasOffsets(), 
+                    Canvas.ProjectiveParams, 10);
+            }
+            base.ProjectiveRender(dc);
+        }
+
+        public override Point GetOriginPoint(Size arrangedSize)
+        {
+            if(Canvas.RenderMode is RenderMode.Projective)
+            {
+                return new Point(-Canvas.XOffset, Canvas.YOffset);
+            } else
+            {
+                return new Point(0,0);
+            }
+            //return base.GetOriginPoint(arrangedSize);
+        }
 
         protected override Point GetAnchorDefaultPosition()
         {
@@ -95,7 +128,7 @@ namespace Modeling_Canvas.UIELements
         }
 
         // helper add method
-        public void AddPoint(double x, double y)
+        public virtual void AddPoint(double x, double y)
         {
             AddPoint(new Point(x, y));
         }

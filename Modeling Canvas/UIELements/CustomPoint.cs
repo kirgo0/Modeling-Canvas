@@ -72,6 +72,26 @@ namespace Modeling_Canvas.UIELements
                     break;
             }
         }
+        protected override void ProjectiveRender(DrawingContext dc)
+        {
+            base.ProjectiveRender(dc);
+
+            var semiTransparentFill = Fill.Clone();
+            semiTransparentFill.Opacity = Opacity;
+
+            switch (Shape)
+            {
+                case PointShape.Circle:
+                    dc.DrawProjectiveCircle(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100, Canvas.ProjectiveParams);
+                    break;
+                case PointShape.Square:
+                    dc.DrawProjectiveSquare(semiTransparentFill, StrokePen, new Point(0, 0), Radius * 2, Canvas.ProjectiveParams);
+                    break;
+                case PointShape.Anchor:
+                    dc.DrawProjectiveAnchorPoint(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100, 5, Canvas.ProjectiveParams);
+                    break;
+            }
+        }
 
         public override Point GetTopLeftPosition()
         {

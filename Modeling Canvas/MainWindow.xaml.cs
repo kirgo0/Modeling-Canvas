@@ -100,8 +100,8 @@ namespace Modeling_Canvas
             line2.AddPoint(-9, -3);
             group.AddChild(line2);
 
-            var circle = new CustomCircle(MyCanvas);
-            group.AddChild(circle);
+            //var circle = new CustomCircle(MyCanvas);
+            //group.AddChild(circle);
             MyCanvas.Children.Add(group);
         }
 

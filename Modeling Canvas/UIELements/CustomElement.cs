@@ -13,7 +13,11 @@ namespace Modeling_Canvas.UIELements
         public Brush Fill { get; set; } = null; // Default fill color
         public Brush Stroke { get; set; } = Brushes.Black; // Default stroke color
         public double StrokeThickness { get; set; } = 1; // Default stroke thickness
-        public Pen StrokePen { get => new Pen(Stroke, StrokeThickness); }
+        private Pen _strokePen = null;
+        public Pen StrokePen {
+            get => _strokePen is null ? new Pen(Stroke, StrokeThickness) : _strokePen;
+            set => _strokePen = value; 
+        }
         public Visibility ShowControls { get => Canvas.SelectedElements.Contains(this) ? Visibility.Visible : Visibility.Hidden; }
         public Visibility AnchorVisibility { get; set; } = Visibility.Hidden;
         public bool HasAnchorPoint { get; set; } = true;
@@ -59,7 +63,15 @@ namespace Modeling_Canvas.UIELements
 
         protected override void OnRender(DrawingContext dc)
         {
-            switch(Canvas.RenderMode)
+            if (HasAnchorPoint)
+            {
+                if (!OverrideAnchorPoint)
+                {
+                    AnchorPoint.Position = GetAnchorDefaultPosition();
+                }
+                AnchorPoint.Visibility = AnchorVisibility;
+            }
+            switch (Canvas.RenderMode)
             {
                 case RenderMode.Default:
                     DefaultRender(dc);
@@ -67,31 +79,22 @@ namespace Modeling_Canvas.UIELements
                 case RenderMode.Affine:
                     AffineRender(dc);
                     break;
+                case RenderMode.Projective:
+                    ProjectiveRender(dc);
+                    break;
             }
 
         }
         protected virtual void DefaultRender(DrawingContext dc)
         {
-            if (HasAnchorPoint)
-            {
-                if (!OverrideAnchorPoint)
-                {
-                    AnchorPoint.Position = GetAnchorDefaultPosition();
-                }
-                AnchorPoint.Visibility = AnchorVisibility;
-            }
         }
 
         protected virtual void AffineRender(DrawingContext dc)
         {
-            if (HasAnchorPoint)
-            {
-                if (!OverrideAnchorPoint)
-                {
-                    AnchorPoint.Position = GetAnchorDefaultPosition();
-                }
-                AnchorPoint.Visibility = AnchorVisibility;
-            }
+        }
+
+        protected virtual void ProjectiveRender(DrawingContext dc)
+        {
         }
 
         protected override void OnInitialized(EventArgs e)

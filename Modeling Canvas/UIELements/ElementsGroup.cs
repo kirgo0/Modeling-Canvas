@@ -4,7 +4,7 @@ using System.Windows.Media;
 
 namespace Modeling_Canvas.UIELements
 {
-    public class ElementsGroup : CustomElement
+    public class ElementsGroup : CustomLine
     {
         public static int Counter { get; set; } = 1;
         public string Name { get; set; } = string.Empty;
@@ -23,72 +23,35 @@ namespace Modeling_Canvas.UIELements
         private Point _topLeftPosition = new Point(0, 0);
         private Point _bottomRightPosition = new Point(0, 0);
 
-        public ElementsGroup(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
+        public ElementsGroup(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas)
         {
-            StrokeThickness = 1;
+            StrokeThickness = 3;
+            Stroke = Brushes.Gray;
             AnchorVisibility = Visibility.Visible;
             Name = $"Group {Counter}";
-            Counter++;
-        }
-
-        protected override Point GetAnchorDefaultPosition()
-        {
-            return new Point((_topLeftPosition.X + _bottomRightPosition.X) / 2, (_topLeftPosition.Y + _bottomRightPosition.Y) / 2);
-        }
-
-        public override Point GetOriginPoint(Size arrangedSize)
-        {
-            List<Point> tlPoints = new List<Point>();
-            foreach (var child in Children)
-            {
-                tlPoints.Add(child.GetTopLeftPosition());
-            }
-            var topLeftPoint = new Point(tlPoints.Min(x => x.X), tlPoints.Max(y => y.Y));
-            return new Point(arrangedSize.Width / 2 + (topLeftPoint.X * UnitSize - RectPadding * UnitSize), arrangedSize.Height / 2 - (topLeftPoint.Y * UnitSize + RectPadding * UnitSize));
+            StrokePen = DashedPen;
+            AddPoint(new Point(0, 0));
+            AddPoint(new Point(0, 1));
+            AddPoint(new Point(1, 0));
+            AddPoint(new Point(1, 1));
         }
 
         protected override void OnRender(DrawingContext dc)
         {
+            StrokePen = DashedPen;
+            Points[0].Position = new Point(_topLeftPosition.X, _topLeftPosition.Y);
+            Points[1].Position = new Point(_bottomRightPosition.X, _topLeftPosition.Y);
+            Points[2].Position = new Point(_bottomRightPosition.X, _bottomRightPosition.Y);
+            Points[3].Position = new Point(_topLeftPosition.X, _bottomRightPosition.Y);
             CalculateRectPoints();
             base.OnRender(dc);
         }
 
-        protected override void DefaultRender(DrawingContext dc)
+
+        public override void AddPoint(double x, double y)
         {
-            var width = Math.Abs(_bottomRightPosition.X - _topLeftPosition.X) * UnitSize + RectPadding * 2 * UnitSize;
-            var height = Math.Abs(_topLeftPosition.Y - _bottomRightPosition.Y) * UnitSize + RectPadding * 2 * UnitSize;
-            var x = 0;
-            var y = 0;
-
-            // Top
-            dc.DrawDashedLine(DashedPen, new Point(x, y), new Point(x + width, y), 20);
-            // Left
-            dc.DrawDashedLine(DashedPen, new Point(x, y), new Point(x, y + height), 20);
-            // Right
-            dc.DrawDashedLine(DashedPen, new Point(x + width, y), new Point(x + width, y + height), 20);
-            // Bottom
-            dc.DrawDashedLine(DashedPen, new Point(x, y + height), new Point(x + width, y + height), 20);
-            base.DefaultRender(dc);
+            //base.AddPoint(x, y);
         }
-
-        protected override void AffineRender(DrawingContext dc)
-        {
-            var width = Math.Abs(_bottomRightPosition.X - _topLeftPosition.X) * UnitSize + RectPadding * 2 * UnitSize;
-            var height = Math.Abs(_topLeftPosition.Y - _bottomRightPosition.Y) * UnitSize + RectPadding * 2 * UnitSize;
-            var x = 0;
-            var y = 0;
-
-            // Top
-            dc.DrawAffineDashedLine(DashedPen, new Point(x, y), new Point(x + width, y), Canvas.AffineParams, 20);
-            // Left
-            dc.DrawAffineDashedLine(DashedPen, new Point(x, y), new Point(x, y + height), Canvas.AffineParams, 20);
-            // Right
-            dc.DrawAffineDashedLine(DashedPen, new Point(x + width, y), new Point(x + width, y + height), Canvas.AffineParams, 20);
-            // Bottom
-            dc.DrawAffineDashedLine(DashedPen, new Point(x, y + height), new Point(x + width, y + height), Canvas.AffineParams, 20);
-            base.AffineRender(dc);
-        }
-
         protected override void InitControls()
         {
             base.InitControls();
@@ -110,7 +73,8 @@ namespace Modeling_Canvas.UIELements
 
         protected override void RenderControlPanel()
         {
-            base.RenderControlPanel();
+            //base.RenderControlPanel();
+            ClearControlPanel();
             AddStrokeColorControls();
             AddStrokeThicknessControls();
         }
@@ -156,6 +120,8 @@ namespace Modeling_Canvas.UIELements
                 child.ScaleElement(AnchorPoint.Position, scaleVector, ScaleFactor);
             }
         }
+
+        
 
         public override string ToString()
         {

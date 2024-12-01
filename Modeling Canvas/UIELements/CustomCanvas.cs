@@ -146,7 +146,7 @@ namespace Modeling_Canvas.UIELements
                         pointWithOffset = pointWithOffset.ApplyAffineTransformation(AffineParams);
                     } else if (RenderMode is RenderMode.Projective)
                     {
-
+                        pointWithOffset = pointWithOffset.ApplyProjectiveTransformation(ProjectiveParams);
                     }
                     // Arrange the element
                     element.Arrange(new Rect(pointWithOffset, element.DesiredSize));
@@ -330,8 +330,17 @@ namespace Modeling_Canvas.UIELements
 
             if (maxX == 0) maxX = 10000;
             if (maxY == 0) maxY = 10000;
-            if (minX < 0) minX = 0;
-            if (minY < 0) minY = 0;
+            if (minX < 0)
+            {
+                maxX -= minX;
+                minX = 0;
+            }
+            if (minY < 0)
+            {
+                maxY -= minY;
+                minY = 0;
+            }
+            //if (minY < 0) minY = 0;
 
             // Vertical lines and labels
             for (double x = halfWidth; x < maxX; x += UnitSize * calculatedFrequency)
