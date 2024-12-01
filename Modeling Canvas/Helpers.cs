@@ -24,6 +24,12 @@ namespace Modeling_Canvas
             return value;
         }
 
+        public static double RoundTo(double value, double absValue)
+        {
+            if(Math.Abs(value) < absValue) return value;
+            else return Math.Sign(value) * absValue;
+        }
+
         public static void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
         {
 
