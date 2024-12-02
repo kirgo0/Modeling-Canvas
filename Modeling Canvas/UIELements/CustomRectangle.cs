@@ -89,7 +89,6 @@ namespace Modeling_Canvas.UIELements
 
         protected override void OnRender(DrawingContext drawingContext)
         {
-            AnchorVisibility = ShowControls;
             foreach (var point in Points)
             {
                 point.Visibility = ShowControls;
@@ -106,7 +105,6 @@ namespace Modeling_Canvas.UIELements
             }
 
             dc.DrawLine(StrokePen, Points[0].PixelPosition, Points[3].PixelPosition, 10);
-            base.DefaultRender(dc);
         }
 
         protected override void AffineRender(DrawingContext dc)
@@ -117,8 +115,6 @@ namespace Modeling_Canvas.UIELements
             }
 
             dc.DrawAffineLine(StrokePen, Points[0].PixelPosition, Points[3].PixelPosition, Canvas.AffineParams, 10);
-            base.DefaultRender(dc);
-            base.AffineRender(dc);
         }
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
@@ -184,5 +180,8 @@ namespace Modeling_Canvas.UIELements
             return $"Rectange\nWidth: {RectWidth}\nHeight: {RectHeight}";
         }
 
+        protected override void ProjectiveRender(DrawingContext dc)
+        {
+        }
     }
 }

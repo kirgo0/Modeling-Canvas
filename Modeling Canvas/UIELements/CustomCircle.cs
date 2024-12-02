@@ -129,20 +129,17 @@ namespace Modeling_Canvas.UIELements
         protected override void DefaultRender(DrawingContext dc)
         {
             dc.DrawCircleWithArcs(Fill, StrokePen, new Point(0, 0), Radius * UnitSize, StartDegrees, EndDegrees, Precision, 10);
-            base.DefaultRender(dc);
         }
 
         protected override void AffineRender(DrawingContext dc)
         {
             dc.DrawAffineCircleWithArcs(Fill, StrokePen, new Point(0, 0), Radius * UnitSize, StartDegrees, EndDegrees, Precision, Canvas.AffineParams, 10);
-            base.AffineRender(dc);
         }
 
         protected override void ProjectiveRender(DrawingContext dc)
         {
             var center = new Point(Canvas.ActualWidth / 2 + Center.X * UnitSize, Canvas.ActualHeight / 2 - Center.Y * UnitSize).AddCanvasOffsets();
             dc.DrawProjectiveCircleWithArcs(Fill, StrokePen, center, Radius * UnitSize, StartDegrees, EndDegrees, Precision, Canvas.ProjectiveParams, 10);
-            base.ProjectiveRender(dc);
         }
 
         protected override void RenderControlPanel()
@@ -340,7 +337,6 @@ namespace Modeling_Canvas.UIELements
         }
         private void UpdateUIControls()
         {
-            AnchorVisibility = ShowControls;
             CenterPoint.Visibility = ShowControls;
             RadiusPoint.Visibility = ShowControls;
             StartDegreesPoint.Visibility = ShowControls;

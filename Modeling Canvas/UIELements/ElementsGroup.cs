@@ -31,13 +31,17 @@ namespace Modeling_Canvas.UIELements
         {
             StrokeThickness = 2;
             Stroke = Brushes.Gray;
-            AnchorVisibility = Visibility.Visible;
             Name = $"Group {Counter}";
             StrokePen = DashedPen;
             AddPoint(new Point(0, 0));
             AddPoint(new Point(0, 0));
             AddPoint(new Point(0, 0));
             AddPoint(new Point(0, 0));
+
+            foreach(var point in Points) {
+                point.OnRenderControlPanel = RenderControlPanel;
+                point.OverrideRenderControlPanelAction = true;
+            }
         }
 
         protected override void OnRender(DrawingContext dc)
@@ -78,6 +82,13 @@ namespace Modeling_Canvas.UIELements
         }
 
         protected override void RenderControlPanel()
+        {
+            ClearControlPanel();
+            AddAnchorControls();
+            AddStrokeColorControls();
+            AddStrokeThicknessControls();
+        }
+        protected void RenderControlPanel(DraggablePoint point)
         {
             ClearControlPanel();
             AddAnchorControls();

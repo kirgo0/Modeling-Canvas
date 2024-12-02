@@ -22,7 +22,13 @@ namespace Modeling_Canvas.UIELements
             set => _strokePen = value; 
         }
         public virtual Visibility ShowControls { get => Canvas.SelectedElements.Contains(this) ? Visibility.Visible : Visibility.Hidden; }
-        public Visibility AnchorVisibility { get; set; } = Visibility.Hidden;
+        public bool AnchorVisible { get; set; } = true;
+        public Visibility AnchorVisibility { 
+            get {
+                if(AnchorVisible) return ShowControls;
+                else return Visibility.Hidden;   
+            } 
+        }
         public bool HasAnchorPoint { get; set; } = true;
 
         private bool overrideAnchorPoint = false;
@@ -102,24 +108,17 @@ namespace Modeling_Canvas.UIELements
             }
 
         }
-        protected virtual void DefaultRender(DrawingContext dc)
-        {
-        }
+        protected abstract void DefaultRender(DrawingContext dc);
 
-        protected virtual void AffineRender(DrawingContext dc)
-        {
-        }
+        protected abstract void AffineRender(DrawingContext dc);
 
-        protected virtual void ProjectiveRender(DrawingContext dc)
-        {
-        }
+        protected abstract void ProjectiveRender(DrawingContext dc);
 
         protected override void OnInitialized(EventArgs e)
         {
             //base.OnInitialized(e);
             InitControls();
         }
-
         protected virtual void InitControls()
         {
             if (HasAnchorPoint)
@@ -181,6 +180,9 @@ namespace Modeling_Canvas.UIELements
         {
             ClearControlPanel(); 
             RenderControlPanelLabel();
+            AddRotateControls();
+            AddOffsetControls();
+            AddScaleControls();
             if (HasAnchorPoint)
             {
                 AddAnchorControls();
@@ -195,12 +197,11 @@ namespace Modeling_Canvas.UIELements
             Action<double> xValueChanged, 
             Action<double> yValueChanged)
         {
-
+            var panel = GetDefaultVerticalPanel();
             // Create and add StackPanel for X position
             var xPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
 
             var label = new TextBlock { Text = labelText, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
-            AddElementToControlPanel(label);
             var xLabel = new TextBlock { Text = "Position X:", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 5, 0) };
             var xInput = new TextBox
             {
@@ -215,7 +216,7 @@ namespace Modeling_Canvas.UIELements
             };
             xInput.SetBinding(TextBox.TextProperty, xBinding);
 
-            xInput.PreviewTextInput += (sender, e) =>
+            xInput.PreviewKeyUp += (sender, e) =>
             {
                 if (double.TryParse(xInput.Text, out double newX))
                 {
@@ -225,7 +226,6 @@ namespace Modeling_Canvas.UIELements
 
             xPanel.Children.Add(xLabel);
             xPanel.Children.Add(xInput);
-            AddElementToControlPanel(xPanel);
 
             // Create and add StackPanel for Y position
             var yPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
@@ -244,7 +244,7 @@ namespace Modeling_Canvas.UIELements
             };
             yInput.SetBinding(TextBox.TextProperty, yBinding);
 
-            yInput.PreviewTextInput += (sender, e) =>
+            yInput.PreviewKeyUp += (sender, e) =>
             {
                 if (double.TryParse(yInput.Text, out double newY))
                 {
@@ -254,11 +254,37 @@ namespace Modeling_Canvas.UIELements
 
             yPanel.Children.Add(yLabel);
             yPanel.Children.Add(yInput);
-            AddElementToControlPanel(yPanel);
+            panel.Children.Add(label);
+            panel.Children.Add(xPanel);
+            panel.Children.Add(yPanel);
+            AddElementToControlPanel(panel);
         }
         
         protected virtual void AddAnchorControls()
         {
+            var panel = GetDefaultHorizontalPanel();
+            var isClosedLabel = new TextBlock { Text = "Anchor visible:" };
+
+            var isClosedCheckBox = new CheckBox
+            {
+                IsChecked = AnchorVisible
+            };
+
+            isClosedCheckBox.Checked += (s, e) =>
+            {
+                AnchorVisible = true;
+                InvalidateVisual();
+            };
+            isClosedCheckBox.Unchecked += (s, e) =>
+            {
+                AnchorVisible = false;
+                InvalidateVisual();
+            };
+
+            panel.Children.Add(isClosedLabel);
+            panel.Children.Add(isClosedCheckBox);
+            AddElementToControlPanel(panel);
+
             AddDefaultPointControls(
                 "Anchor Point",
                 AnchorPoint,
@@ -281,7 +307,7 @@ namespace Modeling_Canvas.UIELements
         
         protected virtual void AddFillColorControls()
         {
-            var panel = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
+            var panel = GetDefaultVerticalPanel();
             var fillLabel = new TextBlock { Text = "Fill Color:", TextAlignment=TextAlignment.Center };
             var fillColorPicker = new ColorPicker
             {
@@ -302,8 +328,8 @@ namespace Modeling_Canvas.UIELements
 
         protected virtual void AddStrokeColorControls()
         {
-            var panel = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
-            var strokeLabel = new TextBlock { Text = "Stroke Color:" };
+            var panel = GetDefaultVerticalPanel();
+            var strokeLabel = new TextBlock { Text = "Stroke Color:", TextAlignment = TextAlignment.Center };
             var strokeColorPicker = new ColorPicker
             {
                 SelectedColor = Stroke is SolidColorBrush solidBrush2 ? solidBrush2.Color : Colors.Black,
@@ -322,7 +348,7 @@ namespace Modeling_Canvas.UIELements
 
         protected virtual void AddStrokeThicknessControls()
         {
-            var panel = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
+            var panel = GetDefaultVerticalPanel();
             var thicknessLabel = new TextBlock { Text = "Stroke Thickness:", TextAlignment = TextAlignment.Center };
             var thicknessSlider = new Slider
             {
@@ -343,6 +369,143 @@ namespace Modeling_Canvas.UIELements
             AddElementToControlPanel(panel);
         }
 
+        protected virtual void AddOffsetControls()
+        {
+            var panel = GetDefaultVerticalPanel();
+
+            var label = new TextBlock { Text = "Offset", VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+
+            var labelX = new TextBlock { Text = "X: ", VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+            var labelY = new TextBlock { Text = "Y: ", VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+
+            var inputX = new TextBox
+            {
+                Width = 100,
+                Text = "0"
+            };
+            var inputY = new TextBox
+            {
+                Width = 100,
+                Text = "0"
+            };
+
+            var offsetButton = new Button
+            {
+                Content = "Offset",
+                Width = 100,
+                Height = 20,
+                Margin = new Thickness(5)
+            };
+
+            offsetButton.Click += (s, e) =>
+            {
+                if (double.TryParse(inputX.Text, out double X) && double.TryParse(inputY.Text, out double Y))
+                {
+                    MoveElement(new Vector(X * UnitSize, -Y * UnitSize));
+                    InvalidateCanvas();
+                }
+            };
+
+            var panelX = GetDefaultHorizontalPanel(5);
+            var panelY = GetDefaultHorizontalPanel(5);
+
+            panelX.Children.Add(labelX);
+            panelX.Children.Add(inputX);
+
+            panelY.Children.Add(labelY);
+            panelY.Children.Add(inputY);
+
+            panel.Children.Add(label);
+            panel.Children.Add(panelX);
+            panel.Children.Add(panelY);
+            panel.Children.Add(offsetButton);
+            AddElementToControlPanel(panel);
+        }
+        protected virtual void AddRotateControls()
+        {
+            var panel = GetDefaultVerticalPanel();
+
+            var label = new TextBlock { Text = "Rotating", VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+            var input = new TextBox
+            {
+                Width = 100
+            };
+
+            var rotateButton = new Button
+            {
+                Content = "Rotate",
+                Width = 100,
+                Height = 20,
+                Margin = new Thickness(5)
+            };
+
+            rotateButton.Click += (s, e) =>
+            {
+                if(double.TryParse(input.Text, out double value))
+                {
+                    RotateElement(AnchorPoint.Position, -value);
+                    InvalidateCanvas();
+                }
+            };
+
+            panel.Children.Add(label);
+            panel.Children.Add(input);
+            panel.Children.Add(rotateButton);
+            AddElementToControlPanel(panel);
+        }
+        protected virtual void AddScaleControls()
+        {
+            var panel = GetDefaultVerticalPanel();
+
+            var label = new TextBlock { Text = "Scale", VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+
+            var labelX = new TextBlock { Text = "X: ", VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+            var labelY = new TextBlock { Text = "Y: ", VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+
+            var inputX = new TextBox
+            {
+                Width = 100,
+                Text = "1"
+            };
+            var inputY = new TextBox
+            {
+                Width = 100,
+                Text = "1"
+            };
+
+            var offsetButton = new Button
+            {
+                Content = "Scale",
+                Width = 100,
+                Height = 20,
+                Margin = new Thickness(5)
+            };
+
+            offsetButton.Click += (s, e) =>
+            {
+                if (double.TryParse(inputX.Text, out double X) && double.TryParse(inputY.Text, out double Y))
+                {
+                    var factor = Math.Abs(X + Y) / 2;
+                    ScaleElement(AnchorPoint.Position, new Vector(X, Y), factor);
+                    InvalidateCanvas();
+                }
+            };
+
+            var panelX = GetDefaultHorizontalPanel(5);
+            var panelY = GetDefaultHorizontalPanel(5);
+
+            panelX.Children.Add(labelX);
+            panelX.Children.Add(inputX);
+
+            panelY.Children.Add(labelY);
+            panelY.Children.Add(inputY);
+
+            panel.Children.Add(label);
+            panel.Children.Add(panelX);
+            panel.Children.Add(panelY);
+            panel.Children.Add(offsetButton);
+            AddElementToControlPanel(panel);
+        }
         protected void AddElementToControlPanel(UIElement control)
         {
             if (Application.Current.MainWindow is MainWindow mainWindow)
@@ -359,6 +522,14 @@ namespace Modeling_Canvas.UIELements
             }
         }
 
+        protected StackPanel GetDefaultVerticalPanel(double marginBottom = 30)
+        {
+            return new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(5, 5, 5, marginBottom), HorizontalAlignment = HorizontalAlignment.Center };
+        }
+        protected StackPanel GetDefaultHorizontalPanel(double marginBottom = 30)
+        {
+            return new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(5, 5, 5, marginBottom), HorizontalAlignment = HorizontalAlignment.Center };
+        }
         protected override void OnMouseEnter(MouseEventArgs e)
         {
             base.OnMouseEnter(e);
@@ -444,6 +615,9 @@ namespace Modeling_Canvas.UIELements
                     if(Canvas.RenderMode is RenderMode.Affine)
                     {
                         offset = currentMousePosition.ReverseAffineTransformation(Canvas.AffineParams) - _lastMousePosition.ReverseAffineTransformation(Canvas.AffineParams);
+                    } else if(Canvas.RenderMode is RenderMode.Projective)
+                    {
+                        offset = currentMousePosition.ReverseProjectiveTransformation(Canvas.ProjectiveParams) - _lastMousePosition.ReverseProjectiveTransformation(Canvas.ProjectiveParams);
                     }
                     MoveElement(offset);
 

@@ -29,7 +29,10 @@
                 <RowDefinition Height="239*"/>
             </Grid.RowDefinitions>
             <Label x:Name="CurrentElementLabel" Content="Label" HorizontalAlignment="Center" Width="170" Margin="0,10,0,0" Grid.Row="1"/>
-            <StackPanel x:Name="ControlStack" Grid.Row="2" Margin="0,33,0,0"/>
+
+            <ScrollViewer x:Name="ControlScroll" Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="ControlStack"  Margin="0,33,0,0"/>
+            </ScrollViewer>
             <TabControl x:Name="DrawModeControlTab" Focusable="False">
                 <TabControl.Resources>
                     <Style TargetType="TextBox">

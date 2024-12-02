@@ -79,6 +79,44 @@ namespace Modeling_Canvas.UIELements
             base.OnMouseLeftButtonDown(e);
         }
 
+        public Action<DraggablePoint>? OnRenderControlPanel { get; set; }
+        public bool OverrideRenderControlPanelAction { get; set; } = false;
+        protected override void RenderControlPanel()
+        {
+            if (!OverrideRenderControlPanelAction)
+            {
+                ClearControlPanel();
+                RenderControlPanelLabel();
+                AddPointControls();
+                OnRenderControlPanel?.Invoke(this);
+            }
+            else
+            {
+                OnRenderControlPanel?.Invoke(this);
+            }
+        }
+
+        protected virtual void AddPointControls()
+        {
+            AddDefaultPointControls(
+                "Point",
+                this,
+                "Position.X",
+                "Position.Y",
+                (x) =>
+                {
+                    Position = new Point(x, Position.Y);
+                    InvalidateCanvas();
+                },
+                (y) =>
+                {
+                    Position = new Point(Position.X, y);
+                    InvalidateCanvas();
+                }
+            );
+        }
+
+
         public Func<DraggablePoint, string>? OverrideToStringAction;
         public override string ToString()
         {

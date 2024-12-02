@@ -2,6 +2,7 @@
 using Modeling_Canvas.Extensions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -30,8 +31,6 @@ namespace Modeling_Canvas.UIELements
 
         protected override void OnRender(DrawingContext dc)
         {
-            AnchorVisibility = ShowControls;
-
             if (Points.Count < 2) return;
 
             foreach (var point in Points)
@@ -59,7 +58,6 @@ namespace Modeling_Canvas.UIELements
                 dc.DrawLine(StrokePen, Points.First().CanvasPixelPosition, Points.Last().CanvasPixelPosition, 10);
             }
 
-            base.DefaultRender(dc);
         }
 
         protected override void AffineRender(DrawingContext dc)
@@ -75,7 +73,6 @@ namespace Modeling_Canvas.UIELements
             {
                 dc.DrawAffineLine(StrokePen, Points.First().CanvasPixelPosition, Points.Last().CanvasPixelPosition, Canvas.AffineParams, 10);
             }
-            base.AffineRender(dc);
         }
 
         protected override void ProjectiveRender(DrawingContext dc)
@@ -94,7 +91,6 @@ namespace Modeling_Canvas.UIELements
                     Points.Last().CanvasPixelPosition.AddCanvasOffsets(), 
                     Canvas.ProjectiveParams, 10);
             }
-            base.ProjectiveRender(dc);
         }
 
         public override Point GetOriginPoint(Size arrangedSize)
@@ -143,11 +139,71 @@ namespace Modeling_Canvas.UIELements
                 Radius = PointsRadius,
                 HasAnchorPoint = false,
                 IsSelectable = false,
-                OnRenderControlPanel = RenderControlPanel
+                OnRenderControlPanel = OnPointClickRenderControlPanel
             };
             Points.Add(draggablepoint);
             Canvas.Children.Add(draggablepoint);
             Panel.SetZIndex(draggablepoint, Canvas.Children.Count + 1);
+        }
+
+        public void InsertPointAt(int pointIndex)
+        {
+            var draggablepoint = new DraggablePoint(Canvas)
+            {
+                Shape = PointsShape,
+                Radius = PointsRadius,
+                HasAnchorPoint = false,
+                IsSelectable = false,
+                OnRenderControlPanel = OnPointClickRenderControlPanel
+            };
+
+            if(pointIndex >= Points.Count) pointIndex = Points.Count - 1;
+
+            draggablepoint.Position = GetAvaragePoint(pointIndex);
+
+            Points.Insert(pointIndex, draggablepoint);
+
+            Canvas.Children.Add(draggablepoint);
+            Panel.SetZIndex(draggablepoint, Canvas.Children.Count + 1);
+        }
+
+        public Point GetAvaragePoint(int index)
+        {
+            if (index <= 0)
+            {
+                var nextPoint = Points[0];
+                if (Points.Count > 1)
+                {
+                    var prevPoint = Points[Points.Count - 1];
+                    var avgX = (prevPoint.X + nextPoint.X) / 2.0;
+                    var avgY = (prevPoint.Y + nextPoint.Y) / 2.0;
+                    return new Point(avgX, avgY);
+                }
+
+                return new Point(nextPoint.X + 1, nextPoint.Y + 1);
+            }
+            else if (index >= Points.Count)
+            {
+                var prevPoint = Points[Points.Count - 1];
+                return new Point(prevPoint.X, prevPoint.Y);
+            }
+            else
+            {
+                var prevPoint = Points[index - 1];
+                var nextPoint = Points[index];
+                var avgX = (prevPoint.X + nextPoint.X) / 2.0;
+                var avgY = (prevPoint.Y + nextPoint.Y) / 2.0;
+                return new Point(avgX, avgY);
+            }
+        }
+
+        public void RemovePoint(DraggablePoint point)
+        {
+            if (Points.Contains(point))
+            {
+                Points.Remove(point);
+                Canvas.Children.Remove(point);
+            }
         }
 
         public override void MoveElement(Vector offset)
@@ -182,26 +238,76 @@ namespace Modeling_Canvas.UIELements
             AddIsClosedControls();
         }
 
-        protected virtual void AddAddPointButton()
+        protected void OnPointClickRenderControlPanel(DraggablePoint point)
         {
+            AddRemovePointControls(point);
+            AddAddPointButton(point);
+            RenderControlPanelLabel();
+            AddRotateControls();
+            AddOffsetControls();
+            AddAnchorControls();
+            AddStrokeColorControls();
+            AddStrokeThicknessControls();
+            AddIsClosedControls();
+        }
+
+        protected virtual void AddAddPointButton(DraggablePoint point = null)
+        {
+            var panel = GetDefaultVerticalPanel();
             var addPointButton = new Button
             {
                 Content = "Add Point",
                 Width = 100,
-                Height = 30,
-                Margin = new Thickness(5)
+                Height = 20,
+                Margin = new Thickness(5),
+                IsTabStop = false
             };
 
             addPointButton.Click += (s, e) =>
             {
-                AddPoint(0, 0);
+                if (point is null)
+                {
+                   AddPoint(GetAnchorDefaultPosition());
+                } else
+                {
+                    var pointIndex = Points.IndexOf(point);
+                    InsertPointAt(pointIndex);
+                }
             };
-            AddElementToControlPanel(addPointButton);
+            panel.Children.Add(addPointButton);
+            AddElementToControlPanel(panel);
+        }
+        
+        protected virtual void AddRemovePointControls(DraggablePoint point)
+        {
+            var panel = GetDefaultVerticalPanel();
+            var removePointButton = new Button
+            {
+                Content = "Remove Point",
+                Width = 100,
+                Height = 20,
+                Margin = new Thickness(5),
+                IsTabStop = false
+            };
+
+            removePointButton.Click += (s, e) =>
+            {
+                RemovePoint(point);
+                RenderControlPanel();
+            };
+            
+            if(Points.Count == 2)
+            {
+                removePointButton.IsEnabled = false;
+            }
+
+            panel.Children.Add(removePointButton);
+            AddElementToControlPanel(panel);
         }
 
         protected virtual void AddIsClosedControls()
         {
-            var panel = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
+            var panel = GetDefaultHorizontalPanel();
             var isClosedLabel = new TextBlock { Text = "Is Closed:" };
 
             var isClosedCheckBox = new CheckBox

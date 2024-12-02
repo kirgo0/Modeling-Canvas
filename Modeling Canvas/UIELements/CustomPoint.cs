@@ -13,6 +13,8 @@ namespace Modeling_Canvas.UIELements
         public double Radius { get; set; } = 10;
         public PointShape Shape { get; set; } = PointShape.Circle;
 
+        public double X { get => Position.X; }
+        public double Y { get => Position.Y; }
         public int PositionPrecision { get; set; } = 3;
 
         protected Point _position;
@@ -36,8 +38,6 @@ namespace Modeling_Canvas.UIELements
 
         protected override void DefaultRender(DrawingContext dc)
         {
-            base.DefaultRender(dc);
-
             var semiTransparentFill = Fill.Clone();
             semiTransparentFill.Opacity = Opacity;
 
@@ -57,8 +57,6 @@ namespace Modeling_Canvas.UIELements
 
         protected override void AffineRender(DrawingContext dc)
         {
-            base.AffineRender(dc);
-
             var semiTransparentFill = Fill.Clone();
             semiTransparentFill.Opacity = Opacity;
 
@@ -77,8 +75,6 @@ namespace Modeling_Canvas.UIELements
         }
         protected override void ProjectiveRender(DrawingContext dc)
         {
-            base.ProjectiveRender(dc);
-
             var semiTransparentFill = Fill.Clone();
             semiTransparentFill.Opacity = Opacity;
 
@@ -113,41 +109,6 @@ namespace Modeling_Canvas.UIELements
         public override Point GetOriginPoint(Size arrangedSize)
         {
             return new Point(arrangedSize.Width / 2 + UnitSize * Position.X, arrangedSize.Height / 2 - UnitSize * Position.Y);
-        }
-
-        public Action? OnRenderControlPanel { get; set; }
-        public bool OverrideRenderControlPanelAction { get; set; } = false;
-        protected override void RenderControlPanel()
-        {
-            if (!OverrideRenderControlPanelAction)
-            {
-                OnRenderControlPanel?.Invoke();
-                RenderControlPanelLabel();
-                AddPointControls();
-            } else
-            {
-                OnRenderControlPanel?.Invoke();
-            }
-        }
-
-        protected virtual void AddPointControls()
-        {
-            AddDefaultPointControls(
-                "Point",
-                this,
-                "Position.X",
-                "Position.Y",
-                (x) =>
-                {
-                    Position = new Point(x, Position.Y);
-                    InvalidateCanvas();
-                },
-                (y) =>
-                {
-                   Position = new Point(Position.X, y);
-                    InvalidateCanvas();
-                }
-            );
         }
 
         public override void MoveElement(Vector offset)
