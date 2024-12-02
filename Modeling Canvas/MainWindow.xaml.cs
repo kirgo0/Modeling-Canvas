@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Modeling_Canvas
 {
@@ -25,9 +26,15 @@ namespace Modeling_Canvas
 
             PointExtensions.Canvas = MyCanvas;
 
-            KeyDown += MyCanvas.OnKeyDown;
-            KeyUp += MyCanvas.OnKeyUp;
+            PreviewKeyDown += MyCanvas.OnKeyDown;
+            PreviewKeyUp += MyCanvas.OnKeyUp;
             ResetScaling(null, null);
+
+            var circle = new CustomCircle(MyCanvas)
+            {
+                Stroke = Brushes.Red
+            };
+            MyCanvas.Children.Add(circle);
 
             DrawModeControlTab.SelectionChanged += ChangeRenderMode;
             

@@ -1,6 +1,8 @@
 ﻿using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
 
 
@@ -13,8 +15,8 @@ namespace Modeling_Canvas.UIELements
 
         public int PositionPrecision { get; set; } = 3;
 
-        private Point _position;
-        public Point Position
+        protected Point _position;
+        public virtual Point Position
         {
             get => _position;
             set
@@ -29,6 +31,7 @@ namespace Modeling_Canvas.UIELements
             Fill = Brushes.Black;
             StrokeThickness = 0;
             IsSelectable = false;
+            LabelText = "Point";
         }
 
         protected override void DefaultRender(DrawingContext dc)
@@ -112,6 +115,41 @@ namespace Modeling_Canvas.UIELements
             return new Point(arrangedSize.Width / 2 + UnitSize * Position.X, arrangedSize.Height / 2 - UnitSize * Position.Y);
         }
 
+        public Action? OnRenderControlPanel { get; set; }
+        public bool OverrideRenderControlPanelAction { get; set; } = false;
+        protected override void RenderControlPanel()
+        {
+            if (!OverrideRenderControlPanelAction)
+            {
+                OnRenderControlPanel?.Invoke();
+                RenderControlPanelLabel();
+                AddPointControls();
+            } else
+            {
+                OnRenderControlPanel?.Invoke();
+            }
+        }
+
+        protected virtual void AddPointControls()
+        {
+            AddDefaultPointControls(
+                "Point",
+                this,
+                "Position.X",
+                "Position.Y",
+                (x) =>
+                {
+                    Position = new Point(x, Position.Y);
+                    InvalidateCanvas();
+                },
+                (y) =>
+                {
+                   Position = new Point(Position.X, y);
+                    InvalidateCanvas();
+                }
+            );
+        }
+
         public override void MoveElement(Vector offset)
         {
         }
@@ -127,5 +165,6 @@ namespace Modeling_Canvas.UIELements
         public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
         {
         }
+
     }
 }

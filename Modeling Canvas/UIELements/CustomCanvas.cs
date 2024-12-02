@@ -5,6 +5,7 @@ using Modeling_Canvas.Models;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -71,7 +72,10 @@ namespace Modeling_Canvas.UIELements
 
         public CustomCanvas()
         {
-            InvalidateCanvasCommand = new RelayCommand(_ => InvalidateVisual());
+            InvalidateCanvasCommand = new RelayCommand(_ => {
+                Keyboard.Focus(this);
+                InvalidateVisual(); 
+            });
         }
 
         protected override void OnRender(DrawingContext dc)
@@ -90,7 +94,6 @@ namespace Modeling_Canvas.UIELements
                     break;
             }
         } 
-
         public Point GetCanvasUnitCoordinates(Point pixelCoordinates)
         {
             if (RenderMode is RenderMode.Affine)
@@ -104,7 +107,6 @@ namespace Modeling_Canvas.UIELements
             pixelCoordinates = new Point((pixelCoordinates.X - ActualWidth / 2 - XOffset) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y - YOffset) / UnitSize);
             return pixelCoordinates;
         }
-
         public void ResetOffests()
         {
             XOffset = 0;
@@ -164,8 +166,12 @@ namespace Modeling_Canvas.UIELements
             var calculatedFrequency = GridFrequency;
             if (UnitSize < 25) calculatedFrequency = 5;
             if (UnitSize < 15) calculatedFrequency = 10;
-            if (UnitSize < 10) calculatedFrequency = 10;
-             return calculatedFrequency;
+            if (UnitSize < 10) calculatedFrequency = 25;
+            if (UnitSize < 5) calculatedFrequency = 100;
+            if (UnitSize < 1) calculatedFrequency = 250;
+            if (UnitSize < 0.5) calculatedFrequency = 500;
+            if (UnitSize <= 0.1) calculatedFrequency = 2500;
+            return calculatedFrequency;
         }
 
         protected void DrawCoordinateGrid(DrawingContext dc)
@@ -302,7 +308,7 @@ namespace Modeling_Canvas.UIELements
             double halfWidth = width / 2 + XOffset;
             double halfHeight = height / 2 - YOffset;
 
-            Pen gridPen = new Pen(Brushes.Black, 0.1);
+            Pen gridPen = new Pen(Brushes.Black, 0.2);
             Pen axisPen = new Pen(Brushes.Black, 2);
 
             if (UnitSize < 0 || GridFrequency < 0)
@@ -336,8 +342,6 @@ namespace Modeling_Canvas.UIELements
                 maxY -= minY;
                 minY = 0;
             }
-            //if (minY < 0) minY = 0;
-
             // Vertical lines and labels
             for (double x = halfWidth; x < maxX; x += UnitSize * calculatedFrequency)
             {
@@ -353,7 +357,6 @@ namespace Modeling_Canvas.UIELements
                 dc.DrawLine(gridPen, start, end);
                 DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3), new Point(x, halfHeight).ApplyProjectiveTransformation(ProjectiveParams), 15, false);
             }
-
             // Horizontal lines and labels
             for (double y = halfHeight; y < maxY; y += UnitSize * calculatedFrequency)
             {
@@ -369,12 +372,10 @@ namespace Modeling_Canvas.UIELements
                 dc.DrawLine(gridPen, start, end);
                 DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3), new Point(halfWidth, y).ApplyProjectiveTransformation(ProjectiveParams), 15, true);
             }
-
             // Axes
             dc.DrawLine(axisPen, new Point(minX, halfHeight).ApplyProjectiveTransformation(ProjectiveParams), new Point(maxX, halfHeight).ApplyProjectiveTransformation(ProjectiveParams)); // X-axis
             dc.DrawLine(axisPen, new Point(halfWidth, minY).ApplyProjectiveTransformation(ProjectiveParams), new Point(halfWidth, maxY).ApplyProjectiveTransformation(ProjectiveParams)); // Y-axis
         }
-
         private void DrawCoordinateLabel(DrawingContext dc, double value, Point position, double fontSize, bool isHorizontal)
         {
             if (value == 0)
@@ -430,7 +431,6 @@ namespace Modeling_Canvas.UIELements
                 mainWindow.ClearControlStack();
             }
         }
-
         protected override void OnMouseMove(MouseEventArgs e)
         {
             if (InputManager.SpacePressed && InputManager.LeftMousePressed)

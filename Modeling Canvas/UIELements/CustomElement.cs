@@ -1,14 +1,17 @@
 ﻿using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using Xceed.Wpf.Toolkit;
 
 namespace Modeling_Canvas.UIELements
 {
-    public abstract class CustomElement : FrameworkElement
+    public abstract class CustomElement : FrameworkElement, INotifyPropertyChanged
     {
         public Brush Fill { get; set; } = null; // Default fill color
         public Brush Stroke { get; set; } = Brushes.Black; // Default stroke color
@@ -35,11 +38,23 @@ namespace Modeling_Canvas.UIELements
                 overrideAnchorPoint = value;
             }
         }
-        private DraggablePoint anchorPoint;
+
+        private DraggablePoint _anchorPoint;
         public DraggablePoint AnchorPoint
         {
-            get => HasAnchorPoint ? anchorPoint : null;
-            set => anchorPoint = value;
+            get => HasAnchorPoint ? _anchorPoint : null;
+            set
+            {
+                _anchorPoint = value;
+                OnPropertyChanged(nameof(AnchorPoint));
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         public bool IsSelectable { get; set; } = true;
         public CustomCanvas Canvas { get; set; }
@@ -48,6 +63,8 @@ namespace Modeling_Canvas.UIELements
         protected Point _lastMousePosition;
         public bool AllowSnapping { get; set; } = true;
         protected virtual bool SnappingEnabled { get => AllowSnapping ? InputManager.ShiftPressed : false; }
+
+        public string LabelText { get; set; } = "Default Label";
 
         protected double _lastRotationDegrees = 0;
         protected bool _isDragging = false;
@@ -99,7 +116,7 @@ namespace Modeling_Canvas.UIELements
 
         protected override void OnInitialized(EventArgs e)
         {
-            base.OnInitialized(e);
+            //base.OnInitialized(e);
             InitControls();
         }
 
@@ -121,11 +138,12 @@ namespace Modeling_Canvas.UIELements
                     OverrideToStringAction = (e) =>
                     {
                         return $"Anchor point\nX: {e.Position.X}\nY: {e.Position.Y}";
-                    }
+                    },
+                    OverrideRenderControlPanelAction = true
                 };
                 AnchorPoint.Position = GetAnchorDefaultPosition();
                 Canvas.Children.Add(AnchorPoint);
-                Panel.SetZIndex(AnchorPoint, Panel.GetZIndex(this) + 1);
+                Panel.SetZIndex(AnchorPoint, Canvas.Children.Count + 1);
             }
         }
         public virtual Point GetOriginPoint(Size arrangedSize)
@@ -153,35 +171,55 @@ namespace Modeling_Canvas.UIELements
             e.Handled = true;
         }
 
+        protected virtual void RenderControlPanelLabel()
+        {
+            var label = new TextBlock { Text = $"| {LabelText} |", TextAlignment = TextAlignment.Center, FontWeight = FontWeight.FromOpenTypeWeight(600) };
+            AddElementToControlPanel(label);
+        }
+
         protected virtual void RenderControlPanel()
         {
-            ClearControlPanel();
+            ClearControlPanel(); 
+            RenderControlPanelLabel();
             if (HasAnchorPoint)
             {
                 AddAnchorControls();
             }
         }
-        private void AddAnchorControls()
+
+        protected void AddDefaultPointControls(
+            string labelText,
+            object source,
+            string xPath,
+            string yPath,
+            Action<double> xValueChanged, 
+            Action<double> yValueChanged)
         {
+
             // Create and add StackPanel for X position
             var xPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
 
-            var label = new TextBlock { Text = "Anchor Point", VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+            var label = new TextBlock { Text = labelText, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
             AddElementToControlPanel(label);
             var xLabel = new TextBlock { Text = "Position X:", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 5, 0) };
             var xInput = new TextBox
             {
-                Text = AnchorPoint.Position.X.ToString(),
                 Width = 100
             };
-            xInput.PreviewTextInput += Helpers.NumberValidationTextBox;
-            xInput.TextChanged += (sender, e) =>
+
+            var xBinding = new Binding(xPath)
+            {
+                Source = source,
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.Explicit
+            };
+            xInput.SetBinding(TextBox.TextProperty, xBinding);
+
+            xInput.PreviewTextInput += (sender, e) =>
             {
                 if (double.TryParse(xInput.Text, out double newX))
                 {
-                    OverrideAnchorPoint = true;
-                    AnchorPoint.Position = new Point(newX, AnchorPoint.Position.Y);
-                    InvalidateCanvas();
+                    xValueChanged(newX);
                 }
             };
 
@@ -195,17 +233,22 @@ namespace Modeling_Canvas.UIELements
             var yLabel = new TextBlock { Text = "Position Y:", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 5, 0) };
             var yInput = new TextBox
             {
-                Text = AnchorPoint.Position.Y.ToString(),
                 Width = 100
             };
-            yInput.PreviewTextInput += Helpers.NumberValidationTextBox;
-            yInput.TextChanged += (sender, e) =>
+
+            var yBinding = new Binding(yPath)
+            {
+                Source = source,
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.Explicit
+            };
+            yInput.SetBinding(TextBox.TextProperty, yBinding);
+
+            yInput.PreviewTextInput += (sender, e) =>
             {
                 if (double.TryParse(yInput.Text, out double newY))
                 {
-                    OverrideAnchorPoint = true;
-                    AnchorPoint.Position = new Point(AnchorPoint.Position.X, newY);
-                    InvalidateCanvas();
+                    yValueChanged(newY);
                 }
             };
 
@@ -214,16 +257,37 @@ namespace Modeling_Canvas.UIELements
             AddElementToControlPanel(yPanel);
         }
         
+        protected virtual void AddAnchorControls()
+        {
+            AddDefaultPointControls(
+                "Anchor Point",
+                AnchorPoint,
+                "Position.X",
+                "Position.Y",
+                (x) =>
+                {
+                    OverrideAnchorPoint = true;
+                    AnchorPoint.Position = new Point(x, AnchorPoint.Position.Y);
+                    InvalidateCanvas();
+                },
+                (y) =>
+                {
+                    OverrideAnchorPoint = true;
+                    AnchorPoint.Position = new Point(AnchorPoint.Position.X, y);
+                    InvalidateCanvas();
+                }
+            );
+        }
+        
         protected virtual void AddFillColorControls()
         {
-
-            // 1. Create controls for the Fill property using ColorPicker
-            var fillLabel = new TextBlock { Text = "Fill Color:" };
+            var panel = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
+            var fillLabel = new TextBlock { Text = "Fill Color:", TextAlignment=TextAlignment.Center };
             var fillColorPicker = new ColorPicker
             {
                 SelectedColor = Fill is SolidColorBrush solidBrush ? solidBrush.Color : Colors.Transparent,
-                //ShowTabHeaders = false,
-                AdvancedTabHeader = string.Empty
+                AdvancedTabHeader = string.Empty,
+                Width = 200
             };
 
             fillColorPicker.SelectedColorChanged += (s, e) =>
@@ -231,47 +295,52 @@ namespace Modeling_Canvas.UIELements
                 Fill = new SolidColorBrush(fillColorPicker.SelectedColor ?? Colors.Transparent); // Update Fill
                 InvalidateVisual();
             };
-            AddElementToControlPanel(fillLabel);
-            AddElementToControlPanel(fillColorPicker);
+            panel.Children.Add(fillLabel);
+            panel.Children.Add(fillColorPicker);
+            AddElementToControlPanel(panel);
         }
 
         protected virtual void AddStrokeColorControls()
         {
-            // 2. Create controls for the Stroke property using ColorPicker
+            var panel = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
             var strokeLabel = new TextBlock { Text = "Stroke Color:" };
             var strokeColorPicker = new ColorPicker
             {
                 SelectedColor = Stroke is SolidColorBrush solidBrush2 ? solidBrush2.Color : Colors.Black,
-                ShowAvailableColors = false
+                ShowAvailableColors = false,
+                Width = 200
             };
             strokeColorPicker.SelectedColorChanged += (s, e) =>
             {
                 Stroke = new SolidColorBrush(strokeColorPicker.SelectedColor ?? Colors.Black); // Update Stroke
                 InvalidateVisual();
             };
-            AddElementToControlPanel(strokeLabel);
-            AddElementToControlPanel(strokeColorPicker);
+            panel.Children.Add(strokeLabel);
+            panel.Children.Add(strokeColorPicker);
+            AddElementToControlPanel(panel);
         }
 
         protected virtual void AddStrokeThicknessControls()
         {
-            // 3. Create controls for StrokeThickness
-            var thicknessLabel = new TextBlock { Text = "Stroke Thickness:" };
+            var panel = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
+            var thicknessLabel = new TextBlock { Text = "Stroke Thickness:", TextAlignment = TextAlignment.Center };
             var thicknessSlider = new Slider
             {
                 Minimum = 1,
                 Maximum = 10,
                 Value = StrokeThickness,
                 TickFrequency = 0.1,
-                IsSnapToTickEnabled = true
+                IsSnapToTickEnabled = true,
+                Width = 200
             };
             thicknessSlider.ValueChanged += (s, e) =>
             {
                 StrokeThickness = e.NewValue; // Update StrokeThickness
                 InvalidateVisual();
             };
-            AddElementToControlPanel(thicknessLabel);
-            AddElementToControlPanel(thicknessSlider);
+            panel.Children.Add(thicknessLabel);
+            panel.Children.Add(thicknessSlider);
+            AddElementToControlPanel(panel);
         }
 
         protected void AddElementToControlPanel(UIElement control)
@@ -308,6 +377,8 @@ namespace Modeling_Canvas.UIELements
                 window.CurrentElementLabel.Content = "";
             }
         }
+
+        private bool _lastAnchorState = false;
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
@@ -386,6 +457,7 @@ namespace Modeling_Canvas.UIELements
             // Rotate logic
             else if (_isRotating && !InputManager.AnyKeyButShiftPressed && !InputManager.LeftMousePressed)
             {
+                OverrideAnchorPoint = true;
                 var angle = Canvas.GetDegreesBetweenMouseAndPoint(AnchorPoint.Position);
                 RotateElement(AnchorPoint.Position, _lastRotationDegrees - angle);
                 _lastRotationDegrees = angle;
@@ -462,10 +534,11 @@ namespace Modeling_Canvas.UIELements
         public abstract void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor);
 
         // Helper method to invalidate the parent canvas
-        public void InvalidateCanvas()
+        public virtual void InvalidateCanvas()
         {
             // Request the canvas to re-render by invalidating it
             Canvas.InvalidateVisual();
+            InvalidateVisual();
         }
 
     }

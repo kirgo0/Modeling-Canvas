@@ -152,6 +152,10 @@ namespace Modeling_Canvas.UIELements
             thirdPoint.Position = new Point(thirdPoint.Position.X, movedPoint.Position.Y);
         }
 
+        protected override void RenderControlPanelLabel()
+        {
+        }
+
         public override void MoveElement(Vector offset)
         {
             foreach (var point in Points)

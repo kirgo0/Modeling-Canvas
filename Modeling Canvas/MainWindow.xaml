@@ -8,6 +8,9 @@
         Title="MainWindow" Height="1000" Width="1300">
     <Window.Resources>
         <local1:FloatConverter x:Key="FloatConverter"/>
+        <Style TargetType="Button">
+            <Setter Property="IsTabStop" Value="False" />
+        </Style>
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -78,7 +81,7 @@
                             <TextBox Text="{Binding ElementName=MyCanvas, Path=AffineParams.Oy, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource FloatConverter}}" 
                      HorizontalAlignment="Left" Margin="39,69,0,0" VerticalAlignment="Top" Width="86" Grid.Column="1"/>
 
-                            <Button Focusable="False" Content="Apply" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="9,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="250" 
+                            <Button Content="Apply" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="9,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="250" 
         Command="{Binding ElementName=MyCanvas, Path=InvalidateCanvasCommand}"/>
                         </Grid>
                     </Grid>
@@ -133,7 +136,7 @@
                             <TextBox Text="{Binding ElementName=MyCanvas, Path=ProjectiveParams.wO, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource FloatConverter}}" 
                      HorizontalAlignment="Left" Margin="37,63,0,19" Grid.Column="2" Width="50"/>
 
-                            <Button Focusable="False"  Content="Apply" Grid.Row="1" Grid.ColumnSpan="3" 
+                            <Button Content="Apply" Grid.Row="1" Grid.ColumnSpan="3" 
                     HorizontalAlignment="Center" Command="{Binding ElementName=MyCanvas, Path=InvalidateCanvasCommand}" 
                     VerticalAlignment="Center" Width="100"/>
                         </Grid>

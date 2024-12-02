@@ -17,11 +17,13 @@ namespace Modeling_Canvas.UIELements
         {
             StrokeThickness = 2;
             Stroke = Brushes.Cyan;
+            LabelText = "Line";
         }
         public CustomLine(CustomCanvas canvas, Point firstPoint, Point secondPoint) : base(canvas)
         {
             StrokeThickness = 2;
             Stroke = Brushes.Cyan;
+            LabelText = "Line";
             AddPoint(firstPoint);
             AddPoint(secondPoint);
         }
@@ -104,7 +106,6 @@ namespace Modeling_Canvas.UIELements
             {
                 return new Point(0,0);
             }
-            //return base.GetOriginPoint(arrangedSize);
         }
 
         protected override Point GetAnchorDefaultPosition()
@@ -141,7 +142,8 @@ namespace Modeling_Canvas.UIELements
                 Shape = PointsShape,
                 Radius = PointsRadius,
                 HasAnchorPoint = false,
-                IsSelectable = false
+                IsSelectable = false,
+                OnRenderControlPanel = RenderControlPanel
             };
             Points.Add(draggablepoint);
             Canvas.Children.Add(draggablepoint);
@@ -171,14 +173,17 @@ namespace Modeling_Canvas.UIELements
             }
         }
 
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
-        {
-            base.OnMouseLeftButtonDown(e);
-        }
-
         protected override void RenderControlPanel()
         {
             base.RenderControlPanel();
+            AddAddPointButton();
+            AddStrokeColorControls();
+            AddStrokeThicknessControls();
+            AddIsClosedControls();
+        }
+
+        protected virtual void AddAddPointButton()
+        {
             var addPointButton = new Button
             {
                 Content = "Add Point",
@@ -192,9 +197,34 @@ namespace Modeling_Canvas.UIELements
                 AddPoint(0, 0);
             };
             AddElementToControlPanel(addPointButton);
-            AddStrokeColorControls();
-            AddStrokeThicknessControls();
         }
+
+        protected virtual void AddIsClosedControls()
+        {
+            var panel = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
+            var isClosedLabel = new TextBlock { Text = "Is Closed:" };
+
+            var isClosedCheckBox = new CheckBox
+            {
+                IsChecked = IsClosed // Bind the initial value
+            };
+
+            isClosedCheckBox.Checked += (s, e) =>
+            {
+                IsClosed = true;
+                InvalidateVisual(); 
+            };
+            isClosedCheckBox.Unchecked += (s, e) =>
+            {
+                IsClosed = false;
+                InvalidateVisual();
+            };
+
+            panel.Children.Add(isClosedLabel);
+            panel.Children.Add(isClosedCheckBox);
+            AddElementToControlPanel(panel);
+        }
+
 
         public override string ToString()
         {

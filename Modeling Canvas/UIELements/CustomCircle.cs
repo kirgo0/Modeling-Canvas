@@ -10,6 +10,11 @@ namespace Modeling_Canvas.UIELements
     {
         public CustomCircle(CustomCanvas canvas) : base(canvas)
         {
+            canvas.MouseWheel += (o, e) =>
+            {
+                if(Canvas.SelectedElements.Contains(this))
+                    RenderControlPanel();
+            };
         }
         public int Precision { get; set; } = 100; // Number of points for the circle
         private double _radius = 5;
@@ -19,14 +24,34 @@ namespace Modeling_Canvas.UIELements
             set
             {
                 if (value <= 0.5) _radius = 0.5;
-                else _radius = value;
+                else _radius = Math.Round(value,3);
             }
         }
-        public double StartDegrees { get; set; } = 0;
+
+        private double _startDegrees = 0;
+        public double StartDegrees { 
+            get => _startDegrees; 
+            set
+            {
+                _startDegrees = Math.Round(value,1);
+            }
+        }
         public double StartRadians { get => Helpers.DegToRad(StartDegrees); }
-        public double EndDegrees { get; set; } = 360;
+
+        private double _endDegrees = 360;
+        public double EndDegrees {
+            get => _endDegrees;
+            set
+            {
+                _endDegrees = Math.Round(value,1);
+            }
+        }
         public double EndRadians { get => Helpers.DegToRad(EndDegrees); }
-        public Point Center { get; set; } = new Point(0, 0);
+        public Point Center
+        {
+            get => CenterPoint.Position;
+            set => CenterPoint.Position = value;
+        }
         public DraggablePoint CenterPoint { get; set; }
         public DraggablePoint RadiusPoint { get; set; }
         public DraggablePoint StartDegreesPoint { get; set; }
@@ -53,6 +78,7 @@ namespace Modeling_Canvas.UIELements
                 OverrideMoveAction = RadiusPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
                 HasAnchorPoint = false,
+                OverrideRenderControlPanelAction = true
             };
             Canvas.Children.Add(RadiusPoint);
             Panel.SetZIndex(RadiusPoint, Canvas.Children.Count + 1);
@@ -63,7 +89,8 @@ namespace Modeling_Canvas.UIELements
                 OverrideMoveAction = StartDegreesPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
                 Fill = Brushes.Red,
-                HasAnchorPoint = false
+                HasAnchorPoint = false,
+                OverrideRenderControlPanelAction = true
             };
             Canvas.Children.Add(StartDegreesPoint);
             Panel.SetZIndex(StartDegreesPoint, Canvas.Children.Count + 1);
@@ -74,7 +101,8 @@ namespace Modeling_Canvas.UIELements
                 OverrideMoveAction = EndDegreesPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
                 Fill = Brushes.Blue,
-                HasAnchorPoint = false
+                HasAnchorPoint = false,
+                OverrideRenderControlPanelAction = true
             };
             Canvas.Children.Add(EndDegreesPoint);
             Panel.SetZIndex(EndDegreesPoint, Canvas.Children.Count + 1);
@@ -83,7 +111,9 @@ namespace Modeling_Canvas.UIELements
             {
                 Radius = 3,
                 OverrideMoveAction = CenterPointMoveAction,
-                HasAnchorPoint = false
+                HasAnchorPoint = false,
+                OverrideRenderControlPanelAction = true,
+                Position = new Point(0, 0)
             };
             Canvas.Children.Add(CenterPoint);
             Panel.SetZIndex(CenterPoint, Canvas.Children.Count + 1);
@@ -118,11 +148,108 @@ namespace Modeling_Canvas.UIELements
         protected override void RenderControlPanel()
         {
             base.RenderControlPanel();
+            AddCenterControls();
             AddFillColorControls();
             AddStrokeColorControls();
             AddStrokeThicknessControls();
+            AddRadiusControls();
+            AddDegreesControls();
         }
 
+        protected virtual void AddRadiusControls()
+        {
+            var panel = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
+            var radiusLabel = new TextBlock { Text = $"Radius: {Radius}", TextAlignment = TextAlignment.Center };
+            var radiusSlider = new Slider
+            {
+                Minimum = 1,
+                Maximum = Math.Max(Canvas.ActualWidth / 2 / UnitSize, Radius),
+                Value = Radius,
+                TickFrequency = 0.1,
+                IsSnapToTickEnabled = true,
+                Width = 200
+            };
+            radiusSlider.ValueChanged += (s, e) =>
+            {
+                Radius = Math.Round(e.NewValue,2); // Update Radius
+                radiusLabel.Text = $"Radius: {Radius}";
+                InvalidateCanvas();
+            };
+            panel.Children.Add(radiusLabel);
+            panel.Children.Add(radiusSlider);
+            AddElementToControlPanel(panel);
+        }
+        protected virtual void AddDegreesControls()
+        {
+            var startDegPanel = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
+            var startDegLabel = new TextBlock { Text = $"StartDegrees: {StartDegrees}", TextAlignment = TextAlignment.Center };
+            var startDegSlider = new Slider
+            {
+                Minimum = 0,
+                Maximum = 360,
+                Value = StartDegrees,
+                TickFrequency = 1,
+                IsSnapToTickEnabled = true,
+                Width = 200
+            };
+
+            startDegSlider.ValueChanged += (s, e) =>
+            {
+                StartDegrees = Math.Round(e.NewValue); // Update Radius
+                startDegLabel.Text = $"StartDegrees: {StartDegrees}";
+                InvalidateCanvas();
+            };
+            startDegPanel.Children.Add(startDegLabel);
+            startDegPanel.Children.Add(startDegSlider);
+
+            AddElementToControlPanel(startDegPanel);
+            var endDegPanel = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
+            var endDegLabel = new TextBlock { Text = $"EndDegrees: {EndDegrees}", TextAlignment = TextAlignment.Center };
+            var endDegSlider = new Slider
+            {
+                Minimum = 0,
+                Maximum = 360,
+                Value = EndDegrees,
+                TickFrequency = 0.5,
+                IsSnapToTickEnabled = true,
+                Width = 200
+            };
+
+            endDegSlider.ValueChanged += (s, e) =>
+            {
+                EndDegrees = Math.Round(e.NewValue); // Update Radius
+                endDegLabel.Text = $"EndDegrees: {EndDegrees}";
+                InvalidateCanvas();
+            };
+            endDegPanel.Children.Add(endDegLabel);
+            endDegPanel.Children.Add(endDegSlider);
+            AddElementToControlPanel(endDegPanel);
+        }
+        protected virtual void AddCenterControls()
+        {
+            AddDefaultPointControls(
+                "Center",
+                this,
+                "Center.X",
+                "Center.Y",
+                (x) =>
+                {
+                    OverrideAnchorPoint = true;
+                    var difference = Center.X - x;
+                    Center = new Point(x, Center.Y);
+                    AnchorPoint.Position = new Point(AnchorPoint.Position.X - difference, AnchorPoint.Position.Y);
+                    InvalidateCanvas();
+                },
+                (y) =>
+                {
+                    OverrideAnchorPoint = true;
+                    var difference = Center.Y - y;
+                    Center = new Point(Center.X, y);
+                    AnchorPoint.Position = new Point(AnchorPoint.Position.X, AnchorPoint.Position.Y - difference);
+                    InvalidateCanvas();
+                }
+                );
+        }
         protected override Point GetAnchorDefaultPosition()
         {
             return Center;
@@ -176,6 +303,12 @@ namespace Modeling_Canvas.UIELements
             MoveElement(offset);
         }
 
+        //protected override void RenderControlPanelLabel()
+        //{
+        //    var label = new TextBlock { Text = "| CIRCLE |" };
+        //    AddElementToControlPanel(label);
+        //}
+
         public override void MoveElement(Vector offset)
         {
             if (InputManager.AnyKeyButShiftPressed) return;
@@ -200,6 +333,11 @@ namespace Modeling_Canvas.UIELements
             Radius *= ScaleFactor;
         }
 
+        public override void InvalidateCanvas()
+        {
+            UpdateUIControls();
+            base.InvalidateCanvas();
+        }
         private void UpdateUIControls()
         {
             AnchorVisibility = ShowControls;

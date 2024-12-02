@@ -1,13 +1,34 @@
 using Modeling_Canvas.Extensions;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Modeling_Canvas.UIELements
 {
-    public class DraggablePoint : CustomPoint
+    public class DraggablePoint : CustomPoint, INotifyPropertyChanged
     {
         public double DragRadius { get; set; } = 10;
+        public Point Position
+        {
+            get => _position;
+            set
+            {
+                if (_position != value)
+                {
+                    _position = new Point(Math.Round(value.X, PositionPrecision), Math.Round(value.Y, PositionPrecision));
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
         public DraggablePoint(CustomCanvas canvas) : base(canvas)
         {
         }

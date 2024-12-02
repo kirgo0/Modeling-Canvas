@@ -80,6 +80,7 @@ namespace Modeling_Canvas.UIELements
         protected override void RenderControlPanel()
         {
             ClearControlPanel();
+            AddAnchorControls();
             AddStrokeColorControls();
             AddStrokeThicknessControls();
         }
