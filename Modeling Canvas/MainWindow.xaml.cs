@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace Modeling_Canvas
 {
@@ -21,8 +22,10 @@ namespace Modeling_Canvas
             InitializeComponent();
             CenterWindowOnScreen();
 
-            InitFigure();
+            //InitFigure();
 
+            var a = new CustomLine(MyCanvas, new Point(0,2), new Point(2, 7));
+            MyCanvas.Children.Add(a);
 
             PointExtensions.Canvas = MyCanvas;
 

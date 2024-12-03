@@ -147,7 +147,7 @@ namespace Modeling_Canvas.UIELements
         }
         public virtual Point GetOriginPoint(Size arrangedSize)
         {
-            return new Point(arrangedSize.Width / 2, arrangedSize.Height / 2);
+            return new Point(0, 0);
         }
         protected virtual Point GetAnchorDefaultPosition()
         {

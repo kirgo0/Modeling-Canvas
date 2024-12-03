@@ -84,16 +84,16 @@ namespace Modeling_Canvas.UIELements
         protected override void RenderControlPanel()
         {
             ClearControlPanel();
+            AddOffsetControls();
+            AddRotateControls();
+            AddScaleControls();
             AddAnchorControls();
             AddStrokeColorControls();
             AddStrokeThicknessControls();
         }
         protected void RenderControlPanel(DraggablePoint point)
         {
-            ClearControlPanel();
-            AddAnchorControls();
-            AddStrokeColorControls();
-            AddStrokeThicknessControls();
+            RenderControlPanel();
         }
 
         public void AddChild(CustomElement child)

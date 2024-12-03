@@ -55,24 +55,27 @@ namespace Modeling_Canvas.Extensions
         }
         public static Point ApplyAffineTransformation(this Point point, AffineModel affine)
         {
+            var x = point.X;
+            var y = Canvas.ActualHeight - point.Y;
+
             double Xx = affine.Xx;
-            double Xy = -affine.Xy;
-            double Yx = -affine.Yx;
+            double Xy = affine.Xy;
+            double Yx = affine.Yx;
             double Yy = affine.Yy;
             double Ox = affine.Ox;
             double Oy = affine.Oy;
 
             return new Point(
-                Xx * point.X + Yx * point.Y + Ox,
-                Xy * point.X + Yy * point.Y + Oy
+                Xx * x + Yx * y + Ox,
+                Canvas.ActualHeight - (Xy * x + Yy * y + Oy)
             );
         }
         public static Point ReverseAffineTransformation(this Point transformedPoint, AffineModel affine)
         { 
-            transformedPoint = new Point(transformedPoint.X, transformedPoint.Y);   
+            transformedPoint = new Point(transformedPoint.X, Canvas.ActualHeight - transformedPoint.Y);   
             double Xx = affine.Xx;
-            double Xy = -affine.Yx;
-            double Yx = -affine.Xy;
+            double Xy = affine.Yx;
+            double Yx = affine.Xy;
             double Yy = affine.Yy;
             double Ox = affine.Ox;
             double Oy = affine.Oy;
@@ -93,7 +96,7 @@ namespace Modeling_Canvas.Extensions
 
             return new Point(
                 invXx * transformedPoint.X + invXy * transformedPoint.Y + invOx,
-                invYx * transformedPoint.X + invYy * transformedPoint.Y + invOy
+                Canvas.ActualHeight - (invYx * transformedPoint.X + invYy * transformedPoint.Y + invOy)
             );
         }
 
@@ -101,42 +104,59 @@ namespace Modeling_Canvas.Extensions
         {
             // Витягуємо значення параметрів із об'єкта ProjectiveModel у локальні змінні
             double xx = projective.Xx;
-            double yx = -projective.Yx;
+            double yx = projective.Yx;
             double ox = projective.Ox;
-            double xy = -projective.Xy;
+            double xy = projective.Xy;
             double yy = projective.Yy;
             double oy = projective.Oy;
-            double wx = projective.wX;
-            double wy = -projective.wY;
+            double wx = projective.wX / Canvas.UnitSize;
+            double wy = projective.wY / Canvas.UnitSize;
             double wo = projective.wO;
+
+            // | Xx / m00 | Xy / m01 | wX / m02 | 
+            // | Yx / m10 | Yy / m11 | wY / m12 |
+            // | Ox / m20 | Oy / m21 | wO / m22 |
+
+            //      x * m00 + y * m10 + m20
+            // x* = -----------------------
+            //      x * m02 + y * m12 + m22
+
+            //      x * m01 + y * m11 + m21
+            // y* = -----------------------
+            //      x * m02 + y * m12 + m22
+
 
             // Поточні координати точки
             double x = point.X;
-            double y = point.Y;
+            double y = Canvas.ActualHeight - point.Y;
 
             // Обчислення знаменника w
-            double w = wx * x + wy * y + wo;
+
+            //       x * m02 + y * m12 + m22
+            double w = x * wx + y * wy + wo;
             if (w == 0)
-                return new Point(0, 0); // Уникаємо ділення на нуль
+                return new Point(0, 0);
 
             // Обчислення трансформованих координат
-            double tx = (xx * x + yx * y + ox) / w;
-            double ty = (xy * x + yy * y + oy) / w;
+            //           x* m00 +y * m10 + m20
+            double tx = (x * xx + y * yx + ox) / w;
+            //          x * m02 + y * m12 + m22
+            double ty = (x * xy + y * yy + oy) / w;
 
-            return new Point(tx, ty);
+            return new Point(tx, Canvas.ActualHeight - ty);
         }
 
         public static Point ReverseProjectiveTransformation(this Point canvasPoint, ProjectiveModel projective)
         {
             canvasPoint = new Point(canvasPoint.X, canvasPoint.Y);
             double xx = projective.Xx;
-            double yx = -projective.Yx;
+            double yx = projective.Yx;
             double ox = projective.Ox;
-            double xy = -projective.Xy;
+            double xy = projective.Xy;
             double yy = projective.Yy;
             double oy = projective.Oy;
-            double wx = projective.wX;
-            double wy = -projective.wY;
+            double wx = projective.wX / Canvas.UnitSize;
+            double wy = projective.wY / Canvas.UnitSize;
             double wo = projective.wO;
 
             // The equation is:
@@ -146,7 +166,7 @@ namespace Modeling_Canvas.Extensions
 
             // Let canvasX = u, canvasY = v
             double u = canvasPoint.X;
-            double v = canvasPoint.Y;
+            double v = Canvas.ActualHeight - canvasPoint.Y;
 
             // Set up the system of equations:
             // u * (wx * x + wy * y + wo) = xx * x + yx * y + ox
@@ -176,7 +196,7 @@ namespace Modeling_Canvas.Extensions
             double y = (a1 * c2 - a2 * c1) / determinant;
 
             //return new Point(x, projective.CanvasHeight - y);
-            return new Point(x, y);
+            return new Point(x, Canvas.ActualHeight - y);
         }
 
 

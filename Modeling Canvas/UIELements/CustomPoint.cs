@@ -28,6 +28,9 @@ namespace Modeling_Canvas.UIELements
             }
         }
 
+        public Point PixelPosition { 
+            get => new Point(Canvas.ActualWidth / 2 + Position.X * UnitSize, Canvas.ActualHeight/2 - Position.Y * UnitSize).AddCanvasOffsets(); }
+            
         public CustomPoint(CustomCanvas canvas) : base(canvas)
         {
             Fill = Brushes.Black;
@@ -44,13 +47,13 @@ namespace Modeling_Canvas.UIELements
             switch (Shape)
             {
                 case PointShape.Circle:
-                    dc.DrawCircle(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100);
+                    dc.DrawCircle(semiTransparentFill, StrokePen, PixelPosition, Radius, 100);
                     break;
                 case PointShape.Square:
-                    dc.DrawSquare(semiTransparentFill, StrokePen, new Point(0, 0), Radius * 2);
+                    dc.DrawSquare(semiTransparentFill, StrokePen, PixelPosition, Radius * 2);
                     break;
                 case PointShape.Anchor:
-                    dc.DrawAnchorPoint(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100, 5);
+                    dc.DrawAnchorPoint(semiTransparentFill, StrokePen, PixelPosition, Radius, 100, 5);
                     break;
             }
         }
@@ -63,13 +66,13 @@ namespace Modeling_Canvas.UIELements
             switch (Shape)
             {
                 case PointShape.Circle:
-                    dc.DrawAffineCircle(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100, Canvas.AffineParams);
+                    dc.DrawAffineCircle(semiTransparentFill, StrokePen, PixelPosition, Radius, 100, Canvas.AffineParams);
                     break;
                 case PointShape.Square:
-                    dc.DrawAffineSquare(semiTransparentFill, StrokePen, new Point(0, 0), Radius * 2, Canvas.AffineParams);
+                    dc.DrawAffineSquare(semiTransparentFill, StrokePen, PixelPosition, Radius * 2, Canvas.AffineParams);
                     break;
                 case PointShape.Anchor:
-                    dc.DrawAffineAnchorPoint(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100, 5, Canvas.AffineParams);
+                    dc.DrawAffineAnchorPoint(semiTransparentFill, StrokePen, PixelPosition, Radius, 100, 5, Canvas.AffineParams);
                     break;
             }
         }
@@ -81,13 +84,13 @@ namespace Modeling_Canvas.UIELements
             switch (Shape)
             {
                 case PointShape.Circle:
-                    dc.DrawProjectiveCircle(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100, Canvas.ProjectiveParams);
+                    dc.DrawProjectiveCircle(semiTransparentFill, StrokePen, PixelPosition, Radius, 100, Canvas.ProjectiveParams);
                     break;
                 case PointShape.Square:
-                    dc.DrawProjectiveSquare(semiTransparentFill, StrokePen, new Point(0, 0), Radius * 2, Canvas.ProjectiveParams);
+                    dc.DrawProjectiveSquare(semiTransparentFill, StrokePen, PixelPosition, Radius * 2, Canvas.ProjectiveParams);
                     break;
                 case PointShape.Anchor:
-                    dc.DrawProjectiveAnchorPoint(semiTransparentFill, StrokePen, new Point(0, 0), Radius, 100, 5, Canvas.ProjectiveParams);
+                    dc.DrawProjectiveAnchorPoint(semiTransparentFill, StrokePen, PixelPosition, Radius, 100, 5, Canvas.ProjectiveParams);
                     break;
             }
         }
@@ -104,11 +107,6 @@ namespace Modeling_Canvas.UIELements
         protected override Size MeasureOverride(Size availableSize)
         {
             return new Size(Radius, Radius);
-        }
-
-        public override Point GetOriginPoint(Size arrangedSize)
-        {
-            return new Point(arrangedSize.Width / 2 + UnitSize * Position.X, arrangedSize.Height / 2 - UnitSize * Position.Y);
         }
 
         public override void MoveElement(Vector offset)

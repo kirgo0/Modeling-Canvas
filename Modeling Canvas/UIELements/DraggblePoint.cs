@@ -66,10 +66,6 @@ namespace Modeling_Canvas.UIELements
             Position = SnappingEnabled ? Position.OffsetAndSpanPoint(offset) : Position.OffsetPoint(offset);
         }
 
-        public Point PixelPosition { get => new Point(Position.X * UnitSize, -Position.Y * UnitSize); }
-            
-        public Point CanvasPixelPosition { get => new Point(Canvas.ActualWidth / 2 + Position.X * UnitSize, Canvas.ActualHeight / 2 - Position.Y * UnitSize); }
-
         public Action<MouseButtonEventArgs> MouseLeftButtonDownAction { get; set; }
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
