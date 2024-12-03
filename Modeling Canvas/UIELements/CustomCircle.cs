@@ -57,14 +57,6 @@ namespace Modeling_Canvas.UIELements
         public DraggablePoint StartDegreesPoint { get; set; }
         public DraggablePoint EndDegreesPoint { get; set; }
 
-        public override Point GetOriginPoint(Size arrangedSize)
-        {
-            if(Canvas.RenderMode is Enums.RenderMode.Projective)
-            {
-                return new Point(-Canvas.XOffset, Canvas.YOffset);
-            }
-            return new Point(arrangedSize.Width / 2 + UnitSize * Center.X, arrangedSize.Height / 2 - UnitSize * Center.Y);
-        }
         protected override Size MeasureOverride(Size availableSize)
         {
             return new Size((Radius * UnitSize + StrokeThickness) * 2, (Radius * UnitSize + StrokeThickness) * 2);
@@ -128,18 +120,17 @@ namespace Modeling_Canvas.UIELements
 
         protected override void DefaultRender(DrawingContext dc)
         {
-            dc.DrawCircleWithArcs(Fill, StrokePen, new Point(0, 0), Radius * UnitSize, StartDegrees, EndDegrees, Precision, 10);
+            dc.DrawCircleWithArcs(Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, StartDegrees, EndDegrees, Precision, 10);
         }
 
         protected override void AffineRender(DrawingContext dc)
         {
-            dc.DrawAffineCircleWithArcs(Fill, StrokePen, new Point(0, 0), Radius * UnitSize, StartDegrees, EndDegrees, Precision, Canvas.AffineParams, 10);
+            dc.DrawAffineCircleWithArcs(Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, StartDegrees, EndDegrees, Precision, Canvas.AffineParams, 10);
         }
 
         protected override void ProjectiveRender(DrawingContext dc)
         {
-            var center = new Point(Canvas.ActualWidth / 2 + Center.X * UnitSize, Canvas.ActualHeight / 2 - Center.Y * UnitSize).AddCanvasOffsets();
-            dc.DrawProjectiveCircleWithArcs(Fill, StrokePen, center, Radius * UnitSize, StartDegrees, EndDegrees, Precision, Canvas.ProjectiveParams, 10);
+            dc.DrawProjectiveCircleWithArcs(Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, StartDegrees, EndDegrees, Precision, Canvas.ProjectiveParams, 10);
         }
 
         protected override void RenderControlPanel()

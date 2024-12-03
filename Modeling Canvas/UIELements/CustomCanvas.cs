@@ -140,15 +140,6 @@ namespace Modeling_Canvas.UIELements
                 if (child is CustomElement element)
                 {
                     var point = element.GetOriginPoint(arrangeSize);
-                    //var pointWithOffset = new Point(point.X + XOffset, point.Y - YOffset);
-                    //if (RenderMode is RenderMode.Affine)
-                    //{
-                    //    pointWithOffset = pointWithOffset.ApplyAffineTransformation(AffineParams);
-                    //} else if (RenderMode is RenderMode.Projective)
-                    //{
-                    //    pointWithOffset = pointWithOffset.ApplyProjectiveTransformation(ProjectiveParams);
-                    //}
-                    // Arrange the element
                     element.Arrange(new Rect(point, element.DesiredSize));
                     element.InvalidateVisual();
                     element.InvalidateMeasure();
@@ -300,6 +291,7 @@ namespace Modeling_Canvas.UIELements
                 new Point(halfWidth, minY).ApplyAffineTransformation(AffineParams),
                 new Point(halfWidth, maxY).ApplyAffineTransformation(AffineParams));
         }
+
         protected void DrawTransformedCoordinateGrid(DrawingContext dc)
         {
             double width = ActualWidth;
@@ -324,32 +316,36 @@ namespace Modeling_Canvas.UIELements
                 new Point(width, height).ReverseProjectiveTransformation(ProjectiveParams),
             };
             // Calculate bounds of the transformed canvas
+
             double minX = 0;
             double maxX = width;
             double minY = 0;
             double maxY = height;
-            //double minX = corners.Min(c => c.X);
-            //double maxX = corners.Max(c => c.X);
-            //double minY = corners.Min(c => c.Y);
-            //double maxY = corners.Max(c => c.Y);
 
-            //if (maxX == 0) maxX = 10000;
-            //if (maxY == 0) maxY = 10000;
-            //if (minX < 0)
-            //{
-            //    maxX -= minX;
-            //    minX = 0;
-            //}
-            //if (minY < 0)
-            //{
-            //    maxY -= minY;
-            //    minY = 0;
-            //}
+
+            minX = corners.Min(c => c.X);
+            maxX = corners.Max(c => c.X);
+            minY = corners.Min(c => c.Y);
+            maxY = corners.Max(c => c.Y);
+
+            if (maxX == 0) maxX = 10000;
+            if (maxY == 0) maxY = 10000;
+            if (minX < 0)
+            {
+                maxX -= minX;
+                minX = 0;
+            }
+            if (minY < 0)
+            {
+                maxY -= minY;
+                minY = 0;
+            }
             // Vertical lines and labels
+            double prevX = 0, prevY = 0;
             for (double x = halfWidth; x < maxX; x += UnitSize * calculatedFrequency)
             {
                 var start = new Point(x, minY).ApplyProjectiveTransformation(ProjectiveParams);
-                var end = new Point(x, maxY).ApplyProjectiveTransformation(ProjectiveParams); 
+                var end = new Point(x, maxY).ApplyProjectiveTransformation(ProjectiveParams);
                 dc.DrawLine(gridPen, start, end);
                 var number = Math.Round(x - halfWidth) / UnitSize;
                 if (number % 10 != 0) continue;
@@ -387,6 +383,7 @@ namespace Modeling_Canvas.UIELements
             dc.DrawLine(axisPen, new Point(minX, halfHeight).ApplyProjectiveTransformation(ProjectiveParams), new Point(maxX, halfHeight).ApplyProjectiveTransformation(ProjectiveParams)); // X-axis
             dc.DrawLine(axisPen, new Point(halfWidth, minY).ApplyProjectiveTransformation(ProjectiveParams), new Point(halfWidth, maxY).ApplyProjectiveTransformation(ProjectiveParams)); // Y-axis
         }
+
         private void DrawCoordinateLabel(DrawingContext dc, double value, Point position, double fontSize, bool isHorizontal)
         {
             if (value == 0)

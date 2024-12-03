@@ -22,10 +22,14 @@ namespace Modeling_Canvas
             InitializeComponent();
             CenterWindowOnScreen();
 
-            //InitFigure();
+            InitFigure();
 
-            var a = new CustomLine(MyCanvas, new Point(0,2), new Point(2, 7));
-            MyCanvas.Children.Add(a);
+            //var a = new CustomLine(MyCanvas, new Point(0,2), new Point(2, 7));
+            //MyCanvas.Children.Add(a);
+
+            //var c = new CustomCircle(MyCanvas);
+            //MyCanvas.Children.Add(c);
+
 
             PointExtensions.Canvas = MyCanvas;
 
