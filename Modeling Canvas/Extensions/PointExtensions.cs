@@ -1,5 +1,6 @@
 ﻿using Modeling_Canvas.Models;
 using Modeling_Canvas.UIELements;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media.Media3D;
 
@@ -62,8 +63,8 @@ namespace Modeling_Canvas.Extensions
             double Xy = affine.Xy;
             double Yx = affine.Yx;
             double Yy = affine.Yy;
-            double Ox = affine.Ox;
-            double Oy = affine.Oy;
+            double Ox = affine.Ox * Canvas.UnitSize;
+            double Oy = affine.Oy * Canvas.UnitSize;
 
             return new Point(
                 Xx * x + Yx * y + Ox,
@@ -77,8 +78,8 @@ namespace Modeling_Canvas.Extensions
             double Xy = affine.Yx;
             double Yx = affine.Xy;
             double Yy = affine.Yy;
-            double Ox = affine.Ox;
-            double Oy = affine.Oy;
+            double Ox = affine.Ox * Canvas.UnitSize;
+            double Oy = affine.Oy * Canvas.UnitSize;
             // Calculate the determinant of the 2x2 matrix
             double determinant = Xx * Yy - Xy * Yx;
 
@@ -104,14 +105,14 @@ namespace Modeling_Canvas.Extensions
         {
             // Витягуємо значення параметрів із об'єкта ProjectiveModel у локальні змінні
             double xx = projective.Xx;
-            double yx = projective.Yx;
-            double ox = projective.Ox;
-            double xy = projective.Xy;
+            double yx = projective.Yx * Canvas.UnitSize;
+            double ox = projective.Ox * Canvas.UnitSize;
+            double xy = projective.Xy * Canvas.UnitSize;
             double yy = projective.Yy;
-            double oy = projective.Oy;
-            double wx = projective.wX / Canvas.UnitSize;
-            double wy = projective.wY / Canvas.UnitSize;
-            double wo = projective.wO;
+            double oy = projective.Oy * Canvas.UnitSize;
+            double wx = projective.wX / 10;
+            double wy = projective.wY / 10;
+            double wo = projective.wO; 
 
             // | Xx / m00 | Xy / m01 | wX / m02 | 
             // | Yx / m10 | Yy / m11 | wY / m12 |
@@ -144,20 +145,19 @@ namespace Modeling_Canvas.Extensions
             double ty = (x * xy + y * yy + oy) / w;
 
             return new Point(tx, Canvas.ActualHeight - ty);
-        }
+        } 
 
         public static Point ReverseProjectiveTransformation(this Point canvasPoint, ProjectiveModel projective)
         {
-            canvasPoint = new Point(canvasPoint.X, canvasPoint.Y);
             double xx = projective.Xx;
-            double yx = projective.Yx;
-            double ox = projective.Ox;
-            double xy = projective.Xy;
+            double yx = projective.Yx * Canvas.UnitSize;
+            double ox = projective.Ox * Canvas.UnitSize;
+            double xy = projective.Xy * Canvas.UnitSize;
             double yy = projective.Yy;
-            double oy = projective.Oy;
-            double wx = projective.wX / Canvas.UnitSize;
-            double wy = projective.wY / Canvas.UnitSize;
-            double wo = projective.wO;
+            double oy = projective.Oy * Canvas.UnitSize;
+            double wx = projective.wX / 10;
+            double wy = projective.wY / 10;
+            double wo = projective.wO; 
 
             // The equation is:
             // canvasX = (xx * x + yx * y + ox) / (wx * x + wy * y + wo)

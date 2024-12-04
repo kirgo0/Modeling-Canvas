@@ -133,6 +133,17 @@ namespace Modeling_Canvas
             else if (ProjectiveTab.IsSelected) MyCanvas.RenderMode = RenderMode.Projective;
             
         }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            MyCanvas.AllowInfinityRender = true;
+            MyCanvas.InvalidateVisual();
+        }
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            MyCanvas.AllowInfinityRender = false;
+            MyCanvas.InvalidateVisual();
+        }
     }
 
 }

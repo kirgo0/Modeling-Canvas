@@ -3,6 +3,7 @@ using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -68,7 +69,7 @@ namespace Modeling_Canvas.UIELements
         public HashSet<CustomElement> SelectedElements { get; set; } = new();
 
         private Point previousMousePosition;
-
+        public bool AllowInfinityRender { get; set; } = true;
         public CustomCanvas()
         {
             InvalidateCanvasCommand = new RelayCommand(_ => {
@@ -89,7 +90,7 @@ namespace Modeling_Canvas.UIELements
                     DrawAffineCoordinateGrid(dc);
                     break;
                 case RenderMode.Projective:
-                    DrawTransformedCoordinateGrid(dc);
+                    DrawProjectiveCoordinateGrid(dc);
                     break;
             }
         } 
@@ -292,7 +293,7 @@ namespace Modeling_Canvas.UIELements
                 new Point(halfWidth, maxY).ApplyAffineTransformation(AffineParams));
         }
 
-        protected void DrawTransformedCoordinateGrid(DrawingContext dc)
+        protected void DrawProjectiveCoordinateGrid(DrawingContext dc)
         {
             double width = ActualWidth;
             double height = ActualHeight;
@@ -308,40 +309,29 @@ namespace Modeling_Canvas.UIELements
             }
             var calculatedFrequency = GetOptimalGridFrequency();
 
-            var corners = new[]
-            {
-                new Point(0, 0).ReverseProjectiveTransformation(ProjectiveParams),
-                new Point(width, 0).ReverseProjectiveTransformation(ProjectiveParams),
-                new Point(0, height).ReverseProjectiveTransformation(ProjectiveParams),
-                new Point(width, height).ReverseProjectiveTransformation(ProjectiveParams),
-            };
-            // Calculate bounds of the transformed canvas
-
             double minX = 0;
             double maxX = width;
             double minY = 0;
             double maxY = height;
 
-
-            minX = corners.Min(c => c.X);
-            maxX = corners.Max(c => c.X);
-            minY = corners.Min(c => c.Y);
-            maxY = corners.Max(c => c.Y);
-
-            if (maxX == 0) maxX = 10000;
-            if (maxY == 0) maxY = 10000;
-            if (minX < 0)
+            if (AllowInfinityRender)
             {
-                maxX -= minX;
-                minX = 0;
+                var corners = new[]
+                {
+                    new Point(0, 0).ReverseProjectiveTransformation(ProjectiveParams),
+                    new Point(width, 0).ReverseProjectiveTransformation(ProjectiveParams),
+                    new Point(0, height).ReverseProjectiveTransformation(ProjectiveParams),
+                    new Point(width, height).ReverseProjectiveTransformation(ProjectiveParams),
+                };
+
+                minX = corners.Min(c => c.X);
+                maxX = corners.Max(c => c.X);
+                minY = corners.Min(c => c.Y);
+                maxY = corners.Max(c => c.Y);
+
             }
-            if (minY < 0)
-            {
-                maxY -= minY;
-                minY = 0;
-            }
+
             // Vertical lines and labels
-            double prevX = 0, prevY = 0;
             for (double x = halfWidth; x < maxX; x += UnitSize * calculatedFrequency)
             {
                 var start = new Point(x, minY).ApplyProjectiveTransformation(ProjectiveParams);

@@ -51,9 +51,7 @@ namespace Modeling_Canvas.Extensions
 
         public static void DrawAffineSquare(this DrawingContext dc, Brush fill, Pen strokePen, Point center, double sideLength, AffineModel affine)
         {
-            // Transform the center point
-            Point transformedCenter = center.ApplyAffineTransformation(affine);
-
+            var transformedCenter = center.ApplyAffineTransformation(affine);
             // Draw the transformed square
             DrawingContextExtensions.DrawSquare(dc, fill, strokePen, transformedCenter, sideLength);
         }

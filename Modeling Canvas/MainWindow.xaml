@@ -139,9 +139,10 @@
                             <TextBox Text="{Binding ElementName=MyCanvas, Path=ProjectiveParams.wO, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource FloatConverter}}" 
                      HorizontalAlignment="Left" Margin="37,63,0,19" Grid.Column="2" Width="50"/>
 
-                            <Button Content="Apply" Grid.Row="1" Grid.ColumnSpan="3" 
+                            <Button Content="Apply" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
                     HorizontalAlignment="Center" Command="{Binding ElementName=MyCanvas, Path=InvalidateCanvasCommand}" 
-                    VerticalAlignment="Center" Width="100"/>
+                    VerticalAlignment="Center" Width="90"/>
+                            <CheckBox IsChecked="{Binding ElementName=MyCanvas, Path=AllowInfinityRender}" IsTabStop="False" Focusable="False" Content="Infinite render" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="66,0,0,0" VerticalAlignment="Center" Grid.Row="1" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked"/>
                         </Grid>
                     </Grid>
                 </TabItem>
