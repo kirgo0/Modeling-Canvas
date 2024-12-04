@@ -412,13 +412,14 @@ namespace Modeling_Canvas.UIElements
                 {
                     element.OverrideAnchorPoint = false;
                 }
-                InvalidateVisual();
             }
+            InvalidateVisual();
         }
 
         public void OnKeyUp(object sender, KeyEventArgs e)
         {
             Mouse.OverrideCursor = null;
+            InvalidateVisual();
         }
 
         protected void ClearControlPanel()

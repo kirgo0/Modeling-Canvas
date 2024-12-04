@@ -1,11 +1,12 @@
 ﻿using Modeling_Canvas.Extensions;
 using System.Windows;
-using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
+using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace Modeling_Canvas.UIElements
 {
-    public class Hypocycloid : CustomElement
+    public partial class Hypocycloid : CustomElement
     {
         protected double _distance = 1;
         public double Distance
@@ -19,13 +20,12 @@ namespace Modeling_Canvas.UIElements
             get => _angle;
             set => _angle = Math.Round(value, 1);
         }
-        public double _rotationAngle { get; set; } = 0;
+        private double _rotationAngle = 0;
         public int PointsCount { get; set; } = 1000;
         public CustomCircle LargeCircle { get; set; }
         public CustomCircle SmallCircle { get; set; }
         public DraggablePoint CenterPoint { get; set; }
-
-
+        public CustomPoint EndPoint { get; set; }
         public double LargeRadius { get => LargeCircle.Radius; }
         public double SmallRadius { get => SmallCircle.Radius; }
 
@@ -39,11 +39,13 @@ namespace Modeling_Canvas.UIElements
             StrokeThickness = 3;
             LargeCircle = new CustomCircle(canvas)
             {
-                Radius = largeRadius
+                Radius = largeRadius,
+                HasAnchorPoint = false
             };
             SmallCircle = new CustomCircle(canvas)
             {
-                Radius = smallRadius
+                Radius = smallRadius,
+                HasAnchorPoint = false
             };
             canvas.MouseWheel += (o, e) =>
             {
@@ -51,53 +53,20 @@ namespace Modeling_Canvas.UIElements
                     RenderControlPanel();
             };
         }
-
-        protected override void OnRender(DrawingContext dc)
-        {
-            UpdateUIControls();
-            base.OnRender(dc);
-        }
-
         protected override Point GetAnchorDefaultPosition()
         {
             return Center;
         }
-        protected override void DefaultRender(DrawingContext dc)
+
+        protected override void OnRender(DrawingContext dc)
         {
-            double R = LargeRadius * UnitSize; // Великий радіус в одиницях Canvas
-            double r = SmallRadius * UnitSize; // Малий радіус в одиницях Canvas
-            double d = Distance * UnitSize;    // Відстань до точки в одиницях Canvas
-
-            PointCollection points = new PointCollection();
-
-            var center = CenterPoint.PixelPosition;
-
-            for (int i = 0; i < PointsCount; i++)
+            UpdateUIControls();
+            if (InputManager.AltPressed)
             {
-                double t = Helpers.DegToRad(Angle) * i / PointsCount;
-                double x = (R - r) * Math.Cos(t) + d * Math.Cos((R - r) / r * t);
-                double y = (R - r) * Math.Sin(t) - d * Math.Sin((R - r) / r * t);
-
-                var rotatedPoint = new Point(x, y).RotatePoint(AnchorPoint.Position, _rotationAngle);
-
-                points.Add(new Point(center.X + rotatedPoint.X, center.Y + rotatedPoint.Y));
+                var t = FindNearestPoint(Mouse.GetPosition(Canvas));
+                if(t is not null) DrawTangentsAndNormals(dc, t.Value);
             }
-
-            for (int i = 0; i < points.Count - 1; i++)
-            {
-                dc.DrawLine(StrokePen, points[i], points[i + 1], 10);
-            }
-        }
-
-        public Point GetSmallCircleCenter(double angleDeg)
-        {
-            var angle = Helpers.DegToRad(angleDeg);
-            double x, y;
-
-            x = Center.X + (LargeRadius - SmallRadius) * Math.Cos(angle);
-            y = Center.Y + (LargeRadius - SmallRadius) * Math.Sin(angle);
-
-            return new Point(x, -y);
+            base.OnRender(dc);
         }
 
         protected override void InitControls()
@@ -137,12 +106,26 @@ namespace Modeling_Canvas.UIElements
                 }
             };
 
+            EndPoint = new CustomPoint(Canvas)
+            {
+                StrokeThickness = 0,
+                Fill = Brushes.Red,
+                Radius = 5
+            };
+
             Canvas.Children.Add(CenterPoint);
             Canvas.Children.Add(SmallCircle);
             Canvas.Children.Add(LargeCircle);
+            Canvas.Children.Add(EndPoint);
             base.InitControls();
         }
 
+        public List<(Point, int)> HypocycloidPoints { get; set; } = new();
+
+        protected override void DefaultRender(DrawingContext dc)
+        {
+            DrawHypocycliod(dc);
+        }
 
         protected override void AffineRender(DrawingContext dc)
         {
@@ -152,127 +135,111 @@ namespace Modeling_Canvas.UIElements
         {
         }
 
+        protected virtual void DrawHypocycliod(DrawingContext dc)
+        {
+            HypocycloidPoints.Clear();
+            double R = LargeRadius * UnitSize; // Великий радіус в одиницях Canvas
+            double r = SmallRadius * UnitSize; // Малий радіус в одиницях Canvas
+            double d = Distance * UnitSize;    // Відстань до точки в одиницях Canvas
+
+            var center = CenterPoint.PixelPosition;
+
+            for (int i = 0; i < PointsCount; i++)
+            {
+                double t = Helpers.DegToRad(Angle) * i / PointsCount;
+                double x = (R - r) * Math.Cos(t) + d * Math.Cos((R - r) / r * t);
+                double y = (R - r) * Math.Sin(t) - d * Math.Sin((R - r) / r * t);
+
+                var rotationAngle = Helpers.DegToRad(_rotationAngle);
+                double rotatedX = Math.Cos(rotationAngle) * (x) - Math.Sin(rotationAngle) * (y);
+                double rotatedY = Math.Sin(rotationAngle) * (x) + Math.Cos(rotationAngle) * (y);
+                HypocycloidPoints.Add((new Point(center.X + rotatedX, center.Y + rotatedY), i));
+            }
+
+            for (int i = 0; i < HypocycloidPoints.Count - 1; i++)
+            {
+                dc.DrawLine(StrokePen, HypocycloidPoints[i].Item1, HypocycloidPoints[i + 1].Item1, 10);
+            }
+
+            EndPoint.Position = Canvas.GetCanvasUnitCoordinates(HypocycloidPoints.Last().Item1);
+        }
+
+        public Point GetSmallCircleCenter(double angleDeg)
+        {
+            angleDeg = Helpers.NormalizeAngle(angleDeg);
+            var angle = Helpers.DegToRad(angleDeg);
+            double x, y;
+
+            x = Center.X + (LargeRadius - SmallRadius) * Math.Cos(angle);
+            y = Center.Y - (LargeRadius - SmallRadius) * Math.Sin(angle);
+
+            return new Point(x, y);
+        }
+
+        public void DrawTangentsAndNormals(DrawingContext dc, double tParameter)
+        {
+            double R = LargeRadius * UnitSize; // Великий радіус в одиницях Canvas
+            double r = SmallRadius * UnitSize; // Малий радіус в одиницях Canvas
+            double d = Distance * UnitSize;    // Відстань до точки в одиницях Canvas
+
+            var center = CenterPoint.PixelPosition;
+
+            // Обчислюємо координати точки на гіпоциклоїді
+            double t = Helpers.DegToRad(Angle) * tParameter / PointsCount;
+            double x = (R - r) * Math.Cos(t) + d * Math.Cos((R - r) / r * t);
+            double y = (R - r) * Math.Sin(t) - d * Math.Sin((R - r) / r * t);
+
+            var rotationAngle = Helpers.DegToRad(_rotationAngle);
+            double rotatedX = Math.Cos(rotationAngle) * x - Math.Sin(rotationAngle) * y;
+            double rotatedY = Math.Sin(rotationAngle) * x + Math.Cos(rotationAngle) * y;
+
+            Point pointOnCurve = new Point(center.X + rotatedX, center.Y + rotatedY);
+
+            // Обчислюємо похідні для дотичної
+            double dx = -(R - r) * Math.Sin(t) - d * ((R - r) / r) * Math.Sin((R - r) / r * t);
+            double dy = (R - r) * Math.Cos(t) - d * ((R - r) / r) * Math.Cos((R - r) / r * t);
+
+            double rotatedDx = Math.Cos(rotationAngle) * dx - Math.Sin(rotationAngle) * dy;
+            double rotatedDy = Math.Sin(rotationAngle) * dx + Math.Cos(rotationAngle) * dy;
+
+            Vector tangent = new Vector(rotatedDx, rotatedDy);
+            tangent.Normalize();
+
+            // Нормальний вектор (перпендикуляр до дотичної)
+            Vector normal = new Vector(-tangent.Y, tangent.X);
+
+            // Малюємо дотичну
+            Point tangentEnd = pointOnCurve + tangent * Canvas.ActualWidth; // Довжина вектора
+            dc.DrawLine(new Pen(Brushes.Blue, 2), pointOnCurve, tangentEnd);
+
+            // Малюємо нормаль
+            Point normalEnd = pointOnCurve + normal * Canvas.ActualWidth; // Довжина вектора
+            dc.DrawLine(new Pen(Brushes.Green, 2), pointOnCurve, normalEnd);
+
+            // Малюємо точку на кривій
+            dc.DrawEllipse(Brushes.Red, null, pointOnCurve, 3, 3);
+        }
+
+        public double? FindNearestPoint(Point targetPoint, double tolerance = 10)
+        {
+            foreach (var item in HypocycloidPoints)
+            {
+                var point = item.Item1;
+                double distance = Math.Sqrt(Math.Pow(point.X - targetPoint.X, 2) + Math.Pow(point.Y - targetPoint.Y, 2));
+                if (distance <= tolerance)
+                {
+                    return item.Item2;
+                }
+            }
+            return null;
+        }
+
         protected override void RenderControlPanel()
         {
             ClearControlPanel();
             AddDistanceControls();
             AddAngleControls();
             AddRadiusControls();
-        }
-
-        protected virtual void AddDistanceControls()
-        {
-            var panel = GetDefaultVerticalPanel();
-            var distanceLabel = new TextBlock { Text = $"Distance: {Distance}", TextAlignment = TextAlignment.Center };
-            var distanceSlider = new Slider
-            {
-                Minimum = 0.1,
-                Maximum = SmallCircle.Radius,
-                Value = Distance,
-                TickFrequency = 0.1,
-                IsSnapToTickEnabled = true,
-                Width = 200
-            };
-            distanceSlider.ValueChanged += (s, e) =>
-            {
-                Distance = e.NewValue;
-                distanceLabel.Text = $"Distance: {Distance}";
-                InvalidateVisual();
-            };
-            panel.Children.Add(distanceLabel);
-            panel.Children.Add(distanceSlider);
-            AddElementToControlPanel(panel);
-        }
-
-        protected void AddRadiusControls()
-        {
-            // Large Radius Controls
-            var largePanel = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
-            var largeRadiusLabel = new TextBlock { Text = $"Large Radius: {LargeRadius}", TextAlignment = TextAlignment.Center };
-
-            var largeRadiusSlider = new Slider
-            {
-                Minimum = SmallRadius,
-                Maximum = Math.Max(Canvas.ActualWidth / 2 / UnitSize, LargeRadius),
-                Value = LargeRadius,
-                TickFrequency = 0.1,
-                IsSnapToTickEnabled = true,
-                Width = 200
-            };
-
-            // Small Radius Controls
-            var smallPanel = new StackPanel { Orientation = Orientation.Vertical, Margin = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Center };
-            var smallRadiusLabel = new TextBlock { Text = $"Small Radius: {SmallRadius}", TextAlignment = TextAlignment.Center };
-
-            var smallRadiusSlider = new Slider
-            {
-                Minimum = 1,
-                Maximum = LargeRadius, // Initially set to LargeRadius.
-                Value = SmallRadius,
-                TickFrequency = 0.1,
-                IsSnapToTickEnabled = true,
-                Width = 200
-            };
-
-            // Large Radius ValueChanged Event
-            largeRadiusSlider.ValueChanged += (s, e) =>
-            {
-                var newLargeRadius = Math.Round(e.NewValue, 2);
-                LargeCircle.Radius = newLargeRadius;
-
-                largeRadiusLabel.Text = $"Large Radius: {LargeRadius}";
-                smallRadiusSlider.Maximum = LargeRadius; // Update SmallRadius slider max value dynamically.
-
-                InvalidateCanvas();
-            };
-
-            // Small Radius ValueChanged Event
-            smallRadiusSlider.ValueChanged += (s, e) =>
-            {
-                var newSmallRadius = Math.Round(e.NewValue, 2);
-                if (SmallRadius == Distance || SmallRadius < Distance)
-                {
-                    Distance = newSmallRadius;
-                }
-                SmallCircle.Radius = newSmallRadius;
-
-                smallRadiusLabel.Text = $"Small Radius: {SmallRadius}";
-                InvalidateCanvas();
-            };
-
-            // Add both panels to the control panel
-            largePanel.Children.Add(largeRadiusLabel);
-            largePanel.Children.Add(largeRadiusSlider);
-            AddElementToControlPanel(largePanel);
-
-            smallPanel.Children.Add(smallRadiusLabel);
-            smallPanel.Children.Add(smallRadiusSlider);
-            AddElementToControlPanel(smallPanel);
-        }
-
-        protected virtual void AddAngleControls()
-        {
-            var panel = GetDefaultVerticalPanel();
-            var distanceLabel = new TextBlock { Text = $"Angle: {Angle}", TextAlignment = TextAlignment.Center };
-            var distanceSlider = new Slider
-            {
-                Minimum = 0,
-                Maximum = 1080,
-                Value = Angle,
-                TickFrequency = 1,
-                IsSnapToTickEnabled = true,
-                Width = 200
-            };
-            distanceSlider.ValueChanged += (s, e) =>
-            {
-                Angle = e.NewValue;
-                distanceLabel.Text = $"Angle: {Angle}";
-                UpdateUIControls();
-                InvalidateCanvas();
-            };
-            panel.Children.Add(distanceLabel);
-            panel.Children.Add(distanceSlider);
-            AddElementToControlPanel(panel);
         }
 
         public override void MoveElement(Vector offset)
@@ -286,6 +253,8 @@ namespace Modeling_Canvas.UIElements
         public override void RotateElement(Point anchorPoint, double degrees)
         {
             _rotationAngle -= degrees;
+            _rotationAngle = Helpers.NormalizeAngle(_rotationAngle);
+            Center = Center.RotatePoint(anchorPoint, degrees);
         }
         public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
         {
@@ -298,10 +267,12 @@ namespace Modeling_Canvas.UIElements
         public void UpdateUIControls()
         {
             LargeCircle.Center = Center;
+
             SmallCircle.Center = GetSmallCircleCenter(Angle + _rotationAngle);
 
             LargeCircle.Visibility = ControlsVisibility;
             SmallCircle.Visibility = ControlsVisibility;
+            EndPoint.Visibility = ControlsVisibility;
 
             LargeCircle.ControlsVisible = ControlsVisibility is Visibility.Visible;
             SmallCircle.ControlsVisible = ControlsVisibility is Visibility.Visible;
