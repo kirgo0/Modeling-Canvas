@@ -1,5 +1,5 @@
 ﻿using Modeling_Canvas.Models;
-using Modeling_Canvas.UIELements;
+using Modeling_Canvas.UIElements;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media.Media3D;

@@ -6,7 +6,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace Modeling_Canvas.UIELements
+namespace Modeling_Canvas.UIElements
 {
     public class CustomLine : CustomElement
     {
@@ -35,7 +35,7 @@ namespace Modeling_Canvas.UIELements
 
             foreach (var point in Points)
             {
-                point.Visibility = ShowControls;
+                point.Visibility = ControlsVisibility;
                 point.Shape = PointShape.Circle;
             }
 

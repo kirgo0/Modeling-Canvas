@@ -21,7 +21,8 @@ namespace Modeling_Canvas.Extensions
         #endregion
 
         #region points
-        public static void DrawCircle(this DrawingContext dc, Brush fill, Pen strokePen, Point center, double radius, int precision)
+        public static void DrawCircle(this DrawingContext dc, Brush fill, Pen strokePen, Point center, double radius, int precision,
+            double transparentThickness = 0)
         {
             var geometry = new StreamGeometry();
 
@@ -52,6 +53,7 @@ namespace Modeling_Canvas.Extensions
 
             geometry.Freeze(); // Freeze for performance
             dc.DrawGeometry(fill, strokePen, geometry);
+            dc.DrawGeometry(null, new Pen(Brushes.Transparent, transparentThickness), geometry);
         }
 
         public static void DrawAnchorPoint(this DrawingContext dc, Brush fill, Pen strokePen, Point center, double radius, int precision, double lineLength)

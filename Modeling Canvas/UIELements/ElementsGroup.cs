@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace Modeling_Canvas.UIELements
+namespace Modeling_Canvas.UIElements
 {
     public class ElementsGroup : CustomLine
     {
@@ -11,7 +11,7 @@ namespace Modeling_Canvas.UIELements
         public string Name { get; set; } = string.Empty;
         public double RectPadding { get; set; } = 0.5;
 
-        public override Visibility ShowControls => AnyItemIsSelected ? Visibility.Visible : Visibility.Hidden;
+        public override Visibility ControlsVisibility => AnyItemIsSelected ? Visibility.Visible : Visibility.Hidden;
         public Pen DashedPen { get =>
                 new Pen(Stroke, StrokeThickness)
                 {
@@ -50,7 +50,7 @@ namespace Modeling_Canvas.UIELements
             CalculateRectPoints();
             StrokePen = DashedPen;
             base.OnRender(dc);
-            Visibility = ShowControls;
+            Visibility = ControlsVisibility;
         }
 
 

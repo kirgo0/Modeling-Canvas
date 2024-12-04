@@ -31,13 +31,13 @@ namespace Modeling_Canvas.Extensions
         #endregion
 
         #region points
-        public static void DrawAffineCircle(this DrawingContext dc, Brush fill, Pen strokePen, Point center, double radius, int precision, AffineModel affine)
+        public static void DrawAffineCircle(this DrawingContext dc, Brush fill, Pen strokePen, Point center, double radius, int precision, AffineModel affine, double transparentThickness = 0)
         {
             // Transform the center point
             Point transformedCenter = center.ApplyAffineTransformation(affine);
 
             // Draw the transformed circle
-            DrawingContextExtensions.DrawCircle(dc, fill, strokePen, transformedCenter, radius, precision);
+            DrawingContextExtensions.DrawCircle(dc, fill, strokePen, transformedCenter, radius, precision, transparentThickness);
         }
 
         public static void DrawAffineAnchorPoint(this DrawingContext dc, Brush fill, Pen strokePen, Point center, double radius, int precision, double lineLength, AffineModel affine)

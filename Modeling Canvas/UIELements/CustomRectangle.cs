@@ -5,7 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace Modeling_Canvas.UIELements
+namespace Modeling_Canvas.UIElements
 {
     public class CustomRectangle : CustomElement
     {
@@ -47,12 +47,6 @@ namespace Modeling_Canvas.UIELements
             Stroke = Brushes.Pink;
             StrokeThickness = 3;
         }
-
-        //public override Point GetOriginPoint(Size arrangedSize)
-        //{
-        //    var topLeftPoint = Points.OrderBy(x => x.Position.X).OrderByDescending(y => y.Position.Y).First().Position;
-        //    return new Point(arrangedSize.Width / 2 + UnitSize * topLeftPoint.X, arrangedSize.Height / 2 - UnitSize * topLeftPoint.Y / 2);
-        //}
         protected override Size MeasureOverride(Size availableSize)
         {
             return new Size(RectWidth * UnitSize + StrokeThickness, RectHeight * UnitSize + StrokeThickness);
@@ -91,7 +85,7 @@ namespace Modeling_Canvas.UIELements
         {
             foreach (var point in Points)
             {
-                point.Visibility = ShowControls;
+                point.Visibility = ControlsVisibility;
             }
             base.OnRender(drawingContext);
 

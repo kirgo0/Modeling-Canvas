@@ -36,7 +36,7 @@ namespace Modeling_Canvas.Extensions
         #endregion
 
         #region points
-        public static void DrawProjectiveCircle(this DrawingContext dc, Brush fill, Pen strokePen, Point center, double radius, int precision, ProjectiveModel projective)
+        public static void DrawProjectiveCircle(this DrawingContext dc, Brush fill, Pen strokePen, Point center, double radius, int precision, ProjectiveModel projective, double transparentThickness = 0)
         {
             // Transform the center point
             Point transformedCenter = center.ApplyProjectiveTransformation(projective);

@@ -6,7 +6,7 @@ using System.Windows.Documents;
 using System.Windows.Media;
 
 
-namespace Modeling_Canvas.UIELements
+namespace Modeling_Canvas.UIElements
 {
     public class CustomPoint : CustomElement
     {

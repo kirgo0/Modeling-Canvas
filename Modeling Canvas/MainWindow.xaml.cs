@@ -1,7 +1,7 @@
 ﻿using Modeling_Canvas.Commands;
 using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
-using Modeling_Canvas.UIELements;
+using Modeling_Canvas.UIElements;
 using System.Security.Policy;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -22,7 +22,13 @@ namespace Modeling_Canvas
             InitializeComponent();
             CenterWindowOnScreen();
 
-            InitFigure();
+            //InitFigure();
+            var a = new Hypocycloid(MyCanvas, 4, 1);
+            MyCanvas.Children.Add(a);
+            a.Center = new Point(0, 0);
+
+            //var b = new SegmentedCircle(MyCanvas);
+            //MyCanvas.Children.Add(b);
 
             //var a = new CustomLine(MyCanvas, new Point(0,2), new Point(2, 7));
             //MyCanvas.Children.Add(a);

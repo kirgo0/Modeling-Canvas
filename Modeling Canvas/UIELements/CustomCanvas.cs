@@ -9,9 +9,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace Modeling_Canvas.UIELements
+namespace Modeling_Canvas.UIElements
 {
-
     public class CustomCanvas : Canvas, INotifyPropertyChanged
     {
         public double XOffset { get; set; } = 0;
@@ -395,7 +394,6 @@ namespace Modeling_Canvas.UIELements
                 dc.DrawText(formattedText, new Point(position.X + xOffset, position.Y + yOffset));
             }
         }
-
 
         public void OnKeyDown(object sender, KeyEventArgs e)
         {

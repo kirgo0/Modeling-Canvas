@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace Modeling_Canvas.UIELements
+namespace Modeling_Canvas.UIElements
 {
     public class DraggablePoint : CustomPoint, INotifyPropertyChanged
     {
