@@ -1,5 +1,4 @@
-﻿using Modeling_Canvas.Extensions;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -12,7 +11,9 @@ namespace Modeling_Canvas.UIElements
         public double RectPadding { get; set; } = 0.5;
 
         public override Visibility ControlsVisibility => AnyItemIsSelected ? Visibility.Visible : Visibility.Hidden;
-        public Pen DashedPen { get =>
+        public Pen DashedPen
+        {
+            get =>
                 new Pen(Stroke, StrokeThickness)
                 {
                     DashCap = PenLineCap.Round,
@@ -38,12 +39,12 @@ namespace Modeling_Canvas.UIElements
             AddPoint(new Point(0, 0));
             AddPoint(new Point(0, 0));
 
-            foreach(var point in Points) {
+            foreach (var point in Points)
+            {
                 point.OnRenderControlPanel = RenderControlPanel;
                 point.OverrideRenderControlPanelAction = true;
             }
         }
-
         protected override void OnRender(DrawingContext dc)
         {
             var a = Canvas.SelectedElements.Intersect(Children).ToList();
@@ -52,7 +53,6 @@ namespace Modeling_Canvas.UIElements
             base.OnRender(dc);
             Visibility = ControlsVisibility;
         }
-
 
         public override void AddPoint(double x, double y)
         {
@@ -115,10 +115,11 @@ namespace Modeling_Canvas.UIElements
 
         protected override void OnElementSelected(MouseButtonEventArgs e)
         {
-            if (!InputManager.ShiftPressed && !Canvas.SelectedElements.Contains(this) && ! AnyItemIsSelected)
+            if (!InputManager.ShiftPressed && !Canvas.SelectedElements.Contains(this) && !AnyItemIsSelected)
             {
                 Canvas.SelectedElements.Clear();
-            } else if(!Canvas.SelectedElements.Contains(this))
+            }
+            else if (!Canvas.SelectedElements.Contains(this))
             {
                 Canvas.SelectedElements.Add(this);
             }

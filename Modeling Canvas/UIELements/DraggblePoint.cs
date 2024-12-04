@@ -7,7 +7,7 @@ using System.Windows.Media;
 
 namespace Modeling_Canvas.UIElements
 {
-    public class DraggablePoint : CustomPoint, INotifyPropertyChanged
+    public partial class DraggablePoint : CustomPoint, INotifyPropertyChanged
     {
         public double DragRadius { get; set; } = 10;
         public Point Position
@@ -90,26 +90,6 @@ namespace Modeling_Canvas.UIElements
             {
                 OnRenderControlPanel?.Invoke(this);
             }
-        }
-
-        protected virtual void AddPointControls()
-        {
-            AddDefaultPointControls(
-                "Point",
-                this,
-                "Position.X",
-                "Position.Y",
-                (x) =>
-                {
-                    Position = new Point(x, Position.Y);
-                    InvalidateCanvas();
-                },
-                (y) =>
-                {
-                    Position = new Point(Position.X, y);
-                    InvalidateCanvas();
-                }
-            );
         }
 
 

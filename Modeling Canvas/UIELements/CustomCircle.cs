@@ -2,7 +2,6 @@
 using Modeling_Canvas.Models;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Modeling_Canvas.UIElements
@@ -17,7 +16,7 @@ namespace Modeling_Canvas.UIElements
             set
             {
                 if (value <= 0.5) _radius = 0.5;
-                else _radius = Math.Round(value,3);
+                else _radius = Math.Round(value, 3);
             }
         }
         public Point Center
@@ -99,7 +98,7 @@ namespace Modeling_Canvas.UIElements
             AddStrokeThicknessControls();
             AddRadiusControls();
         }
-        
+
         protected override Point GetAnchorDefaultPosition()
         {
             return Center;
@@ -154,7 +153,7 @@ namespace Modeling_Canvas.UIElements
         public override void RotateElement(Point anchorPoint, double degrees)
         {
             RotateAction?.Invoke(anchorPoint, degrees);
-            if(OverrideRotateAction) return;
+            if (OverrideRotateAction) return;
             Center = Center.RotatePoint(anchorPoint, degrees);
         }
 

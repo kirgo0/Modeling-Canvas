@@ -15,18 +15,21 @@ namespace Modeling_Canvas.UIElements
         public Brush Stroke { get; set; } = Brushes.Black; // Default stroke color
         public double StrokeThickness { get; set; } = 1; // Default stroke thickness
         private Pen _strokePen = null;
-        public Pen StrokePen {
+        public Pen StrokePen
+        {
             get => _strokePen is null ? new Pen(Stroke, StrokeThickness) : _strokePen;
-            set => _strokePen = value; 
+            set => _strokePen = value;
         }
         public bool ControlsVisible { get; set; } = false;
         public virtual Visibility ControlsVisibility { get => Canvas.SelectedElements.Contains(this) || ControlsVisible ? Visibility.Visible : Visibility.Hidden; }
         public bool AnchorVisible { get; set; } = true;
-        public Visibility AnchorVisibility { 
-            get {
-                if(AnchorVisible) return ControlsVisibility;
-                else return Visibility.Hidden;   
-            } 
+        public Visibility AnchorVisibility
+        {
+            get
+            {
+                if (AnchorVisible) return ControlsVisibility;
+                else return Visibility.Hidden;
+            }
         }
         public bool HasAnchorPoint { get; set; } = true;
 
@@ -177,7 +180,7 @@ namespace Modeling_Canvas.UIElements
 
         protected virtual void RenderControlPanel()
         {
-            ClearControlPanel(); 
+            ClearControlPanel();
             RenderControlPanelLabel();
             AddRotateControls();
             AddOffsetControls();
@@ -270,10 +273,11 @@ namespace Modeling_Canvas.UIElements
                 {
                     Mouse.OverrideCursor = Cursors.SizeAll;
                     Vector offset = currentMousePosition - _lastMousePosition;
-                    if(Canvas.RenderMode is RenderMode.Affine)
+                    if (Canvas.RenderMode is RenderMode.Affine)
                     {
                         offset = currentMousePosition.ReverseAffineTransformation(Canvas.AffineParams) - _lastMousePosition.ReverseAffineTransformation(Canvas.AffineParams);
-                    } else if(Canvas.RenderMode is RenderMode.Projective)
+                    }
+                    else if (Canvas.RenderMode is RenderMode.Projective)
                     {
                         offset = currentMousePosition.ReverseProjectiveTransformation(Canvas.ProjectiveParams) - _lastMousePosition.ReverseProjectiveTransformation(Canvas.ProjectiveParams);
                     }

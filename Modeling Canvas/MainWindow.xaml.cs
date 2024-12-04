@@ -1,14 +1,9 @@
-﻿using Modeling_Canvas.Commands;
-using Modeling_Canvas.Enums;
+﻿using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
 using Modeling_Canvas.UIElements;
-using System.Security.Policy;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Shapes;
 
 namespace Modeling_Canvas
 {
@@ -44,7 +39,7 @@ namespace Modeling_Canvas
             ResetScaling(null, null);
 
             DrawModeControlTab.SelectionChanged += ChangeRenderMode;
-            
+
             MyCanvas.SizeChanged += (s, e) =>
             {
                 MyCanvas.AffineParams.CanvasHeight = MyCanvas.ActualHeight;
@@ -137,7 +132,7 @@ namespace Modeling_Canvas
             if (DefaultTab.IsSelected) MyCanvas.RenderMode = RenderMode.Default;
             else if (AffineTab.IsSelected) MyCanvas.RenderMode = RenderMode.Affine;
             else if (ProjectiveTab.IsSelected) MyCanvas.RenderMode = RenderMode.Projective;
-            
+
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)

@@ -8,9 +8,10 @@ namespace Modeling_Canvas.UIElements
     public class Hypocycloid : CustomElement
     {
         protected double _distance = 1;
-        public double Distance {
+        public double Distance
+        {
             get => _distance;
-            set => _distance = Math.Round(value, 3); 
+            set => _distance = Math.Round(value, 3);
         }
         protected double _angle = 720;
         public double Angle
@@ -23,7 +24,7 @@ namespace Modeling_Canvas.UIElements
         public CustomCircle LargeCircle { get; set; }
         public CustomCircle SmallCircle { get; set; }
         public DraggablePoint CenterPoint { get; set; }
-        
+
 
         public double LargeRadius { get => LargeCircle.Radius; }
         public double SmallRadius { get => SmallCircle.Radius; }
@@ -43,7 +44,7 @@ namespace Modeling_Canvas.UIElements
             SmallCircle = new CustomCircle(canvas)
             {
                 Radius = smallRadius
-            }; 
+            };
             canvas.MouseWheel += (o, e) =>
             {
                 if (Canvas.SelectedElements.Contains(this))
@@ -154,7 +155,7 @@ namespace Modeling_Canvas.UIElements
         protected override void RenderControlPanel()
         {
             ClearControlPanel();
-            AddDistanceControls(); 
+            AddDistanceControls();
             AddAngleControls();
             AddRadiusControls();
         }
@@ -182,7 +183,7 @@ namespace Modeling_Canvas.UIElements
             panel.Children.Add(distanceSlider);
             AddElementToControlPanel(panel);
         }
-        
+
         protected void AddRadiusControls()
         {
             // Large Radius Controls
@@ -273,7 +274,7 @@ namespace Modeling_Canvas.UIElements
             panel.Children.Add(distanceSlider);
             AddElementToControlPanel(panel);
         }
-        
+
         public override void MoveElement(Vector offset)
         {
             if (InputManager.AnyKeyButShiftPressed) return;
@@ -281,7 +282,7 @@ namespace Modeling_Canvas.UIElements
 
             base.MoveElement(offset);
         }
-        
+
         public override void RotateElement(Point anchorPoint, double degrees)
         {
             _rotationAngle -= degrees;
@@ -293,7 +294,7 @@ namespace Modeling_Canvas.UIElements
         {
             MoveElement(offset);
         }
-        
+
         public void UpdateUIControls()
         {
             LargeCircle.Center = Center;

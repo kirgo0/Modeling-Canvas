@@ -174,7 +174,7 @@ namespace Modeling_Canvas.Extensions
 
             geometry.Freeze();
             dc.DrawGeometry(fill, strokePen, geometry);
-            dc.DrawGeometry(null, new Pen(Brushes.Transparent,transparentThickness), geometry);
+            dc.DrawGeometry(null, new Pen(Brushes.Transparent, transparentThickness), geometry);
         }
 
         private static void DrawArcSegment(StreamGeometryContext context, Point center, double radius, double startDegrees, double endDegrees, int precision)

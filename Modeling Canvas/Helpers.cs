@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using System.Windows;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 
 namespace Modeling_Canvas
 {
@@ -26,7 +24,7 @@ namespace Modeling_Canvas
 
         public static double RoundTo(double value, double absValue)
         {
-            if(Math.Abs(value) < absValue) return value;
+            if (Math.Abs(value) < absValue) return value;
             else return Math.Sign(value) * absValue;
         }
 

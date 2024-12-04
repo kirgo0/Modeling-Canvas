@@ -1,8 +1,6 @@
 ﻿using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Media;
 
 
@@ -28,9 +26,11 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        public Point PixelPosition { 
-            get => new Point(Canvas.ActualWidth / 2 + Position.X * UnitSize, Canvas.ActualHeight/2 - Position.Y * UnitSize).AddCanvasOffsets(); }
-            
+        public Point PixelPosition
+        {
+            get => new Point(Canvas.ActualWidth / 2 + Position.X * UnitSize, Canvas.ActualHeight / 2 - Position.Y * UnitSize).AddCanvasOffsets();
+        }
+
         public CustomPoint(CustomCanvas canvas) : base(canvas)
         {
             Fill = Brushes.Black;
@@ -116,13 +116,12 @@ namespace Modeling_Canvas.UIElements
         {
         }
 
+        public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
+        {
+        }
         public override string ToString()
         {
             return $"Point\nX: {Position.X}\nY: {Position.Y}";
-        }
-
-        public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
-        {
         }
 
     }

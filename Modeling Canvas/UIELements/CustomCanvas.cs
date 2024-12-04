@@ -3,7 +3,6 @@ using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -17,15 +16,16 @@ namespace Modeling_Canvas.UIElements
         public double YOffset { get; set; } = 0;
 
         public RenderMode _renderMode = RenderMode.Default;
-        public RenderMode RenderMode { 
-            get => _renderMode; 
+        public RenderMode RenderMode
+        {
+            get => _renderMode;
             set
             {
                 _renderMode = value;
                 InvalidateVisual();
             }
         }
-        public int RotationPrecision { get; set; } = 4; 
+        public int RotationPrecision { get; set; } = 4;
         private AffineModel _affineParams = new AffineModel();
         public AffineModel AffineParams
         {
@@ -71,16 +71,17 @@ namespace Modeling_Canvas.UIElements
         public bool AllowInfinityRender { get; set; } = true;
         public CustomCanvas()
         {
-            InvalidateCanvasCommand = new RelayCommand(_ => {
+            InvalidateCanvasCommand = new RelayCommand(_ =>
+            {
                 Keyboard.Focus(this);
-                InvalidateVisual(); 
+                InvalidateVisual();
             });
         }
 
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-            switch(RenderMode)
+            switch (RenderMode)
             {
                 case RenderMode.Default:
                     DrawCoordinateGrid(dc);
@@ -92,7 +93,7 @@ namespace Modeling_Canvas.UIElements
                     DrawProjectiveCoordinateGrid(dc);
                     break;
             }
-        } 
+        }
         public Point GetCanvasUnitCoordinates(Point pixelCoordinates)
         {
             if (RenderMode is RenderMode.Affine)
@@ -407,7 +408,7 @@ namespace Modeling_Canvas.UIElements
             }
             if (e.Key == Key.E)
             {
-                foreach(var element in SelectedElements)
+                foreach (var element in SelectedElements)
                 {
                     element.OverrideAnchorPoint = false;
                 }

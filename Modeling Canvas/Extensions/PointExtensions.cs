@@ -1,8 +1,6 @@
 ﻿using Modeling_Canvas.Models;
 using Modeling_Canvas.UIElements;
-using System.Diagnostics;
 using System.Windows;
-using System.Windows.Media.Media3D;
 
 namespace Modeling_Canvas.Extensions
 {
@@ -72,8 +70,8 @@ namespace Modeling_Canvas.Extensions
             );
         }
         public static Point ReverseAffineTransformation(this Point transformedPoint, AffineModel affine)
-        { 
-            transformedPoint = new Point(transformedPoint.X, Canvas.ActualHeight - transformedPoint.Y);   
+        {
+            transformedPoint = new Point(transformedPoint.X, Canvas.ActualHeight - transformedPoint.Y);
             double Xx = affine.Xx;
             double Xy = affine.Yx;
             double Yx = affine.Xy;
@@ -112,7 +110,7 @@ namespace Modeling_Canvas.Extensions
             double oy = projective.Oy * Canvas.UnitSize;
             double wx = projective.wX / 10;
             double wy = projective.wY / 10;
-            double wo = projective.wO; 
+            double wo = projective.wO;
 
             // | Xx / m00 | Xy / m01 | wX / m02 | 
             // | Yx / m10 | Yy / m11 | wY / m12 |
@@ -145,7 +143,7 @@ namespace Modeling_Canvas.Extensions
             double ty = (x * xy + y * yy + oy) / w;
 
             return new Point(tx, Canvas.ActualHeight - ty);
-        } 
+        }
 
         public static Point ReverseProjectiveTransformation(this Point canvasPoint, ProjectiveModel projective)
         {
@@ -157,7 +155,7 @@ namespace Modeling_Canvas.Extensions
             double oy = projective.Oy * Canvas.UnitSize;
             double wx = projective.wX / 10;
             double wy = projective.wY / 10;
-            double wo = projective.wO; 
+            double wo = projective.wO;
 
             // The equation is:
             // canvasX = (xx * x + yx * y + ox) / (wx * x + wy * y + wo)

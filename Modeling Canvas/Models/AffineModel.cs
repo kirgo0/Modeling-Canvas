@@ -54,18 +54,20 @@ namespace Modeling_Canvas.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public bool IsDefaults { get => 
+        public bool IsDefaults
+        {
+            get =>
                 Xx == 1 && Xy == 0 && Ox == 0 &&
-                Yy == 1 && Yx == 0 && Oy == 0; 
+                Yy == 1 && Yx == 0 && Oy == 0;
         }
 
         public void Reset()
         {
-            Xx = 1; 
-            Xy = 0; 
-            Ox = 0; 
-            Yy = 1; 
-            Yx = 0; 
+            Xx = 1;
+            Xy = 0;
+            Ox = 0;
+            Yy = 1;
+            Yx = 0;
             Oy = 0;
         }
 

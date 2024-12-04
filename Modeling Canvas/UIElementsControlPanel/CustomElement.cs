@@ -1,7 +1,7 @@
-﻿using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
-using System.Windows;
 using Xceed.Wpf.Toolkit;
 
 namespace Modeling_Canvas.UIElements
