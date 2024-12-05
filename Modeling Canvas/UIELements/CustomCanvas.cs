@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Modeling_Canvas.UIElements
 {
@@ -68,7 +69,9 @@ namespace Modeling_Canvas.UIElements
         public HashSet<CustomElement> SelectedElements { get; set; } = new();
 
         private Point previousMousePosition;
-        public bool AllowInfinityRender { get; set; } = true;
+        public bool AllowInfinityRender { get; set; } = false;
+
+        private DispatcherTimer timer;
         public CustomCanvas()
         {
             InvalidateCanvasCommand = new RelayCommand(_ =>
@@ -412,14 +415,21 @@ namespace Modeling_Canvas.UIElements
                 {
                     element.OverrideAnchorPoint = false;
                 }
+                InvalidateVisual();
             }
-            InvalidateVisual();
+            if (e.Key == Key.LeftAlt)
+            {
+                InvalidateVisual();
+            }
         }
 
         public void OnKeyUp(object sender, KeyEventArgs e)
         {
             Mouse.OverrideCursor = null;
-            InvalidateVisual();
+            if (e.Key == Key.LeftAlt)
+            {
+                InvalidateVisual();
+            }
         }
 
         protected void ClearControlPanel()

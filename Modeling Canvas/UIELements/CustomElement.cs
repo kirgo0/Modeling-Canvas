@@ -283,10 +283,6 @@ namespace Modeling_Canvas.UIElements
                     }
                     MoveElement(offset);
 
-                    //foreach (var element in Canvas.SelectedElements.Where(e => !e.Equals(this)))
-                    //{
-                    //    element.MoveElement(offset);
-                    //}
                 }
                 _lastMousePosition = currentMousePosition;
             }

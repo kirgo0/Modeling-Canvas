@@ -103,9 +103,9 @@ namespace Modeling_Canvas.Extensions
         {
             // Витягуємо значення параметрів із об'єкта ProjectiveModel у локальні змінні
             double xx = projective.Xx;
-            double yx = projective.Yx * Canvas.UnitSize;
+            double yx = projective.Yx;
             double ox = projective.Ox * Canvas.UnitSize;
-            double xy = projective.Xy * Canvas.UnitSize;
+            double xy = projective.Xy;
             double yy = projective.Yy;
             double oy = projective.Oy * Canvas.UnitSize;
             double wx = projective.wX / 10;
@@ -148,9 +148,9 @@ namespace Modeling_Canvas.Extensions
         public static Point ReverseProjectiveTransformation(this Point canvasPoint, ProjectiveModel projective)
         {
             double xx = projective.Xx;
-            double yx = projective.Yx * Canvas.UnitSize;
+            double yx = projective.Yx;
             double ox = projective.Ox * Canvas.UnitSize;
-            double xy = projective.Xy * Canvas.UnitSize;
+            double xy = projective.Xy;
             double yy = projective.Yy;
             double oy = projective.Oy * Canvas.UnitSize;
             double wx = projective.wX / 10;
