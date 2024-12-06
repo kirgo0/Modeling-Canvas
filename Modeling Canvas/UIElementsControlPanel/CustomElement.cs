@@ -8,7 +8,6 @@ namespace Modeling_Canvas.UIElements
 {
     public abstract partial class CustomElement
     {
-
         protected void AddDefaultPointControls(
             string labelText,
             object source,

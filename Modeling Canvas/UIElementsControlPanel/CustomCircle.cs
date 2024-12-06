@@ -20,7 +20,7 @@ namespace Modeling_Canvas.UIElements
             };
             radiusSlider.ValueChanged += (s, e) =>
             {
-                Radius = Math.Round(e.NewValue, 2); // Update Radius
+                Radius = Math.Round(e.NewValue, 2);
                 radiusLabel.Text = $"Radius: {Radius}";
                 InvalidateCanvas();
             };

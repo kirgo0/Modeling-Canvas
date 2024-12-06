@@ -1,118 +1,56 @@
-﻿
-using System.Windows.Controls;
-using System.Windows;
-using System.Windows.Data;
+﻿using System.Windows;
+using Modeling_Canvas.Models;
 
 namespace Modeling_Canvas.UIElements
 {
     public partial class Hypocycloid
     {
-        private void CreateUIControls()
+        private Dictionary<string, FrameworkElement> CreateHypocycloidControls(HypocycloidModel model, string labelPrefix = "", string namePrefix = "")
         {
-            var distancePanel = CreateSliderControl(
-                "Distance",
+            var controls = new Dictionary<string, FrameworkElement>();
+            var distancePanel = WpfHelper.CreateSliderControl(
+                $"{labelPrefix}Distance",
+                model,
                 nameof(Model.Distance),
                 null,                      
                 nameof(Model.SmallRadius),
                 0.1
             );
+            controls[namePrefix + nameof(Model.Distance)] = distancePanel;
 
-            _controls[nameof(Model.Distance)] = distancePanel;
-
-            var anglePanel = CreateSliderControl(
-                "Angle",
+            var anglePanel = WpfHelper.CreateSliderControl(
+                $"{labelPrefix}Angle",
+                model,
                 nameof(Model.Angle),
                 nameof(Model.MinAngle),
                 nameof(Model.MaxAmgle),
                 1
             );
+            controls[namePrefix + nameof(Model.Angle)] = anglePanel;
 
-            _controls[nameof(Model.Angle)] = anglePanel;
-
-            var largeRadiusPanel = CreateSliderControl(
-                "Large Radius",
+            var largeRadiusPanel = WpfHelper.CreateSliderControl(
+                $"{labelPrefix}Large Radius",
+                model,
                 nameof(Model.LargeRadius),
                 nameof(Model.SmallRadius),
                 nameof(Model.MaxLargeCircleRadius),
                 0.1
             );
-            _controls[nameof(Model.LargeRadius)] = largeRadiusPanel;
+            controls[namePrefix + nameof(Model.LargeRadius)] = largeRadiusPanel;
 
-            var smallRadiusPanel = CreateSliderControl(
-                "Small Radius",
+            var smallRadiusPanel = WpfHelper.CreateSliderControl(
+                $"{labelPrefix}Small Radius",
+                model,
                 nameof(Model.SmallRadius),
                 nameof(Model.MinRadius),
                 nameof(Model.LargeRadius),
                 0.1
             );
-            _controls[nameof(Model.SmallRadius)] = smallRadiusPanel;
+            controls[namePrefix + nameof(Model.SmallRadius)] = smallRadiusPanel;
+            return controls;
         }
 
-        private UIElement CreateSliderControl(
-    string labelText,
-    string bindingPath,
-    string minBindingPath,
-    string maxBindingPath,
-    double tickFrequency = 0.5)
-        {
-            var panel = GetDefaultVerticalPanel();
+        
 
-            var label = new TextBlock
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-
-            var labelBinding = new Binding(bindingPath)
-            {
-                Source = Model,
-                Mode = BindingMode.OneWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
-                StringFormat = $"{labelText}: {{0:F2}}"
-            };
-            label.SetBinding(TextBlock.TextProperty, labelBinding);
-
-            var slider = new Slider
-            {
-                TickFrequency = tickFrequency,
-                IsSnapToTickEnabled = true,
-                Width = 200
-            };
-
-            var valueBinding = new Binding(bindingPath)
-            {
-                Source = Model,
-                Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            slider.SetBinding(Slider.ValueProperty, valueBinding);
-
-            if (!string.IsNullOrEmpty(minBindingPath))
-            {
-                var minBinding = new Binding(minBindingPath)
-                {
-                    Source = Model,
-                    Mode = BindingMode.OneWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                };
-                slider.SetBinding(Slider.MinimumProperty, minBinding);
-            }
-
-            if (!string.IsNullOrEmpty(maxBindingPath))
-            {
-                var maxBinding = new Binding(maxBindingPath)
-                {
-                    Source = Model,
-                    Mode = BindingMode.OneWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                };
-                slider.SetBinding(Slider.MaximumProperty, maxBinding);
-            }
-
-            panel.Children.Add(label);
-            panel.Children.Add(slider);
-
-            return panel;
-        }
     }
 }
