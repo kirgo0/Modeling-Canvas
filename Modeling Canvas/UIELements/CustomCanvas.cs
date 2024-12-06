@@ -97,7 +97,7 @@ namespace Modeling_Canvas.UIElements
                     break;
             }
         }
-        public Point GetCanvasUnitCoordinates(Point pixelCoordinates)
+        public Point GetUnitCoordinates(Point pixelCoordinates)
         {
             if (RenderMode is RenderMode.Affine)
             {
@@ -109,6 +109,10 @@ namespace Modeling_Canvas.UIElements
             }
             pixelCoordinates = new Point((pixelCoordinates.X - ActualWidth / 2 - XOffset) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y - YOffset) / UnitSize);
             return pixelCoordinates;
+        }
+        public Point GetPixelCoordinates(Point unitCoordinates)
+        {
+            return new Point(ActualWidth / 2 + unitCoordinates.X * UnitSize, ActualHeight / 2 - unitCoordinates.Y * UnitSize).AddCanvasOffsets();
         }
         public void ResetOffests()
         {
@@ -130,7 +134,7 @@ namespace Modeling_Canvas.UIElements
         public Point GetCanvasMousePosition()
         {
             var mouseOnCanvas = Mouse.GetPosition(this);
-            return GetCanvasUnitCoordinates(mouseOnCanvas);
+            return GetUnitCoordinates(mouseOnCanvas);
         }
 
         protected override Size ArrangeOverride(Size arrangeSize)
@@ -153,7 +157,7 @@ namespace Modeling_Canvas.UIElements
 
             return arrangeSize;
         }
-        public int NumberFrequency { get; set; } = 1; // Default frequency is 1
+        public int NumberFrequency { get; set; } = 1;
 
         protected double GetOptimalGridFrequency()
         {

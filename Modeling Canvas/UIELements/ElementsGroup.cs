@@ -57,9 +57,9 @@ namespace Modeling_Canvas.UIElements
         public override void AddPoint(double x, double y)
         {
         }
-        protected override void InitControls()
+        protected override void InitChildren()
         {
-            base.InitControls();
+            base.InitChildren();
             AnchorPoint.Stroke = Brushes.BlueViolet;
         }
 

@@ -36,11 +36,7 @@ namespace Modeling_Canvas.UIElements
                     RenderControlPanel();
             };
         }
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            return new Size((Radius * UnitSize + StrokeThickness) * 2, (Radius * UnitSize + StrokeThickness) * 2);
-        }
-        protected override void InitControls()
+        protected override void InitChildren()
         {
             RadiusPoint = new DraggablePoint(Canvas)
             {
@@ -65,7 +61,7 @@ namespace Modeling_Canvas.UIElements
             };
             Canvas.Children.Add(CenterPoint);
             Panel.SetZIndex(CenterPoint, Canvas.Children.Count + 1);
-            base.InitControls();
+            base.InitChildren();
         }
 
         protected override void OnRender(DrawingContext dc)
@@ -99,10 +95,6 @@ namespace Modeling_Canvas.UIElements
             AddRadiusControls();
         }
 
-        protected override Point GetAnchorDefaultPosition()
-        {
-            return Center;
-        }
         public override Point GetTopLeftPosition()
         {
             return new Point(Center.X - Radius - StrokeThickness / UnitSize, Center.Y + Radius + StrokeThickness / UnitSize);

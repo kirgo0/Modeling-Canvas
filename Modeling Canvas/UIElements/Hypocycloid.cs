@@ -1,22 +1,26 @@
 ﻿using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
-using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using MathNet.Numerics;
+using Modeling_Canvas.Enums;
+using System.Linq;
+
 
 namespace Modeling_Canvas.UIElements
 {
-    public partial class Hypocycloid : CustomElement, INotifyPropertyChanged
+    public partial class Hypocycloid : CustomElement
     {
-        public int PointsCount { get; set; } = 1000;
+        public int PointsCount { get => (int) (Model.Angle / 360 * 2000); }
         public CustomCircle LargeCircle { get; set; }
         public CustomCircle SmallCircle { get; set; }
         public CustomPoint EndPoint { get; set; }
         public HypocycloidModel Model { get; set; }
         public HypocycloidModel AnimationModel { get; set; }
+        public HypocycloidCalculationsModel CalculatedValues { get; set; }
         public double MinAnimationDuration { get; } = 0.3;
         public double MaxAnimationDuration { get; } = 10;
 
@@ -34,7 +38,6 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        private Dictionary<string, FrameworkElement> _controls = new();
         private Dictionary<string, FrameworkElement> _animationControls = new();
         public List<Point> HypocycloidPoints { get; set; } = new();
 
@@ -66,13 +69,6 @@ namespace Modeling_Canvas.UIElements
                 }
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
         public Point Center
         {
             get => LargeCircle.Center;
@@ -81,6 +77,7 @@ namespace Modeling_Canvas.UIElements
         public Hypocycloid(CustomCanvas canvas, double largeRadius, double smallRadius, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
             Model = new();
+            CalculatedValues = new();
             AnimationModel = new();
             Model.LargeRadius = largeRadius;
             Model.SmallRadius = smallRadius;
@@ -105,12 +102,19 @@ namespace Modeling_Canvas.UIElements
                 InvalidateCanvas();
             };
 
+            CalculatedValues.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(CalculatedValues.ShowInflectionPoints))
+                {
+                    InvalidateCanvas();
+                }
+            };
+
         }
         protected override Point GetAnchorDefaultPosition()
         {
             return Center;
         }
-
         protected override void OnRender(DrawingContext dc)
         {
             UpdateUIControls();
@@ -122,7 +126,7 @@ namespace Modeling_Canvas.UIElements
             base.OnRender(dc);
         }
 
-        protected override void InitControls()
+        protected override void InitChildren()
         {
             LargeCircle = new CustomCircle(Canvas)
             {
@@ -176,6 +180,18 @@ namespace Modeling_Canvas.UIElements
             Canvas.Children.Add(LargeCircle);
             Canvas.Children.Add(EndPoint);
 
+            base.InitChildren();
+        }
+
+        protected override void InitControlPanel()
+        {
+            base.InitControlPanel();
+
+
+            var showInflectionPointsCheckbox = WpfHelper.CreateLabeledCheckBox("Inflection points", CalculatedValues, nameof(HypocycloidCalculationsModel.ShowInflectionPoints));
+
+            _controls.Add(nameof(HypocycloidCalculationsModel.ShowInflectionPoints), showInflectionPointsCheckbox);
+
             var animateMenuCheckbox = WpfHelper.CreateLabeledCheckBox("Animate", this, nameof(ShowAnimationControls));
 
             _controls.Add(nameof(ShowAnimationControls), animateMenuCheckbox);
@@ -186,7 +202,7 @@ namespace Modeling_Canvas.UIElements
 
             _animationControls = CreateHypocycloidControls(AnimationModel, "Animate to ");
 
-            foreach(var ac in _animationControls.Values)
+            foreach (var ac in _animationControls.Values)
             {
                 ac.AddVisibilityBinding(this, nameof(ShowAnimationControls));
             }
@@ -214,99 +230,54 @@ namespace Modeling_Canvas.UIElements
 
             _controls.Add("AnimateButton", startAnimationButton);
 
-           
-            base.InitControls();
         }
-        private List<List<Point>> _precomputedFrames = new();
-        private int _currentFrameIndex = 0;
 
-        private void Animate()
+        protected override void RenderControlPanel()
         {
-            // Ensure the AnimationDuration is valid
-            if (AnimationDuration <= 0)
+            ClearControlPanel();
+            foreach (var control in _controls)
             {
-                throw new InvalidOperationException("AnimationDuration must be greater than zero.");
-            }
+                AddElementToControlPanel(control.Value);
 
-            if (Model.AreValuesEqual(AnimationModel)) return;
-
-            var startTime = DateTime.Now;
-            var duration = TimeSpan.FromSeconds(AnimationDuration);
-
-            // Capture starting values
-            double initialLargeRadius = Model.LargeRadius;
-            double targetLargeRadius = AnimationModel.LargeRadius;
-
-            double initialSmallRadius = Model.SmallRadius;
-            double targetSmallRadius = AnimationModel.SmallRadius;
-
-            double initialDistance = Model.Distance;
-            double targetDistance = AnimationModel.Distance;
-
-            double initialAngle = Model.Angle;
-            double targetAngle = AnimationModel.Angle;
-
-            double initialRotationAngle = Model.RotationAngle;
-            double targetRotationAngle = AnimationModel.RotationAngle;
-
-            // Set up the timer
-            var timer = new DispatcherTimer(TimeSpan.FromMilliseconds(16), DispatcherPriority.Render, (s, e) =>
-            {
-                var elapsedTime = DateTime.Now - startTime;
-                var progress = Math.Min(1.0, elapsedTime.TotalMilliseconds / duration.TotalMilliseconds);
-
-                // Interpolate values
-                Model.LargeRadius = Lerp(initialLargeRadius, targetLargeRadius, progress);
-                Model.SmallRadius = Lerp(initialSmallRadius, targetSmallRadius, progress);
-                Model.Distance = Lerp(initialDistance, targetDistance, progress);
-                Model.Angle = Lerp(initialAngle, targetAngle, progress);
-                Model.RotationAngle = Lerp(initialRotationAngle, targetRotationAngle, progress);
-
-                // Stop the timer when the animation is complete
-                if (progress >= 1.0)
+                if (_animationControls.TryGetValue(control.Key, out var animationControl))
                 {
-                    ((DispatcherTimer) s).Stop();
-                    IsNotAnimating = true;
+                    AddElementToControlPanel(animationControl);
                 }
-            },
-            Dispatcher.CurrentDispatcher
-            );
-
-            IsNotAnimating = false;
-            timer.Start();
-        }
-
-        private static double Lerp(double start, double end, double t)
-        {
-            return start + (end - start) * t;
+            }
         }
 
         protected override void DefaultRender(DrawingContext dc)
         {
-            HypocycloidPoints = CalculateHypocycloid(dc, Model);
-            EndPoint.Position = Canvas.GetCanvasUnitCoordinates(HypocycloidPoints.LastOrDefault());
+            HypocycloidPoints = CalculateHypocycloidPoints(dc, Model);
+            EndPoint.Position = Canvas.GetUnitCoordinates(HypocycloidPoints.LastOrDefault());
             DrawPoints(dc, HypocycloidPoints);
-            //if (_isAnimating)
-            //{
-            //    // Render using precomputed frames
-            //    if (_currentFrameIndex < _precomputedFrames.Count)
-            //    {
-            //        var currentPoints = _precomputedFrames[_currentFrameIndex];
-            //        EndPoint.Position = Canvas.GetCanvasUnitCoordinates(currentPoints.LastOrDefault());
-            //        DrawPoints(dc, currentPoints);
-            //    }
-            //}
-            //else
-            //{
-            //    // Normal rendering logic
-            //    HypocycloidPoints = CalculateHypocycloid(dc, Model);
-            //    EndPoint.Position = Canvas.GetCanvasUnitCoordinates(HypocycloidPoints.LastOrDefault());
-            //    DrawPoints(dc, HypocycloidPoints);
-            //}
+            if (CalculatedValues.ShowInflectionPoints)
+            {
+                CalculatedValues.InflectionPoints = CalculateInflectionPoints(Model);
+                foreach (var point in CalculatedValues.InflectionPoints)
+                {
+                    dc.DrawCircle(Brushes.DeepPink, null, point, 5, 15);
+                }
+            }
         }
 
         protected override void AffineRender(DrawingContext dc)
         {
+            HypocycloidPoints = CalculateHypocycloidPoints(dc, Model);
+            EndPoint.Position = Canvas.GetUnitCoordinates(HypocycloidPoints.LastOrDefault());
+            //DrawPoints(dc, HypocycloidPoints);
+            for (int i = 0; i < HypocycloidPoints.Count - 1; i++)
+            {
+                dc.DrawAffineLine(StrokePen, HypocycloidPoints[i], HypocycloidPoints[i + 1], Canvas.AffineParams, 10);
+            }
+            if (CalculatedValues.ShowInflectionPoints)
+            {
+                CalculatedValues.InflectionPoints = CalculateInflectionPoints(Model);
+                foreach (var point in CalculatedValues.InflectionPoints)
+                {
+                    dc.DrawCircle(Brushes.DeepPink, null, point, 5, 15);
+                }
+            }
         }
 
         protected override void ProjectiveRender(DrawingContext dc)
@@ -321,7 +292,7 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        protected virtual List<Point> CalculateHypocycloid(DrawingContext dc, HypocycloidModel model)
+        protected virtual List<Point> CalculateHypocycloidPoints(DrawingContext dc, HypocycloidModel model)
         {
             var points = new List<Point>();
 
@@ -346,6 +317,51 @@ namespace Modeling_Canvas.UIElements
             return points;
         }
 
+        protected virtual List<Point> CalculateInflectionPoints(HypocycloidModel model)
+        {
+            var inflectionPoints = new List<Point>();
+
+            double R = model.LargeRadius * UnitSize;
+            double r = model.SmallRadius * UnitSize;
+            double d = model.Distance * UnitSize;
+
+            var center = LargeCircle.CenterPoint.PixelPosition;
+
+            // Попереднє значення радіус-вектора
+            double prevRadius = 0;
+            double prevDerivative = 0;
+
+            for (int i = 0; i <= PointsCount; i++)
+            {
+                double t = Helpers.DegToRad(model.Angle) * i / PointsCount;
+
+                // Координати точки
+                double x = (R - r) * Math.Cos(t) + d * Math.Cos((R - r) / r * t);
+                double y = (R - r) * Math.Sin(t) - d * Math.Sin((R - r) / r * t);
+
+                // Радіус-вектор
+                double radius = Math.Sqrt(x * x + y * y);
+
+                // Похідна радіус-вектора
+                double derivative = radius - prevRadius;
+
+                // Перевірка зміни знаку похідної (точка перегину)
+                if (prevDerivative * derivative < 0)
+                {
+                    var rotationAngle = Helpers.DegToRad(model.RotationAngle);
+                    double rotatedX = Math.Cos(rotationAngle) * x - Math.Sin(rotationAngle) * y;
+                    double rotatedY = Math.Sin(rotationAngle) * x + Math.Cos(rotationAngle) * y;
+
+                    inflectionPoints.Add(new Point(center.X + rotatedX, center.Y + rotatedY));
+                }
+
+                // Оновлення попередніх значень
+                prevRadius = radius;
+                prevDerivative = derivative;
+            }
+
+            return inflectionPoints;
+        }
         public Point GetSmallCircleCenter(double angleDeg)
         {
             angleDeg = Helpers.NormalizeAngle(angleDeg);
@@ -410,18 +426,65 @@ namespace Modeling_Canvas.UIElements
             return null;
         }
 
-        protected override void RenderControlPanel()
-        {
-            ClearControlPanel();
-            foreach (var control in _controls)
-            {
-                AddElementToControlPanel(control.Value);
 
-                if (_animationControls.TryGetValue(control.Key, out var animationControl))
-                {
-                    AddElementToControlPanel(animationControl);
-                }
+        private void Animate()
+        {
+            if (AnimationDuration <= 0)
+            {
+                throw new InvalidOperationException("AnimationDuration must be greater than zero.");
             }
+
+            if (Model.AreValuesEqual(AnimationModel)) return;
+
+            var startTime = DateTime.Now;
+            var duration = TimeSpan.FromSeconds(AnimationDuration);
+
+            // Capture starting values
+            double initialLargeRadius = Model.LargeRadius;
+            double targetLargeRadius = AnimationModel.LargeRadius;
+
+            double initialSmallRadius = Model.SmallRadius;
+            double targetSmallRadius = AnimationModel.SmallRadius;
+
+            double initialDistance = Model.Distance;
+            double targetDistance = AnimationModel.Distance;
+
+            double initialAngle = Model.Angle;
+            double targetAngle = AnimationModel.Angle;
+
+            double initialRotationAngle = Model.RotationAngle;
+            double targetRotationAngle = AnimationModel.RotationAngle;
+
+            // Set up the timer
+            var timer = new DispatcherTimer(TimeSpan.FromMilliseconds(16), DispatcherPriority.Render, (s, e) =>
+            {
+                var elapsedTime = DateTime.Now - startTime;
+                var progress = Math.Min(1.0, elapsedTime.TotalMilliseconds / duration.TotalMilliseconds);
+
+                // Interpolate values
+                Model.LargeRadius = Lerp(initialLargeRadius, targetLargeRadius, progress);
+                Model.SmallRadius = Lerp(initialSmallRadius, targetSmallRadius, progress);
+                Model.Distance = Lerp(initialDistance, targetDistance, progress);
+                Model.Angle = Lerp(initialAngle, targetAngle, progress);
+                Model.RotationAngle = Lerp(initialRotationAngle, targetRotationAngle, progress);
+
+                // Stop the timer when the animation is complete
+                if (progress >= 1.0)
+                {
+                    ((DispatcherTimer)s).Stop();
+                    IsNotAnimating = true;
+                }
+            },
+            Dispatcher.CurrentDispatcher
+            );
+
+            IsNotAnimating = false;
+            timer.Start();
+        }
+
+        private static double Lerp(double start, double end, double t)
+        {
+            return start + (end - start) * t;
         }
 
         public override void MoveElement(Vector offset)
@@ -440,10 +503,9 @@ namespace Modeling_Canvas.UIElements
         }
         public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
         {
-        }
-        public virtual void CenterPointMoveAction(DraggablePoint point, Vector offset)
-        {
-            MoveElement(offset);
+            Center = Center.ScalePoint(anchorPoint, scaleVector);
+            Model.LargeRadius *= ScaleFactor;
+            Model.SmallRadius *= ScaleFactor;
         }
 
         public void UpdateUIControls()

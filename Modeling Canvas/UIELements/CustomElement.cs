@@ -11,9 +11,9 @@ namespace Modeling_Canvas.UIElements
 {
     public abstract partial class CustomElement : FrameworkElement, INotifyPropertyChanged
     {
-        public Brush Fill { get; set; } = null; // Default fill color
-        public Brush Stroke { get; set; } = Brushes.Black; // Default stroke color
-        public double StrokeThickness { get; set; } = 1; // Default stroke thickness
+        public Brush Fill { get; set; } = null;
+        public Brush Stroke { get; set; } = Brushes.Black;
+        public double StrokeThickness { get; set; } = 1;
         private Pen _strokePen = null;
         public Pen StrokePen
         {
@@ -76,8 +76,12 @@ namespace Modeling_Canvas.UIElements
         public string LabelText { get; set; } = "Default Label";
 
         protected double _lastRotationDegrees = 0;
+
         protected bool _isDragging = false;
+
         protected bool _isRotating = false;
+
+        protected Dictionary<string, FrameworkElement> _controls = new();
 
         protected CustomElement(CustomCanvas canvas, bool hasAnchorPoint = true)
         {
@@ -119,9 +123,10 @@ namespace Modeling_Canvas.UIElements
 
         protected override void OnInitialized(EventArgs e)
         {
-            InitControls();
+            InitChildren();
+            InitControlPanel();
         }
-        protected virtual void InitControls()
+        protected virtual void InitChildren()
         {
             if (HasAnchorPoint)
             {
@@ -146,6 +151,10 @@ namespace Modeling_Canvas.UIElements
                 Canvas.Children.Add(AnchorPoint);
                 Panel.SetZIndex(AnchorPoint, Canvas.Children.Count + 1);
             }
+        }
+        protected virtual void InitControlPanel()
+        {
+
         }
         public virtual Point GetOriginPoint(Size arrangedSize)
         {
@@ -228,7 +237,7 @@ namespace Modeling_Canvas.UIElements
                 {
                     // Calculate the distance change vector relative to the anchor point
                     Point anchorPosition = AnchorPoint.Position;
-                    Point lastMousePosition = Canvas.GetCanvasUnitCoordinates(_lastMousePosition);
+                    Point lastMousePosition = Canvas.GetUnitCoordinates(_lastMousePosition);
                     Point mousePosition = Canvas.GetCanvasMousePosition();
 
                     Vector lastVector = lastMousePosition - anchorPosition;

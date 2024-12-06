@@ -55,7 +55,7 @@ namespace Modeling_Canvas.UIElements
             AddDegreesControls();
         }
 
-        protected override void InitControls()
+        protected override void InitChildren()
         {
             StartDegreesPoint = new DraggablePoint(Canvas)
             {
@@ -81,7 +81,7 @@ namespace Modeling_Canvas.UIElements
             Canvas.Children.Add(EndDegreesPoint);
             Panel.SetZIndex(EndDegreesPoint, Canvas.Children.Count + 1);
 
-            base.InitControls();
+            base.InitChildren();
         }
 
         public virtual void StartDegreesPointMoveAction(DraggablePoint point, Vector offset)

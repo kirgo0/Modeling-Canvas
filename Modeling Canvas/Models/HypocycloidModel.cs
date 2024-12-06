@@ -12,43 +12,16 @@ namespace Modeling_Canvas.Models
 {
     public class HypocycloidModel : INotifyPropertyChanged
     {
-
-        private bool _isUpdating = false;
-
-        public void BeginUpdate()
-        {
-            _isUpdating = true;
-        }
-
-        public void EndUpdate()
-        {
-            _isUpdating = false;
-            OnPropertyChanged(null); // Notify all properties updated
-        }
-
         public double MinRadius { get; } = 0.5;
         public double MinAngle { get; } = 0;
         public double MaxAmgle { get; } = 1080;
-
-        public double _maxLargeCircleRadius = 25;
-        public double MaxLargeCircleRadius 
-        {
-            get => _maxLargeCircleRadius;
-            set
-            {
-                if (_maxLargeCircleRadius != value)
-                {
-                    _maxLargeCircleRadius = value;
-                    OnPropertyChanged(nameof(MaxLargeCircleRadius));
-                }
-            }
-        }
 
         private double _distance = 1;
         private double _angle = 720;
         private double _rotationAngle = 0;
         private double _largeRadius = 5;
         private double _smallRadius = 1;
+        private double _maxLargeCircleRadius = 25;
         public double Distance
         {
             get => _distance;
@@ -61,7 +34,6 @@ namespace Modeling_Canvas.Models
                 }
             }
         }
-
         public double Angle
         {
             get => _angle;
@@ -74,7 +46,6 @@ namespace Modeling_Canvas.Models
                 }
             }
         }
-
         public double RotationAngle
         {
             get => _rotationAngle;
@@ -121,7 +92,18 @@ namespace Modeling_Canvas.Models
                 }
             }
         }
-
+        public double MaxLargeCircleRadius
+        {
+            get => _maxLargeCircleRadius;
+            set
+            {
+                if (_maxLargeCircleRadius != value)
+                {
+                    _maxLargeCircleRadius = value;
+                    OnPropertyChanged(nameof(MaxLargeCircleRadius));
+                }
+            }
+        }
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged(string propertyName)
@@ -133,10 +115,9 @@ namespace Modeling_Canvas.Models
             if (model2 == null)
                 throw new ArgumentNullException(nameof(model2));
 
-            // Use reflection to get all public instance properties of the model
             var properties = typeof(HypocycloidModel)
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(p => p.PropertyType == typeof(double)); // Filter for double properties
+                .Where(p => p.PropertyType == typeof(double)); 
 
             // Compare the values of each property in both models
             foreach (var property in properties)
