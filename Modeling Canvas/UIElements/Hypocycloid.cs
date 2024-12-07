@@ -13,8 +13,9 @@ namespace Modeling_Canvas.UIElements
         private int maxPointCount = 2000;
         public int PointsCount { 
             get {
-                var calculatedCount = (int)(Model.Angle / 360 * maxPointCount / (20 / Canvas.UnitSize));
-                return calculatedCount > maxPointCount ? maxPointCount : calculatedCount;
+                var maxQualityPointsCount = Model.Angle / 360 * maxPointCount;
+                var calculatedCount = (maxQualityPointsCount / (20 / Canvas.UnitSize));
+                return calculatedCount > maxQualityPointsCount ? (int)maxQualityPointsCount : (int) calculatedCount;
             }
         }
         public CustomCircle LargeCircle { get; set; }
@@ -117,17 +118,6 @@ namespace Modeling_Canvas.UIElements
         {
             return Center;
         }
-        protected override void OnRender(DrawingContext dc)
-        {
-            UpdateUIControls();
-            if (InputManager.AltPressed)
-            {
-                var t = FindNearestPoint(Mouse.GetPosition(Canvas));
-                if(t is not null) DrawTangentsAndNormals(dc, t.Value);
-            }
-            base.OnRender(dc);
-        }
-
         protected override void InitChildren()
         {
             LargeCircle = new CustomCircle(Canvas)
@@ -189,6 +179,23 @@ namespace Modeling_Canvas.UIElements
         {
             base.InitControlPanel();
 
+            var arcLengthText = WpfHelper.CreateValueTextBlock(
+                "Arc Length",
+                CalculatedValues,
+                nameof(HypocycloidCalculationsModel.ArcLength),
+                CalculatedValues,
+                nameof(HypocycloidCalculationsModel.ShowArcLength)
+                );
+            _controls.Add(nameof(HypocycloidCalculationsModel.ArcLength), arcLengthText);
+
+            var areaText = WpfHelper.CreateValueTextBlock(
+                "Area",
+                CalculatedValues,
+                nameof(HypocycloidCalculationsModel.HypocycloidArea),
+                CalculatedValues,
+                nameof(HypocycloidCalculationsModel.ShowArcLength)
+                );
+            _controls.Add(nameof(HypocycloidCalculationsModel.ShowHypocycloidArea), areaText);
 
             var showInflectionPointsCheckbox = WpfHelper.CreateLabeledCheckBox("Inflection points", CalculatedValues, nameof(HypocycloidCalculationsModel.ShowInflectionPoints));
 
@@ -247,23 +254,46 @@ namespace Modeling_Canvas.UIElements
                 }
             }
         }
-
+        protected override void OnRender(DrawingContext dc)
+        {
+            UpdateUIControls();
+            if (InputManager.AltPressed)
+            {
+                var t = FindNearestPoint(Mouse.GetPosition(Canvas));
+                if (t is not null) DrawTangentsAndNormals(dc, t.Value);
+            }
+            base.OnRender(dc);
+        }
         protected override void DefaultRender(DrawingContext dc)
         {
             HypocycloidPoints = CalculateHypocycloidPoints(dc, Model);
             EndPoint.Position = Canvas.GetUnitCoordinates(HypocycloidPoints.LastOrDefault());
 
+            if(HypocycloidPoints.Count == 0)
+            {
+                dc.DrawCircle(Canvas, Brushes.DeepPink, null, LargeCircle.CenterPoint.PixelPosition, 5, 15, 0, false);
+                return;
+            }
+
             for (int i = 0; i < HypocycloidPoints.Count - 1; i++)
             {
                 dc.DrawLine(Canvas, StrokePen, HypocycloidPoints[i], HypocycloidPoints[i + 1], 10);
             }
-            if (CalculatedValues.ShowInflectionPoints)
+            if (CalculatedValues.ShowInflectionPoints && Model.Distance > 1e-2)
             {
                 CalculatedValues.InflectionPoints = CalculateInflectionPoints(Model);
                 foreach (var point in CalculatedValues.InflectionPoints)
                 {
                     dc.DrawCircle(Canvas, Brushes.DeepPink, null, point, 5, 15, 0, false);
                 }
+            }
+            if (CalculatedValues.ShowArcLength)
+            {
+                CalculatedValues.ArcLength = CalculateHypocycloidLength(Model);
+            }
+            if (CalculatedValues.ShowHypocycloidArea)
+            {
+                CalculatedValues.HypocycloidArea = CalculateHypocycloidArea(Model);
             }
         }
         protected virtual List<Point> CalculateHypocycloidPoints(DrawingContext dc, HypocycloidModel model)
@@ -330,6 +360,43 @@ namespace Modeling_Canvas.UIElements
 
             return inflectionPoints;
         }
+
+        protected double CalculateHypocycloidLength(HypocycloidModel model)
+        {
+            double R = model.LargeRadius;
+            double r = model.SmallRadius;
+            double d = model.Distance;
+
+            int segments = 1000;
+            double length = 0;
+
+            for (int i = 0; i < segments; i++)
+            {
+                double t1 = i * Helpers.DegToRad(Model.Angle) / segments;
+                double t2 = (i + 1) * Helpers.DegToRad(Model.Angle) / segments;
+
+                double x1 = (R - r) * Math.Cos(t1) + d * Math.Cos((R - r) / r * t1);
+                double y1 = (R - r) * Math.Sin(t1) - d * Math.Sin((R - r) / r * t1);
+                double x2 = (R - r) * Math.Cos(t2) + d * Math.Cos((R - r) / r * t2);
+                double y2 = (R - r) * Math.Sin(t2) - d * Math.Sin((R - r) / r * t2);
+
+                // calculate each segment length
+                length += Math.Sqrt(Math.Pow(x2 - x1, 2) + Math.Pow(y2 - y1, 2));
+            }
+
+            return length;
+        }
+
+        protected double CalculateHypocycloidArea(HypocycloidModel model)
+        {
+            double R = model.LargeRadius;
+            double r = model.SmallRadius;
+            double angleFraction = model.Angle / 360.0; // Fraction of the full rotation
+
+            // Area is scaled based on the fraction of the angle
+            return Math.PI * Math.Pow(R - r, 2) * angleFraction;
+        }
+
         public Point GetSmallCircleCenter(double angleDeg)
         {
             angleDeg = Helpers.NormalizeAngle(angleDeg);
@@ -372,12 +439,12 @@ namespace Modeling_Canvas.UIElements
             Vector normal = new Vector(-tangent.Y, tangent.X);
 
             Point tangentEnd = pointOnCurve + tangent * Canvas.ActualWidth;
-            dc.DrawLine(new Pen(Brushes.Blue, 2), pointOnCurve, tangentEnd);
+            dc.DrawLine(Canvas, new Pen(Brushes.Blue, 2), pointOnCurve, tangentEnd);
 
             Point normalEnd = pointOnCurve + normal * Canvas.ActualWidth;
-            dc.DrawLine(new Pen(Brushes.Green, 2), pointOnCurve, normalEnd);
+            dc.DrawLine(Canvas, new Pen(Brushes.Green, 2), pointOnCurve, normalEnd);
             
-            dc.DrawEllipse(Brushes.Red, null, pointOnCurve, 3, 3);
+            dc.DrawCircle(Canvas, Brushes.Red, null, pointOnCurve, 7, 15, 0, false);
         }
 
         public double? FindNearestPoint(Point targetPoint, double tolerance = 10)
@@ -491,7 +558,8 @@ namespace Modeling_Canvas.UIElements
 
         public override string ToString()
         {
-            return $"Hypercycloid\nLr: {LargeCircle.Radius}\nSr: {SmallCircle.Radius}\nDistance: {Model.Distance}";
+            return $"Hypocycloid\nLr: {LargeCircle.Radius}, Sr: {SmallCircle.Radius}\nDistance: {Model.Distance}{(CalculatedValues.ShowArcLength ? $"\nArc Length: {Math.Round(CalculatedValues.ArcLength, 3)}" : "")}{(CalculatedValues.ShowHypocycloidArea ? $",Area: {Math.Round(CalculatedValues.HypocycloidArea, 3)}" : "")}";
+
         }
     }
 }

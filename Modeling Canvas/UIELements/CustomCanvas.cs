@@ -86,28 +86,25 @@ namespace Modeling_Canvas.UIElements
             base.OnRender(dc);
             DrawGrid(dc);
         }
+
         public Point GetTransformedUnitCoordinates(Point pixelCoordinates)
         {
-            pixelCoordinates = TransformPoint(pixelCoordinates);
-            pixelCoordinates = new Point((pixelCoordinates.X - ActualWidth / 2 - XOffset) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y - YOffset) / UnitSize);
-            return pixelCoordinates;
-        }
-        public Point GetUnitCoordinates(Point pixelCoordinates)
-        {
+            if (RenderMode is RenderMode.Affine)
+            {
+                pixelCoordinates = pixelCoordinates.ReverseAffineTransformation(AffineParams);
+            }
+            else if (RenderMode is RenderMode.Projective)
+            {
+                pixelCoordinates = pixelCoordinates.ReverseProjectiveTransformation(ProjectiveParams);
+            }
             pixelCoordinates = new Point((pixelCoordinates.X - ActualWidth / 2 - XOffset) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y - YOffset) / UnitSize);
             return pixelCoordinates;
         }
 
-        public void ResetOffests()
+        public Point GetUnitCoordinates(Point pixelCoordinates)
         {
-            XOffset = 0;
-            YOffset = 0;
-            InvalidateVisual();
-        }
-        public void ResetScaling()
-        {
-            UnitSize = 40;
-            InvalidateVisual();
+            pixelCoordinates = new Point((pixelCoordinates.X - ActualWidth / 2 - XOffset) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y - YOffset) / UnitSize);
+            return pixelCoordinates;
         }
         public double GetDegreesBetweenMouseAndPoint(Point point)
         {
@@ -518,6 +515,17 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
+        public void ResetOffests()
+        {
+            XOffset = 0;
+            YOffset = 0;
+            InvalidateVisual();
+        }
+        public void ResetScaling()
+        {
+            UnitSize = 40;
+            InvalidateVisual();
+        }
     }
 }
 

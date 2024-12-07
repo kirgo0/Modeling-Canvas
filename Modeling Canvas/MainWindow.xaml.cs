@@ -4,6 +4,7 @@ using Modeling_Canvas.UIElements;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 
 namespace Modeling_Canvas
 {
@@ -17,7 +18,7 @@ namespace Modeling_Canvas
             InitializeComponent();
             CenterWindowOnScreen();
 
-            InitFigure();
+            //InitFigure();
             var a = new Hypocycloid(MyCanvas, 4, 1);
             MyCanvas.Children.Add(a);
             //a.Center = new Point(5, 5);
@@ -46,7 +47,6 @@ namespace Modeling_Canvas
                 MyCanvas.ProjectiveParams.CanvasHeight = MyCanvas.ActualHeight;
             };
         }
-
         private void CenterWindowOnScreen()
         {
             double screenWidth = SystemParameters.PrimaryScreenWidth;
@@ -129,9 +129,9 @@ namespace Modeling_Canvas
 
         private void ChangeRenderMode(object sender, SelectionChangedEventArgs e)
         {
-            if (DefaultTab.IsSelected) MyCanvas.RenderMode = RenderMode.Default;
-            else if (AffineTab.IsSelected) MyCanvas.RenderMode = RenderMode.Affine;
-            else if (ProjectiveTab.IsSelected) MyCanvas.RenderMode = RenderMode.Projective;
+            if (DefaultTab.IsSelected) MyCanvas.RenderMode = Modeling_Canvas.Enums.RenderMode.Default;
+            else if (AffineTab.IsSelected) MyCanvas.RenderMode = Enums.RenderMode.Affine;
+            else if (ProjectiveTab.IsSelected) MyCanvas.RenderMode = Enums.RenderMode.Projective;
 
         }
 
@@ -144,6 +144,38 @@ namespace Modeling_Canvas
         {
             MyCanvas.AllowInfinityRender = false;
             MyCanvas.InvalidateVisual();
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
+            source.AddHook(WndProc);
+        }
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            const int WM_SYSKEYDOWN = 0x0104; // System Key Down
+            const int WM_SYSKEYUP = 0x0105;   // System Key Up
+            const int WM_SYSCOMMAND = 0x0112; // System Command
+
+            if (msg == WM_SYSKEYDOWN || msg == WM_SYSKEYUP)
+            {
+                if (wParam.ToInt32() == (int)Key.LeftAlt || wParam.ToInt32() == (int)Key.RightAlt)
+                {
+                    handled = true; // Suppress menu activation
+                }
+            }
+
+            if (msg == WM_SYSCOMMAND)
+            {
+                // Prevent activation of the system menu when Alt is pressed
+                if (wParam.ToInt32() == 0xF100) // SC_KEYMENU
+                {
+                    handled = true; // Suppress system menu
+                }
+            }
+
+            return IntPtr.Zero;
         }
     }
 

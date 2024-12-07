@@ -6,10 +6,10 @@ namespace Modeling_Canvas.Models
     public class HypocycloidCalculationsModel : INotifyPropertyChanged
     {
         private bool _showRadiusCurvature;
-        private bool _showHypocycloidArea;
+        private bool _showHypocycloidArea = true;
         private bool _showInfelctionPoints = true;
         private bool _showRingArea;
-        private bool _showArcLength;
+        private bool _showArcLength = true;
 
         private double _radiusCurvature;
         private double _hypocycloidArea;

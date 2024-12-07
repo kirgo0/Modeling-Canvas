@@ -6,7 +6,7 @@ namespace Modeling_Canvas.Extensions
 {
     public static class DrawingContextExtensions
     {
-        public static void DrawLine(this DrawingContext dc, CustomCanvas canvas, Pen pen, Point p1, Point p2, double transparentThickness)
+        public static void DrawLine(this DrawingContext dc, CustomCanvas canvas, Pen pen, Point p1, Point p2, double transparentThickness = 0)
         {
             p1 = canvas.TransformPoint(p1);
             p2 = canvas.TransformPoint(p2);

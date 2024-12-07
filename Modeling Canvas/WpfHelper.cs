@@ -84,6 +84,44 @@ namespace Modeling_Canvas
 
             return panel;
         }
+
+        public static FrameworkElement CreateValueTextBlock(
+            string labelText,
+            object model,
+            string bindingPath,
+            object? visibilityBindingSource = null,
+            string? visibilityBindingPath = null
+        )
+        {
+            var panel = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(5)
+            };
+
+            panel.AddVisibilityBinding(visibilityBindingSource, visibilityBindingPath);
+
+            var label = new TextBlock
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            var labelBinding = new Binding(bindingPath)
+            {
+                Source = model,
+                Mode = BindingMode.OneWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                StringFormat = $"{labelText}: {{0:F2}}"
+            };
+            label.SetBinding(TextBlock.TextProperty, labelBinding);
+
+            panel.Children.Add(label);
+
+            return panel;
+        }
+
         public static FrameworkElement CreateLabeledCheckBox(string labelText, object bindingSource, string bindingPath)
         {
             var panel = new StackPanel
