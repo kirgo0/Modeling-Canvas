@@ -47,7 +47,6 @@ namespace Modeling_Canvas.UIElements
         }
         protected override void OnRender(DrawingContext dc)
         {
-            var a = Canvas.SelectedElements.Intersect(Children).ToList();
             CalculateRectPoints();
             StrokePen = DashedPen;
             base.OnRender(dc);

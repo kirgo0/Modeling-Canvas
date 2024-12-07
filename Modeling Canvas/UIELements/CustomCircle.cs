@@ -72,18 +72,9 @@ namespace Modeling_Canvas.UIElements
 
         protected override void DefaultRender(DrawingContext dc)
         {
-            dc.DrawCircle(Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, Precision, 10);
+            dc.DrawCircle(Canvas, Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, Precision, 10);
         }
 
-        protected override void AffineRender(DrawingContext dc)
-        {
-            dc.DrawAffineCircle(Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, Precision, Canvas.AffineParams, 10);
-        }
-
-        protected override void ProjectiveRender(DrawingContext dc)
-        {
-            dc.DrawProjectiveCircle(Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, Precision, Canvas.ProjectiveParams, 10);
-        }
 
         protected override void RenderControlPanel()
         {

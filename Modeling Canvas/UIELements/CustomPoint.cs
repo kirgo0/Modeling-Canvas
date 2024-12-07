@@ -47,50 +47,13 @@ namespace Modeling_Canvas.UIElements
             switch (Shape)
             {
                 case PointShape.Circle:
-                    dc.DrawCircle(semiTransparentFill, StrokePen, PixelPosition, Radius, 100);
+                    dc.DrawCircle(Canvas, semiTransparentFill, StrokePen, PixelPosition, Radius, 100, 0, false);
                     break;
                 case PointShape.Square:
-                    dc.DrawSquare(semiTransparentFill, StrokePen, PixelPosition, Radius * 2);
+                    dc.DrawSquare(Canvas, semiTransparentFill, StrokePen, PixelPosition, Radius * 2, false);
                     break;
                 case PointShape.Anchor:
-                    dc.DrawAnchorPoint(semiTransparentFill, StrokePen, PixelPosition, Radius, 100, 5);
-                    break;
-            }
-        }
-
-        protected override void AffineRender(DrawingContext dc)
-        {
-            var semiTransparentFill = Fill.Clone();
-            semiTransparentFill.Opacity = Opacity;
-
-            switch (Shape)
-            {
-                case PointShape.Circle:
-                    dc.DrawAffineCircle(semiTransparentFill, StrokePen, PixelPosition, Radius, 100, Canvas.AffineParams);
-                    break;
-                case PointShape.Square:
-                    dc.DrawAffineSquare(semiTransparentFill, StrokePen, PixelPosition, Radius * 2, Canvas.AffineParams);
-                    break;
-                case PointShape.Anchor:
-                    dc.DrawAffineAnchorPoint(semiTransparentFill, StrokePen, PixelPosition, Radius, 100, 5, Canvas.AffineParams);
-                    break;
-            }
-        }
-        protected override void ProjectiveRender(DrawingContext dc)
-        {
-            var semiTransparentFill = Fill.Clone();
-            semiTransparentFill.Opacity = Opacity;
-
-            switch (Shape)
-            {
-                case PointShape.Circle:
-                    dc.DrawProjectiveCircle(semiTransparentFill, StrokePen, PixelPosition, Radius, 100, Canvas.ProjectiveParams);
-                    break;
-                case PointShape.Square:
-                    dc.DrawProjectiveSquare(semiTransparentFill, StrokePen, PixelPosition, Radius * 2, Canvas.ProjectiveParams);
-                    break;
-                case PointShape.Anchor:
-                    dc.DrawProjectiveAnchorPoint(semiTransparentFill, StrokePen, PixelPosition, Radius, 100, 5, Canvas.ProjectiveParams);
+                    dc.DrawAnchorPoint(Canvas, semiTransparentFill, StrokePen, PixelPosition, Radius, 100, 5, false);
                     break;
             }
         }

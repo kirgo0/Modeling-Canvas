@@ -95,20 +95,10 @@ namespace Modeling_Canvas.UIElements
         {
             for (int i = 0; i < 3; i++)
             {
-                dc.DrawLine(StrokePen, Points[i].PixelPosition, Points[i + 1].PixelPosition, 10);
+                dc.DrawLine(Canvas, StrokePen, Points[i].PixelPosition, Points[i + 1].PixelPosition, 10);
             }
 
-            dc.DrawLine(StrokePen, Points[0].PixelPosition, Points[3].PixelPosition, 10);
-        }
-
-        protected override void AffineRender(DrawingContext dc)
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                dc.DrawAffineLine(StrokePen, Points[i].PixelPosition, Points[i + 1].PixelPosition, Canvas.AffineParams, 10);
-            }
-
-            dc.DrawAffineLine(StrokePen, Points[0].PixelPosition, Points[3].PixelPosition, Canvas.AffineParams, 10);
+            dc.DrawLine(Canvas, StrokePen, Points[0].PixelPosition, Points[3].PixelPosition, 10);
         }
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
@@ -174,8 +164,8 @@ namespace Modeling_Canvas.UIElements
             return $"Rectange\nWidth: {RectWidth}\nHeight: {RectHeight}";
         }
 
-        protected override void ProjectiveRender(DrawingContext dc)
-        {
-        }
+        //protected override void ProjectiveRender(DrawingContext dc)
+        //{
+        //}
     }
 }

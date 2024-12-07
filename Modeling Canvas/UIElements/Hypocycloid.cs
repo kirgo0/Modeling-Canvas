@@ -1,20 +1,22 @@
 ﻿using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using MathNet.Numerics;
-using Modeling_Canvas.Enums;
-using System.Linq;
 
 
 namespace Modeling_Canvas.UIElements
 {
     public partial class Hypocycloid : CustomElement
     {
-        public int PointsCount { get => (int) (Model.Angle / 360 * 2000); }
+        private int maxPointCount = 2000;
+        public int PointsCount { 
+            get {
+                var calculatedCount = (int)(Model.Angle / 360 * maxPointCount / (20 / Canvas.UnitSize));
+                return calculatedCount > maxPointCount ? maxPointCount : calculatedCount;
+            }
+        }
         public CustomCircle LargeCircle { get; set; }
         public CustomCircle SmallCircle { get; set; }
         public CustomPoint EndPoint { get; set; }
@@ -250,48 +252,20 @@ namespace Modeling_Canvas.UIElements
         {
             HypocycloidPoints = CalculateHypocycloidPoints(dc, Model);
             EndPoint.Position = Canvas.GetUnitCoordinates(HypocycloidPoints.LastOrDefault());
-            DrawPoints(dc, HypocycloidPoints);
-            if (CalculatedValues.ShowInflectionPoints)
-            {
-                CalculatedValues.InflectionPoints = CalculateInflectionPoints(Model);
-                foreach (var point in CalculatedValues.InflectionPoints)
-                {
-                    dc.DrawCircle(Brushes.DeepPink, null, point, 5, 15);
-                }
-            }
-        }
 
-        protected override void AffineRender(DrawingContext dc)
-        {
-            HypocycloidPoints = CalculateHypocycloidPoints(dc, Model);
-            EndPoint.Position = Canvas.GetUnitCoordinates(HypocycloidPoints.LastOrDefault());
-            //DrawPoints(dc, HypocycloidPoints);
             for (int i = 0; i < HypocycloidPoints.Count - 1; i++)
             {
-                dc.DrawAffineLine(StrokePen, HypocycloidPoints[i], HypocycloidPoints[i + 1], Canvas.AffineParams, 10);
+                dc.DrawLine(Canvas, StrokePen, HypocycloidPoints[i], HypocycloidPoints[i + 1], 10);
             }
             if (CalculatedValues.ShowInflectionPoints)
             {
                 CalculatedValues.InflectionPoints = CalculateInflectionPoints(Model);
                 foreach (var point in CalculatedValues.InflectionPoints)
                 {
-                    dc.DrawCircle(Brushes.DeepPink, null, point, 5, 15);
+                    dc.DrawCircle(Canvas, Brushes.DeepPink, null, point, 5, 15, 0, false);
                 }
             }
         }
-
-        protected override void ProjectiveRender(DrawingContext dc)
-        {
-        }
-
-        protected virtual void DrawPoints(DrawingContext dc, List<Point> points)
-        {
-            for (int i = 0; i < points.Count - 1; i++)
-            {
-                dc.DrawLine(StrokePen, points[i], points[i + 1], 10);
-            }
-        }
-
         protected virtual List<Point> CalculateHypocycloidPoints(DrawingContext dc, HypocycloidModel model)
         {
             var points = new List<Point>();
@@ -327,7 +301,6 @@ namespace Modeling_Canvas.UIElements
 
             var center = LargeCircle.CenterPoint.PixelPosition;
 
-            // Попереднє значення радіус-вектора
             double prevRadius = 0;
             double prevDerivative = 0;
 
@@ -335,17 +308,13 @@ namespace Modeling_Canvas.UIElements
             {
                 double t = Helpers.DegToRad(model.Angle) * i / PointsCount;
 
-                // Координати точки
                 double x = (R - r) * Math.Cos(t) + d * Math.Cos((R - r) / r * t);
                 double y = (R - r) * Math.Sin(t) - d * Math.Sin((R - r) / r * t);
 
-                // Радіус-вектор
                 double radius = Math.Sqrt(x * x + y * y);
 
-                // Похідна радіус-вектора
                 double derivative = radius - prevRadius;
 
-                // Перевірка зміни знаку похідної (точка перегину)
                 if (prevDerivative * derivative < 0)
                 {
                     var rotationAngle = Helpers.DegToRad(model.RotationAngle);
@@ -355,7 +324,6 @@ namespace Modeling_Canvas.UIElements
                     inflectionPoints.Add(new Point(center.X + rotatedX, center.Y + rotatedY));
                 }
 
-                // Оновлення попередніх значень
                 prevRadius = radius;
                 prevDerivative = derivative;
             }
@@ -425,7 +393,6 @@ namespace Modeling_Canvas.UIElements
             }
             return null;
         }
-
 
         private void Animate()
         {

@@ -40,7 +40,7 @@ namespace Modeling_Canvas.UIElements
         protected override void DefaultRender(DrawingContext dc)
         {
             base.DefaultRender(dc);
-            dc.DrawCircle(Brushes.Transparent, new Pen(Stroke, 0), new Point(0, 0), DragRadius, 100);
+            dc.DrawCircle(Canvas, Brushes.Transparent, new Pen(Stroke, 0), PixelPosition, DragRadius, 100);
 
         }
 

@@ -52,6 +52,7 @@ namespace Modeling_Canvas.Extensions
             // Update the point in the list
             return new Point(newX, newY);
         }
+
         public static Point ApplyAffineTransformation(this Point point, AffineModel affine)
         {
             var x = point.X;
@@ -101,7 +102,6 @@ namespace Modeling_Canvas.Extensions
 
         public static Point ApplyProjectiveTransformation(this Point point, ProjectiveModel projective)
         {
-            // Витягуємо значення параметрів із об'єкта ProjectiveModel у локальні змінні
             double xx = projective.Xx;
             double yx = projective.Yx;
             double ox = projective.Ox * Canvas.UnitSize;

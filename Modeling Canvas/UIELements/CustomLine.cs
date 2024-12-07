@@ -48,49 +48,15 @@ namespace Modeling_Canvas.UIElements
             {
                 var p1 = Points[i].PixelPosition;
                 var p2 = Points[i + 1].PixelPosition;
-                dc.DrawLine(StrokePen, p1, p2, 10);
+                dc.DrawLine(Canvas, StrokePen, p1, p2, 10);
             }
 
             if (IsClosed)
             {
-                dc.DrawLine(StrokePen, Points.First().PixelPosition, Points.Last().PixelPosition, 10);
+                dc.DrawLine(Canvas, StrokePen, Points.First().PixelPosition, Points.Last().PixelPosition, 10);
             }
 
         }
-
-        protected override void AffineRender(DrawingContext dc)
-        {
-            for (int i = 0; i < Points.Count - 1; i++)
-            {
-                var p1 = Points[i].PixelPosition;
-                var p2 = Points[i + 1].PixelPosition;
-                dc.DrawAffineLine(StrokePen, p1, p2, Canvas.AffineParams, 10);
-            }
-
-            if (IsClosed)
-            {
-                dc.DrawAffineLine(StrokePen, Points.First().PixelPosition, Points.Last().PixelPosition, Canvas.AffineParams, 10);
-            }
-        }
-
-        protected override void ProjectiveRender(DrawingContext dc)
-        {
-            for (int i = 0; i < Points.Count - 1; i++)
-            {
-                var p1 = Points[i].PixelPosition;
-                var p2 = Points[i + 1].PixelPosition;
-                dc.DrawProjectiveLine(StrokePen, p1, p2, Canvas.ProjectiveParams, 10);
-            }
-
-            if (IsClosed)
-            {
-                dc.DrawProjectiveLine(StrokePen,
-                    Points.First().PixelPosition,
-                    Points.Last().PixelPosition,
-                    Canvas.ProjectiveParams, 10);
-            }
-        }
-
 
         protected override Point GetAnchorDefaultPosition()
         {

@@ -101,25 +101,10 @@ namespace Modeling_Canvas.UIElements
                 }
                 AnchorPoint.Visibility = AnchorVisibility;
             }
-            switch (Canvas.RenderMode)
-            {
-                case RenderMode.Default:
-                    DefaultRender(dc);
-                    break;
-                case RenderMode.Affine:
-                    AffineRender(dc);
-                    break;
-                case RenderMode.Projective:
-                    ProjectiveRender(dc);
-                    break;
-            }
+            DefaultRender(dc);
 
         }
         protected abstract void DefaultRender(DrawingContext dc);
-
-        protected abstract void AffineRender(DrawingContext dc);
-
-        protected abstract void ProjectiveRender(DrawingContext dc);
 
         protected override void OnInitialized(EventArgs e)
         {
@@ -237,7 +222,7 @@ namespace Modeling_Canvas.UIElements
                 {
                     // Calculate the distance change vector relative to the anchor point
                     Point anchorPosition = AnchorPoint.Position;
-                    Point lastMousePosition = Canvas.GetUnitCoordinates(_lastMousePosition);
+                    Point lastMousePosition = Canvas.GetTransformedUnitCoordinates(_lastMousePosition);
                     Point mousePosition = Canvas.GetCanvasMousePosition();
 
                     Vector lastVector = lastMousePosition - anchorPosition;
