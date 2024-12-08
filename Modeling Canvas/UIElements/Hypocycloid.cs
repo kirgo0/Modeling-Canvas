@@ -274,7 +274,7 @@ namespace Modeling_Canvas.UIElements
         }
         protected override void DefaultRender(DrawingContext dc)
         {
-            HypocycloidPoints = CalculateHypocycloidPoints(dc, Model);
+            HypocycloidPoints = CalculateHypocycloidPoints(dc, Model, HypocycloidPoints);
             EndPoint.Position = Canvas.GetUnitCoordinates(HypocycloidPoints.LastOrDefault());
 
             if(HypocycloidPoints.Count == 0)
@@ -304,26 +304,34 @@ namespace Modeling_Canvas.UIElements
                 CalculatedValues.HypocycloidArea = CalculateHypocycloidArea(Model);
             }
         }
-        protected virtual List<Point> CalculateHypocycloidPoints(DrawingContext dc, HypocycloidModel model)
-        {
-            var points = new List<Point>();
 
-            double R = model.LargeRadius * UnitSize; 
+        protected virtual List<Point> CalculateHypocycloidPoints(DrawingContext dc, HypocycloidModel model, List<Point> points = null)
+        {
+            if(points is null) points = new List<Point>();
+            else points.Clear();
+
+            double R = model.LargeRadius * UnitSize;
             double r = model.SmallRadius * UnitSize;
             double d = model.Distance * UnitSize;
 
             var center = LargeCircle.CenterPoint.PixelPosition;
 
+            double constant1 = R - r;
+            double constant2 = constant1 / r;
+            double rotationAngle = Helpers.DegToRad(model.RotationAngle);
+            double cosRotation = Math.Cos(rotationAngle);
+            double sinRotation = Math.Sin(rotationAngle);
+
             for (int i = 0; i < PointsCount; i++)
             {
                 double t = Helpers.DegToRad(model.Angle) * i / PointsCount;
-                double x = (R - r) * Math.Cos(t) + d * Math.Cos((R - r) / r * t);
-                double y = (R - r) * Math.Sin(t) - d * Math.Sin((R - r) / r * t);
+                double x = constant1 * Math.Cos(t) + d * Math.Cos(constant2 * t);
+                double y = constant1 * Math.Sin(t) - d * Math.Sin(constant2 * t);
 
-                var rotationAngle = Helpers.DegToRad(model.RotationAngle);
-                double rotatedX = Math.Cos(rotationAngle) * (x) - Math.Sin(rotationAngle) * (y);
-                double rotatedY = Math.Sin(rotationAngle) * (x) + Math.Cos(rotationAngle) * (y);
-                points.Add((new Point(center.X + rotatedX, center.Y + rotatedY)));
+                double rotatedX = cosRotation * x - sinRotation * y;
+                double rotatedY = sinRotation * x + cosRotation * y;
+
+                points.Add(new Point(center.X + rotatedX, center.Y + rotatedY));
             }
 
             return points;
@@ -536,13 +544,14 @@ namespace Modeling_Canvas.UIElements
 
             base.MoveElement(offset);
         }
-
+        
         public override void RotateElement(Point anchorPoint, double degrees)
         {
             Model.RotationAngle -= degrees;
             Model.RotationAngle = Helpers.NormalizeAngle(Model.RotationAngle);
             Center = Center.RotatePoint(anchorPoint, degrees);
         }
+        
         public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
         {
             Center = Center.ScalePoint(anchorPoint, scaleVector);

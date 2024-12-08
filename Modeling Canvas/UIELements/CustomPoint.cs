@@ -10,7 +10,6 @@ namespace Modeling_Canvas.UIElements
     {
         public double Radius { get; set; } = 10;
         public PointShape Shape { get; set; } = PointShape.Circle;
-
         public double X { get => Position.X; }
         public double Y { get => Position.Y; }
         public int PositionPrecision { get; set; } = 3;
@@ -22,6 +21,7 @@ namespace Modeling_Canvas.UIElements
             set
             {
                 _position = new Point(Math.Round(value.X, PositionPrecision), Math.Round(value.Y, PositionPrecision));
+                OnPropertyChanged();
                 InvalidateVisual();
             }
         }
@@ -37,6 +37,7 @@ namespace Modeling_Canvas.UIElements
             StrokeThickness = 0;
             IsSelectable = false;
             LabelText = "Point";
+            HasAnchorPoint = false;
         }
 
         protected override void DefaultRender(DrawingContext dc)
@@ -72,9 +73,6 @@ namespace Modeling_Canvas.UIElements
             return new Size(Radius, Radius);
         }
 
-        public override void MoveElement(Vector offset)
-        {
-        }
         public override void RotateElement(Point anchorPoint, double degrees)
         {
         }

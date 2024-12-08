@@ -10,22 +10,11 @@ namespace Modeling_Canvas.UIElements
     public partial class DraggablePoint : CustomPoint
     {
         public double DragRadius { get; set; } = 10;
-        public Point Position
-        {
-            get => _position;
-            set
-            {
-                if (_position != value)
-                {
-                    _position = new Point(Math.Round(value.X, PositionPrecision), Math.Round(value.Y, PositionPrecision));
-                    OnPropertyChanged();
-                }
-            }
-        }
 
         public DraggablePoint(CustomCanvas canvas) : base(canvas)
         {
         }
+
         public DraggablePoint(CustomCanvas canvas, Point position) : base(canvas)
         {
             Position = position;

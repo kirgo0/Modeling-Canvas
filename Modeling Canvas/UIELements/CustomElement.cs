@@ -1,5 +1,4 @@
 ﻿using Modeling_Canvas.Enums;
-using Modeling_Canvas.Extensions;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -290,7 +289,6 @@ namespace Modeling_Canvas.UIElements
 
         protected virtual void OnElementSelected(MouseButtonEventArgs e)
         {
-            if (!IsInteractable) return;
             if (!InputManager.ShiftPressed && !Canvas.SelectedElements.Contains(this))
             {
                 Canvas.SelectedElements.Clear();
@@ -347,7 +345,7 @@ namespace Modeling_Canvas.UIElements
             {
                 AnchorPoint.MoveElement(offset);
             }
-            else
+            else if(HasAnchorPoint) 
             {
                 AnchorPoint.Position = GetAnchorDefaultPosition();
             }
