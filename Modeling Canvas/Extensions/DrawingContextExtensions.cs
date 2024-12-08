@@ -225,5 +225,36 @@ namespace Modeling_Canvas.Extensions
             }
         }
 
+        public static void DrawBezierCurve(this DrawingContext dc, CustomCanvas canvas, Pen pen, Point p0, Point c1, Point c2, Point p3, double transparentThickness = 0)
+        {
+            const int steps = 100; // Number of points to approximate the curve
+            Point prevPoint = p0;
+
+            for (int i = 1; i <= steps; i++)
+            {
+                double t = i / (double)steps;
+                Point currentPoint = CalculateBezierPoint(t, p0, c1, c2, p3);
+                dc.DrawLine(canvas, pen, prevPoint, currentPoint, transparentThickness);
+                prevPoint = currentPoint;
+            }
+        }
+
+        private static Point CalculateBezierPoint(double t, Point p0, Point c1, Point c2, Point p3)
+        {
+            double u = 1 - t;
+            double tt = t * t;
+            double uu = u * u;
+            double uuu = uu * u;
+            double ttt = tt * t;
+
+            Point result = new Point
+            {
+                X = uuu * p0.X + 3 * uu * t * c1.X + 3 * u * tt * c2.X + ttt * p3.X,
+                Y = uuu * p0.Y + 3 * uu * t * c1.Y + 3 * u * tt * c2.Y + ttt * p3.Y
+            };
+
+            return result;
+        }
+
     }
 }

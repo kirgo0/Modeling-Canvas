@@ -1,5 +1,4 @@
 ﻿using Modeling_Canvas.Enums;
-using Modeling_Canvas.Extensions;
 using System.Windows;
 using System.Windows.Media;
 
@@ -33,8 +32,6 @@ namespace Modeling_Canvas.UIElements
             Points.Last().Shape = PointShape.Square;
         }
 
-        // main add method
-
         protected override DraggablePoint OnPointInit(Point point)
         {
             var customPoint = base.OnPointInit(point);
@@ -46,16 +43,11 @@ namespace Modeling_Canvas.UIElements
 
             return customPoint;
         }
-       
+
         //protected void OnPointClickRenderControlPanel(DraggablePoint point)
         //{
         //    SelectedPoint = point;
-        //    //RenderControlPanelLabel();
-        //    //AddRotateControls();
-        //    //AddOffsetControls();
-        //    //AddAnchorControls();
-        //    //AddStrokeColorControls();
-        //    //AddStrokeThicknessControls();
+        //    RenderControlPanelLabel();
         //}
 
         public override string ToString()

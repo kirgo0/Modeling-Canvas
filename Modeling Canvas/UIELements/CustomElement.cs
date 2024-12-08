@@ -11,6 +11,8 @@ namespace Modeling_Canvas.UIElements
 {
     public abstract partial class CustomElement : FrameworkElement, INotifyPropertyChanged, IMovableElement
     {
+        public CustomElement? LogicalParent { get; set; } = null;
+
         private Brush _fill = null;
         public Brush Fill {
             get => _fill;
@@ -112,7 +114,6 @@ namespace Modeling_Canvas.UIElements
             private set
             {
                 _anchorPoint = value;
-                //OnPropertyChanged(nameof(AnchorPoint));
             }
         }
 
@@ -220,6 +221,13 @@ namespace Modeling_Canvas.UIElements
             {
                 AddElementToControlPanel(control.Value);
             }
+        }
+
+        protected virtual void AddChildren(CustomElement element)
+        {
+            element.LogicalParent = this;
+            Canvas.Children.Add(element);
+            Panel.SetZIndex(element, Canvas.Children.Count + 1);
         }
 
         public virtual Point GetOriginPoint(Size arrangedSize)
@@ -360,7 +368,7 @@ namespace Modeling_Canvas.UIElements
 
         protected virtual void OnElementSelected(MouseButtonEventArgs e)
         {
-            if (!InputManager.ShiftPressed && !Canvas.SelectedElements.Contains(this))
+            if (!InputManager.ShiftPressed && !Canvas.SelectedElements.Contains(this) && !Canvas.SelectedElements.Contains(LogicalParent))
             {
                 Canvas.SelectedElements.Clear();
             }

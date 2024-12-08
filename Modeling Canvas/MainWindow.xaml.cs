@@ -34,8 +34,14 @@ namespace Modeling_Canvas
             //var c = new CustomCircle(MyCanvas);
             //MyCanvas.Children.Add(c);
 
-            //var d = new BezierPoint(MyCanvas, new Point(0, 2));
-            //MyCanvas.Children.Add(d);
+            var d = new BezierCurve(MyCanvas);
+
+            d.AddPoint(2, 3);
+            d.AddPoint(1, 1);
+            d.AddPoint(-2, 3);
+            d.AddPoint(3, -4);
+
+            MyCanvas.Children.Add(d);
 
 
             PointExtensions.Canvas = MyCanvas;

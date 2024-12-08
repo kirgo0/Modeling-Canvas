@@ -10,7 +10,7 @@ namespace Modeling_Canvas.UIElements
         public DraggablePoint ControlPoint { get; set; }
         public Pen ControlLinePen { get; set; } = new Pen(Brushes.Magenta, 1);
 
-        public BezierPoint(CustomCanvas canvas, Point position = new Point(), bool hasAnchorPoint = true) : base(canvas)
+        public BezierPoint(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
             Fill = Brushes.White;
             StrokeThickness = 2;

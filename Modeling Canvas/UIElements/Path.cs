@@ -70,6 +70,38 @@ namespace Modeling_Canvas.UIElements
             base.InitControlPanel();
             AddStrokeColorControls();
             AddStrokeThicknessControls();
+
+            var addPointbutton =
+                WpfHelper.CreateButton(
+                    () =>
+                    {
+                        AddPoint(GetAnchorDefaultPosition());
+                    },
+                    "Add point"
+                );
+
+            _controls.Add("Add Point", addPointbutton);
+
+            var removePointbutton =
+                WpfHelper.CreateButton(
+                    () =>
+                    {
+                        //RemovePoint();
+                        RenderControlPanel();
+                    },
+                    "Remove point"
+                );
+
+            _controls.Add("Remove Point", removePointbutton);
+
+            var isClosedCheckBox =
+                WpfHelper.CreateLabeledCheckBox(
+                    "Is Closed:",
+                    this,
+                    nameof(IsClosed)
+                );
+
+            _controls.Add("IsClosed", isClosedCheckBox);
         }
 
         protected override Point GetAnchorDefaultPosition()
@@ -115,8 +147,10 @@ namespace Modeling_Canvas.UIElements
             var customPoint = OnPointInit(point);
 
             Points.Add(customPoint);
-            Canvas.Children.Add(customPoint);
-            Panel.SetZIndex(customPoint, Canvas.Children.Count + 1);
+
+            AddChildren(customPoint);
+            //Canvas.Children.Add(customPoint);
+            //Panel.SetZIndex(customPoint, Canvas.Children.Count + 1);
         }
 
         public void InsertPointAt(int pointIndex)
