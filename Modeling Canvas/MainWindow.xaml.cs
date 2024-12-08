@@ -20,13 +20,13 @@ namespace Modeling_Canvas
             InitializeComponent();
             CenterWindowOnScreen();
 
-            InitFigure();
+            //InitFigure();
             //var a = new Hypocycloid(MyCanvas, 4, 1);
             //MyCanvas.Children.Add(a);
             //a.Center = new Point(5, 5);
 
-            //var b = new SegmentedCircle(MyCanvas);
-            //MyCanvas.Children.Add(b);
+            var b = new SegmentedCircle(MyCanvas);
+            MyCanvas.Children.Add(b);
 
             //var a = new CustomLine(MyCanvas, new Point(0, 2), new Point(2, 7));
             //MyCanvas.Children.Add(a);
@@ -34,8 +34,8 @@ namespace Modeling_Canvas
             //var c = new CustomCircle(MyCanvas);
             //MyCanvas.Children.Add(c);
 
-            var d = new BezierPoint(MyCanvas, new Point(0, 2));
-            MyCanvas.Children.Add(d);
+            //var d = new BezierPoint(MyCanvas, new Point(0, 2));
+            //MyCanvas.Children.Add(d);
 
 
             PointExtensions.Canvas = MyCanvas;

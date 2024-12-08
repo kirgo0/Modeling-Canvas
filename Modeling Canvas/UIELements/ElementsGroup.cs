@@ -28,7 +28,7 @@ namespace Modeling_Canvas.UIElements
         private Point _topLeftPosition = new Point(0, 0);
         private Point _bottomRightPosition = new Point(0, 0);
 
-        public ElementsGroup(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas)
+        public ElementsGroup(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
             StrokeThickness = 2;
             Stroke = Brushes.Gray;
@@ -41,7 +41,7 @@ namespace Modeling_Canvas.UIElements
 
             foreach (var point in Points)
             {
-                point.OnRenderControlPanel = RenderControlPanel;
+                //point.OnRenderControlPanel = RenderControlPanel;
                 point.OverrideRenderControlPanelAction = true;
             }
         }
@@ -51,6 +51,13 @@ namespace Modeling_Canvas.UIElements
             StrokePen = DashedPen;
             base.OnRender(dc);
             Visibility = ControlsVisibility;
+        }
+
+        protected override void InitControlPanel()
+        {
+            base.InitControlPanel();
+            //AddStrokeColorControls();
+            //AddStrokeThicknessControls();
         }
 
         public override void AddPoint(double x, double y)
@@ -80,20 +87,20 @@ namespace Modeling_Canvas.UIElements
             Points[3].Position = new Point(_topLeftPosition.X, _bottomRightPosition.Y);
         }
 
-        protected override void RenderControlPanel()
-        {
-            ClearControlPanel();
-            AddOffsetControls();
-            AddRotateControls();
-            AddScaleControls();
-            AddAnchorControls();
-            AddStrokeColorControls();
-            AddStrokeThicknessControls();
-        }
-        protected void RenderControlPanel(DraggablePoint point)
-        {
-            RenderControlPanel();
-        }
+        //protected override void RenderControlPanel()
+        //{
+        //    ClearControlPanel();
+        //    AddOffsetControls();
+        //    AddRotateControls();
+        //    AddAnchorControls();
+        //    AddStrokeColorControls();
+        //    AddStrokeThicknessControls();
+        //}
+
+        //protected void RenderControlPanel(DraggablePoint point)
+        //{
+        //    RenderControlPanel();
+        //}
 
         public void AddChild(CustomElement child)
         {

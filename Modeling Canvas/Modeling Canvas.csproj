@@ -12,6 +12,7 @@
   <ItemGroup>
     <Compile Remove="Extensions\DrawingContextAffineExtensions.cs" />
     <Compile Remove="Extensions\DrawingContextProjectiveExtensions.cs" />
+    <Compile Remove="UIElements\CustomRectangle.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,54 +8,76 @@ namespace Modeling_Canvas.UIElements
 {
     public partial class CustomCircle : CustomElement
     {
-        public int Precision { get; set; } = 100; // Number of points for the circle
+        public double MinRadiusValue { get; set; } = 0.5;
+
+        private double _maxRadiusValue = 10;
+
+        public int Precision { get; set; } = 100;
+
         private double _radius = 5;
+
+        public double MaxRadiusValue
+        {
+            get => _maxRadiusValue;
+            set
+            {
+                if (_maxRadiusValue != value)
+                {
+                    _maxRadiusValue = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public double Radius
         {
             get => _radius;
             set
             {
-                if (value <= 0.5) _radius = 0.5;
-                else _radius = Math.Round(value, 3);
+                if (_radius != value)
+                {
+                    if (value <= 0.5) _radius = 0.5;
+                    else _radius = Math.Round(value, 3);
+                    OnPropertyChanged();
+                }
             }
         }
+
         public Point Center
         {
             get => CenterPoint.Position;
             set => CenterPoint.Position = value;
         }
+
         public DraggablePoint CenterPoint { get; set; }
+
         public DraggablePoint RadiusPoint { get; set; }
+
         public double RadiusControlDistance { get; set; } = 1;
 
-        public CustomCircle(CustomCanvas canvas) : base(canvas)
+        public CustomCircle(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
-            canvas.MouseWheel += (o, e) =>
-            {
-                if (Canvas.SelectedElements.Contains(this))
-                    RenderControlPanel();
-            };
+            canvas.MouseWheel += (o, e) => MaxRadiusValue = CalculateMaxCircleRadius();
+            Initialized += (o, e) => MaxRadiusValue = CalculateMaxCircleRadius();
         }
         protected override void InitChildren()
         {
-            RadiusPoint = new DraggablePoint(Canvas)
+            RadiusPoint = new DraggablePoint(Canvas, false)
             {
                 Radius = 8,
                 Opacity = 0.7,
                 OverrideMoveAction = RadiusPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
-                HasAnchorPoint = false,
                 OverrideRenderControlPanelAction = true
             };
             Canvas.Children.Add(RadiusPoint);
             Panel.SetZIndex(RadiusPoint, Canvas.Children.Count + 1);
 
 
-            CenterPoint = new DraggablePoint(Canvas)
+            CenterPoint = new DraggablePoint(Canvas, false)
             {
                 Radius = 3,
                 OverrideMoveAction = CenterPointMoveAction,
-                HasAnchorPoint = false,
                 OverrideRenderControlPanelAction = true,
                 Position = new Point(0, 0)
             };
@@ -78,15 +100,25 @@ namespace Modeling_Canvas.UIElements
             dc.DrawCircle(Canvas, Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, Precision, 10);
         }
 
-        protected override void RenderControlPanel()
+        protected override void InitControlPanel()
         {
-            base.RenderControlPanel();
+            base.InitControlPanel();
             AddCenterControls();
             AddFillColorControls();
             AddStrokeColorControls();
             AddStrokeThicknessControls();
             AddRadiusControls();
         }
+
+        //protected override void RenderControlPanel()
+        //{
+        //    base.RenderControlPanel();
+        //    AddCenterControls();
+        //    AddFillColorControls();
+        //    AddStrokeColorControls();
+        //    AddStrokeThicknessControls();
+        //    AddRadiusControls();
+        //}
 
         public override Point GetTopLeftPosition()
         {
@@ -156,9 +188,9 @@ namespace Modeling_Canvas.UIElements
             Radius *= scaleFactor;
         }
 
-        public override void InvalidateCanvas()
+        public double CalculateMaxCircleRadius()
         {
-            base.InvalidateCanvas();
+            return Math.Max(Canvas.ActualHeight / 2, Canvas.ActualWidth / 2) / UnitSize;
         }
 
         public override string ToString()

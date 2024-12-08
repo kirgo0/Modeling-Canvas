@@ -22,11 +22,10 @@ namespace Modeling_Canvas.UIElements
 
         protected override void InitChildren()
         {
-            ControlPoint = new DraggablePoint(Canvas)
+            ControlPoint = new DraggablePoint(Canvas, false)
             {
                 Radius = 8,
                 Opacity = 0.7,
-                HasAnchorPoint = false,
                 OverrideRenderControlPanelAction = true,
                 Stroke = Brushes.Black,
                 StrokeThickness = 2,

@@ -11,9 +11,53 @@ namespace Modeling_Canvas.UIElements
 {
     public abstract partial class CustomElement : FrameworkElement, INotifyPropertyChanged, IMovableElement
     {
-        public Brush Fill { get; set; } = null;
-        public Brush Stroke { get; set; } = Brushes.Black;
-        public double StrokeThickness { get; set; } = 1;
+        private Brush _fill = null;
+        public Brush Fill {
+            get => _fill;
+            set
+            {
+                if (_fill != value)
+                {
+                    _fill = value;
+                    OnPropertyChanged();
+                    InvalidateCanvas();
+                }
+            }
+        }
+
+        private Brush _stroke = Brushes.Black;
+
+        public Brush Stroke
+        {
+            get => _stroke;
+            set
+            {
+                if (_stroke != value)
+                {
+                    _stroke = value;
+                    OnPropertyChanged();
+                    InvalidateCanvas();
+                }
+            }
+        }
+
+        public double MinStrokeThickness { get; set; } = 0.1;
+        public double MaxStrokeThickness { get; set; } = 25;
+        
+        private double _strokeThickness = 1;
+        public double StrokeThickness { 
+            get => _strokeThickness;
+            set
+            {
+                if (_strokeThickness != value)
+                {
+                    _strokeThickness = value;
+                    OnPropertyChanged();
+                    InvalidateCanvas();
+                }
+            }
+        }
+
         private Pen _strokePen = null;
         public Pen StrokePen
         {
@@ -22,7 +66,21 @@ namespace Modeling_Canvas.UIElements
         }
         public bool ControlsVisible { get; set; } = false;
         public virtual Visibility ControlsVisibility { get => Canvas.SelectedElements.Contains(this) || ControlsVisible ? Visibility.Visible : Visibility.Hidden; }
-        public bool AnchorVisible { get; set; } = true;
+
+        private bool _anchorVisible = true;
+        public bool AnchorVisible {
+            get => _anchorVisible;
+            set
+            {
+                if (_anchorVisible != value)
+                {
+                    _anchorVisible = value;
+                    OnPropertyChanged();
+                    InvalidateCanvas();
+                }
+            }
+        }
+
         public Visibility AnchorVisibility
         {
             get
@@ -31,7 +89,7 @@ namespace Modeling_Canvas.UIElements
                 else return Visibility.Hidden;
             }
         }
-        public bool HasAnchorPoint { get; set; } = true;
+        public bool HasAnchorPoint { get; } = true;
 
         private bool overrideAnchorPoint = false;
         public bool OverrideAnchorPoint
@@ -51,10 +109,10 @@ namespace Modeling_Canvas.UIElements
         public DraggablePoint AnchorPoint
         {
             get => HasAnchorPoint ? _anchorPoint : null;
-            set
+            private set
             {
                 _anchorPoint = value;
-                OnPropertyChanged(nameof(AnchorPoint));
+                //OnPropertyChanged(nameof(AnchorPoint));
             }
         }
 
@@ -116,10 +174,9 @@ namespace Modeling_Canvas.UIElements
         {
             if (HasAnchorPoint)
             {
-                AnchorPoint = new DraggablePoint(Canvas)
+                AnchorPoint = new DraggablePoint(Canvas, false)
                 {
                     Radius = 10,
-                    HasAnchorPoint = false,
                     Focusable = false,
                     Fill = Brushes.Transparent,
                     Stroke = Brushes.Green,
@@ -141,9 +198,30 @@ namespace Modeling_Canvas.UIElements
         
         protected virtual void InitControlPanel()
         {
-
+            //RenderControlPanelLabel();
+            AddOffsetControls();
+            AddRotateControls();
+            AddScaleControls();
+            if (HasAnchorPoint)
+            {
+                AddAnchorControls();
+            }
         }
-       
+        protected virtual void RenderControlPanelLabel()
+        {
+            var label = new TextBlock { Text = $"| {LabelText} |", TextAlignment = TextAlignment.Center, FontWeight = FontWeight.FromOpenTypeWeight(600) };
+            AddElementToControlPanel(label);
+        }
+
+        protected virtual void RenderControlPanel()
+        {
+            ClearControlPanel();
+            foreach (var control in _controls)
+            {
+                AddElementToControlPanel(control.Value);
+            }
+        }
+
         public virtual Point GetOriginPoint(Size arrangedSize)
         {
             return new Point(0, 0);
@@ -174,24 +252,7 @@ namespace Modeling_Canvas.UIElements
             e.Handled = true;
         }
 
-        protected virtual void RenderControlPanelLabel()
-        {
-            var label = new TextBlock { Text = $"| {LabelText} |", TextAlignment = TextAlignment.Center, FontWeight = FontWeight.FromOpenTypeWeight(600) };
-            AddElementToControlPanel(label);
-        }
 
-        protected virtual void RenderControlPanel()
-        {
-            ClearControlPanel();
-            RenderControlPanelLabel();
-            AddRotateControls();
-            AddOffsetControls();
-            AddScaleControls();
-            if (HasAnchorPoint)
-            {
-                AddAnchorControls();
-            }
-        }
         protected override void OnMouseEnter(MouseEventArgs e)
         {
             base.OnMouseEnter(e);
@@ -213,6 +274,7 @@ namespace Modeling_Canvas.UIElements
         }
 
         private bool _lastAnchorState = false;
+
         protected override void OnMouseMove(MouseEventArgs e)
         {
             var window = App.Current.MainWindow as MainWindow;
@@ -319,6 +381,7 @@ namespace Modeling_Canvas.UIElements
             InvalidateCanvas();
             RenderControlPanel();
         }
+        
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
             base.OnMouseLeftButtonUp(e);
@@ -326,6 +389,7 @@ namespace Modeling_Canvas.UIElements
             _isRotating = false;
             ReleaseMouseCapture();
         }
+
         protected override void OnMouseRightButtonDown(MouseButtonEventArgs e)
         {
             if (!IsInteractable) return;
@@ -337,6 +401,7 @@ namespace Modeling_Canvas.UIElements
                 CaptureMouse();
             }
         }
+        
         protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
         {
             base.OnMouseRightButtonUp(e);
@@ -359,7 +424,9 @@ namespace Modeling_Canvas.UIElements
                 AnchorPoint.Position = GetAnchorDefaultPosition();
             }
         }
+       
         public abstract void RotateElement(Point anchorPoint, double degrees);
+        
         public abstract void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor);
 
         // Helper method to invalidate the parent canvas

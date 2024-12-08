@@ -132,9 +132,9 @@ namespace Modeling_Canvas.UIElements
             thirdPoint.Position = new Point(thirdPoint.Position.X, movedPoint.Position.Y);
         }
 
-        protected override void RenderControlPanelLabel()
-        {
-        }
+        //protected override void RenderControlPanelLabel()
+        //{
+        //}
 
         public override void MoveElement(Vector offset)
         {

@@ -42,56 +42,21 @@ namespace Modeling_Canvas.UIElements
             customPoint.Shape = PointsShape;
             customPoint.Radius = PointsRadius;
             customPoint.IsSelectable = false;
-            customPoint.OnRenderControlPanel = OnPointClickRenderControlPanel;
+            //customPoint.OnRenderControlPanel = OnPointClickRenderControlPanel;
 
             return customPoint;
         }
-        
-        public override void MoveElement(Vector offset)
-        {
-            foreach (var point in Points)
-            {
-                point.MoveElement(offset);
-            }
-            base.MoveElement(offset);
-        }
-
-        public override void RotateElement(Point anchorPoint, double degrees)
-        {
-            foreach (var point in Points)
-            {
-                point.Position = point.Position.RotatePoint(anchorPoint, degrees);
-            }
-        }
-
-        public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
-        {
-            foreach (var point in Points)
-            {
-                point.Position = point.Position.ScalePoint(anchorPoint, scaleVector);
-            }
-        }
-        protected override void RenderControlPanel()
-        {
-            base.RenderControlPanel();
-            AddAddPointButton();
-            AddStrokeColorControls();
-            AddStrokeThicknessControls();
-            AddIsClosedControls();
-        }
-
-        protected void OnPointClickRenderControlPanel(DraggablePoint point)
-        {
-            AddRemovePointControls(point);
-            AddAddPointButton(point);
-            RenderControlPanelLabel();
-            AddRotateControls();
-            AddOffsetControls();
-            AddAnchorControls();
-            AddStrokeColorControls();
-            AddStrokeThicknessControls();
-            AddIsClosedControls();
-        }
+       
+        //protected void OnPointClickRenderControlPanel(DraggablePoint point)
+        //{
+        //    SelectedPoint = point;
+        //    //RenderControlPanelLabel();
+        //    //AddRotateControls();
+        //    //AddOffsetControls();
+        //    //AddAnchorControls();
+        //    //AddStrokeColorControls();
+        //    //AddStrokeThicknessControls();
+        //}
 
         public override string ToString()
         {

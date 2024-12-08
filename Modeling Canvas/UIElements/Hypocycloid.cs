@@ -120,16 +120,14 @@ namespace Modeling_Canvas.UIElements
         }
         protected override void InitChildren()
         {
-            LargeCircle = new CustomCircle(Canvas)
+            LargeCircle = new CustomCircle(Canvas, false)
             {
                 Radius = Model.LargeRadius,
-                HasAnchorPoint = false
             };
 
-            SmallCircle = new CustomCircle(Canvas)
+            SmallCircle = new CustomCircle(Canvas, false)
             {
                 Radius = Model.SmallRadius,
-                HasAnchorPoint = false
             };
 
             LargeCircle.IsSelectable = false;
@@ -149,8 +147,6 @@ namespace Modeling_Canvas.UIElements
 
             LargeCircle.RadiusControlDistance = 1.5;
             SmallCircle.RadiusControlDistance = 0.5;
-
-            LargeCircle.HasAnchorPoint = false;
 
             LargeCircle.OnRadiusChange += (s, e) =>
             {
@@ -177,24 +173,24 @@ namespace Modeling_Canvas.UIElements
 
         protected override void InitControlPanel()
         {
-            base.InitControlPanel();
-
             var arcLengthText = WpfHelper.CreateValueTextBlock(
                 "Arc Length",
                 CalculatedValues,
-                nameof(HypocycloidCalculationsModel.ArcLength),
-                CalculatedValues,
-                nameof(HypocycloidCalculationsModel.ShowArcLength)
+                nameof(HypocycloidCalculationsModel.ArcLength)
                 );
+
+            arcLengthText.AddVisibilityBinding(CalculatedValues,nameof(HypocycloidCalculationsModel.ShowArcLength));
+
             _controls.Add(nameof(HypocycloidCalculationsModel.ArcLength), arcLengthText);
 
             var areaText = WpfHelper.CreateValueTextBlock(
                 "Area",
                 CalculatedValues,
-                nameof(HypocycloidCalculationsModel.HypocycloidArea),
-                CalculatedValues,
-                nameof(HypocycloidCalculationsModel.ShowArcLength)
+                nameof(HypocycloidCalculationsModel.HypocycloidArea)
                 );
+
+            areaText.AddVisibilityBinding(CalculatedValues, nameof(HypocycloidCalculationsModel.ShowArcLength));
+
             _controls.Add(nameof(HypocycloidCalculationsModel.ShowHypocycloidArea), areaText);
 
             var showInflectionPointsCheckbox = WpfHelper.CreateLabeledCheckBox("Inflection points", CalculatedValues, nameof(HypocycloidCalculationsModel.ShowInflectionPoints));
@@ -230,14 +226,16 @@ namespace Modeling_Canvas.UIElements
 
             var startAnimationButton = WpfHelper.CreateButton(
                 content: "Animate",
-                clickAction: () => Animate(),
-                visibilityBindingSource: this,
-                visibilityBindingPath: nameof(ShowAnimationControls)
+                clickAction: () => Animate()
                 );
+
+            startAnimationButton.AddVisibilityBinding(this, nameof(ShowAnimationControls));
 
             startAnimationButton.AddIsDisabledBinding(this, nameof(IsNotAnimating));
 
             _controls.Add("AnimateButton", startAnimationButton);
+
+            base.InitControlPanel();
 
         }
 
@@ -254,6 +252,7 @@ namespace Modeling_Canvas.UIElements
                 }
             }
         }
+
         protected override void OnRender(DrawingContext dc)
         {
             LargeCircle.Center = Center;

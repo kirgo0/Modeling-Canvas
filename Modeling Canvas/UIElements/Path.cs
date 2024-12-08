@@ -9,8 +9,24 @@ namespace Modeling_Canvas.UIElements
     public class Path<T> : CustomElement where T : CustomElement, IPoint
     {
         public int PointsRadius { get; set; } = 5;
+
         public List<T> Points { get; } = new();
-        public bool IsClosed { get; set; } = true;
+
+        public bool _isClosed = true;
+        public bool IsClosed {
+            get => _isClosed;
+            set
+            {
+                if (_isClosed != value)
+                {
+                    _isClosed = value;
+                    OnPropertyChanged();
+                    InvalidateCanvas();
+                }
+            }
+        }
+
+        public T? SelectedPoint { get; set; }
 
         public Path(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
@@ -49,6 +65,13 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
+        protected override void InitControlPanel()
+        {
+            base.InitControlPanel();
+            AddStrokeColorControls();
+            AddStrokeThicknessControls();
+        }
+
         protected override Point GetAnchorDefaultPosition()
         {
             if (Points == null || !Points.Any()) return new Point(0, 0);
@@ -77,13 +100,12 @@ namespace Modeling_Canvas.UIElements
 
         protected virtual T OnPointInit(Point point)
         {
-            T customPoint = (T)Activator.CreateInstance(typeof(T), Canvas);
+            T customPoint = (T)Activator.CreateInstance(typeof(T), Canvas, false);
 
             if (customPoint is null)
                 throw new InvalidOperationException($"Failed to create an instance of type {typeof(T)}.");
 
             customPoint.Position = point;
-            customPoint.HasAnchorPoint = false;
 
             return customPoint;
         }
@@ -170,11 +192,6 @@ namespace Modeling_Canvas.UIElements
             {
                 point.Position = point.Position.ScalePoint(anchorPoint, scaleVector);
             }
-        }
-
-        protected override void RenderControlPanel()
-        {
-            base.RenderControlPanel();
         }
 
         public override string ToString()

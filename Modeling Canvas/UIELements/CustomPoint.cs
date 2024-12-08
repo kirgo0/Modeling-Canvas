@@ -21,7 +21,6 @@ namespace Modeling_Canvas.UIElements
             {
                 _position = new Point(Math.Round(value.X, PositionPrecision), Math.Round(value.Y, PositionPrecision));
                 OnPropertyChanged();
-                InvalidateVisual();
             }
         }
 
@@ -30,13 +29,12 @@ namespace Modeling_Canvas.UIElements
             get => new Point(Canvas.ActualWidth / 2 + Position.X * UnitSize, Canvas.ActualHeight / 2 - Position.Y * UnitSize).AddCanvasOffsets();
         }
 
-        public CustomPoint(CustomCanvas canvas) : base(canvas)
+        public CustomPoint(CustomCanvas canvas, bool hasAnchorPoint = false) : base(canvas, hasAnchorPoint)
         {
             Fill = Brushes.Black;
             StrokeThickness = 0;
             IsSelectable = false;
             LabelText = "Point";
-            HasAnchorPoint = false;
         }
 
         protected override void DefaultRender(DrawingContext dc)
@@ -80,6 +78,7 @@ namespace Modeling_Canvas.UIElements
         public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
         {
         }
+
         public override string ToString()
         {
             return $"Point\nX: {Position.X}\nY: {Position.Y}";

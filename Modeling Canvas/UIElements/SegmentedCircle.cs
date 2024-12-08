@@ -7,8 +7,8 @@ namespace Modeling_Canvas.UIElements
 {
     public partial class SegmentedCircle : CustomCircle
     {
-        public DraggablePoint StartDegreesPoint { get; set; }
-        public DraggablePoint EndDegreesPoint { get; set; }
+        public double MaxDegrees { get; set; } = 360;
+        public double MinDegrees { get; set; } = 0;
 
         private double _startDegrees = 0;
         public double StartDegrees
@@ -17,6 +17,8 @@ namespace Modeling_Canvas.UIElements
             set
             {
                 _startDegrees = Math.Round(value, 1);
+                OnPropertyChanged();
+                InvalidateCanvas();
             }
         }
         public double StartRadians { get => Helpers.DegToRad(StartDegrees); }
@@ -28,15 +30,15 @@ namespace Modeling_Canvas.UIElements
             set
             {
                 _endDegrees = Math.Round(value, 1);
+                OnPropertyChanged();
+                InvalidateCanvas();
             }
         }
         public double EndRadians { get => Helpers.DegToRad(EndDegrees); }
+        public DraggablePoint StartDegreesPoint { get; set; }
+        public DraggablePoint EndDegreesPoint { get; set; }
         public SegmentedCircle(CustomCanvas canvas) : base(canvas)
         {
-        }
-        protected override void DefaultRender(DrawingContext dc)
-        {
-            dc.DrawCircleWithArcs(Canvas, Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, StartDegrees, EndDegrees, Precision, 10);
         }
         protected override void OnRender(DrawingContext dc)
         {
@@ -47,33 +49,36 @@ namespace Modeling_Canvas.UIElements
             base.OnRender(dc);
         }
 
-        protected override void RenderControlPanel()
+        protected override void DefaultRender(DrawingContext dc)
         {
-            base.RenderControlPanel();
+            dc.DrawCircleWithArcs(Canvas, Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, StartDegrees, EndDegrees, Precision, 10);
+        }
+
+        protected override void InitControlPanel()
+        {
+            base.InitControlPanel();
             AddDegreesControls();
         }
 
         protected override void InitChildren()
         {
-            StartDegreesPoint = new DraggablePoint(Canvas)
+            StartDegreesPoint = new DraggablePoint(Canvas, false)
             {
                 Opacity = 0.7,
                 OverrideMoveAction = StartDegreesPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
                 Fill = Brushes.Red,
-                HasAnchorPoint = false,
                 OverrideRenderControlPanelAction = true
             };
             Canvas.Children.Add(StartDegreesPoint);
             Panel.SetZIndex(StartDegreesPoint, Canvas.Children.Count + 1);
 
-            EndDegreesPoint = new DraggablePoint(Canvas)
+            EndDegreesPoint = new DraggablePoint(Canvas, false)
             {
                 Opacity = 0.7,
                 OverrideMoveAction = EndDegreesPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
                 Fill = Brushes.Blue,
-                HasAnchorPoint = false,
                 OverrideRenderControlPanelAction = true
             };
             Canvas.Children.Add(EndDegreesPoint);

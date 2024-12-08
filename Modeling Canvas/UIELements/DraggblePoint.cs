@@ -11,20 +11,21 @@ namespace Modeling_Canvas.UIElements
     {
         public double DragRadius { get; set; } = 10;
 
-        public DraggablePoint(CustomCanvas canvas) : base(canvas)
+        public DraggablePoint(CustomCanvas canvas, bool hasAnchorPoint = false) : base(canvas, hasAnchorPoint)
         {
-        }
-
-        public DraggablePoint(CustomCanvas canvas, Point position) : base(canvas)
-        {
-            Position = position;
+            LabelText = "D.Point";
         }
 
         protected override void DefaultRender(DrawingContext dc)
         {
             base.DefaultRender(dc);
             dc.DrawCircle(Canvas, Brushes.Transparent, new Pen(Stroke, 0), PixelPosition, DragRadius, 100);
+        }
 
+        protected override void InitControlPanel()
+        {
+            base.InitControlPanel();
+            AddPointControls();
         }
 
         public Action<DraggablePoint, Vector> OverrideMoveAction;
@@ -60,21 +61,20 @@ namespace Modeling_Canvas.UIElements
 
         public Action<DraggablePoint>? OnRenderControlPanel { get; set; }
         public bool OverrideRenderControlPanelAction { get; set; } = false;
-        protected override void RenderControlPanel()
-        {
-            if (!OverrideRenderControlPanelAction)
-            {
-                ClearControlPanel();
-                RenderControlPanelLabel();
-                AddPointControls();
-                OnRenderControlPanel?.Invoke(this);
-            }
-            else
-            {
-                OnRenderControlPanel?.Invoke(this);
-            }
-        }
 
+        //protected override void RenderControlPanel()
+        //{
+        //    if (!OverrideRenderControlPanelAction)
+        //    {
+        //        ClearControlPanel();
+        //        RenderControlPanelLabel();
+        //        AddPointControls();
+        //        OnRenderControlPanel?.Invoke(this);
+        //    }
+        //    else
+        //    {
+        //        OnRenderControlPanel?.Invoke(this);
+        //    }
 
         public Func<DraggablePoint, string>? OverrideToStringAction;
         public override string ToString()

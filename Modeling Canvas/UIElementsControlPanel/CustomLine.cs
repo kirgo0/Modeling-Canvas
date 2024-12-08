@@ -5,86 +5,41 @@ namespace Modeling_Canvas.UIElements
 {
     public partial class CustomLine
     {
-
-        protected virtual void AddAddPointButton(DraggablePoint point = null)
+        protected override void InitControlPanel()
         {
-            var panel = GetDefaultVerticalPanel();
-            var addPointButton = new Button
-            {
-                Content = "Add Point",
-                Width = 100,
-                Height = 20,
-                Margin = new Thickness(5),
-                IsTabStop = false
-            };
+            base.InitControlPanel();
 
-            addPointButton.Click += (s, e) =>
-            {
-                if (point is null)
-                {
-                    AddPoint(GetAnchorDefaultPosition());
-                }
-                else
-                {
-                    var pointIndex = Points.IndexOf(point);
-                    InsertPointAt(pointIndex);
-                }
-            };
-            panel.Children.Add(addPointButton);
-            AddElementToControlPanel(panel);
-        }
+            var addPointbutton =
+                WpfHelper.CreateButton(
+                    () =>
+                    {
+                        AddPoint(GetAnchorDefaultPosition());
+                    },
+                    "Add point"
+                );
 
-        protected virtual void AddRemovePointControls(DraggablePoint point)
-        {
-            var panel = GetDefaultVerticalPanel();
-            var removePointButton = new Button
-            {
-                Content = "Remove Point",
-                Width = 100,
-                Height = 20,
-                Margin = new Thickness(5),
-                IsTabStop = false
-            };
+            _controls.Add("Add Point", addPointbutton);
 
-            removePointButton.Click += (s, e) =>
-            {
-                RemovePoint(point);
-                RenderControlPanel();
-            };
+            var removePointbutton =
+                WpfHelper.CreateButton(
+                    () =>
+                    {
+                        //RemovePoint();
+                        RenderControlPanel();
+                    },
+                    "Remove point"
+                );
 
-            if (Points.Count == 2)
-            {
-                removePointButton.IsEnabled = false;
-            }
+            _controls.Add("Remove Point", removePointbutton);
 
-            panel.Children.Add(removePointButton);
-            AddElementToControlPanel(panel);
-        }
+            var isClosedCheckBox =
+                WpfHelper.CreateLabeledCheckBox(
+                    "Is Closed:",
+                    this,
+                    nameof(IsClosed)
+                );
 
-        protected virtual void AddIsClosedControls()
-        {
-            var panel = GetDefaultHorizontalPanel();
-            var isClosedLabel = new TextBlock { Text = "Is Closed:" };
-
-            var isClosedCheckBox = new CheckBox
-            {
-                IsChecked = IsClosed // Bind the initial value
-            };
-
-            isClosedCheckBox.Checked += (s, e) =>
-            {
-                IsClosed = true;
-                InvalidateVisual();
-            };
-            isClosedCheckBox.Unchecked += (s, e) =>
-            {
-                IsClosed = false;
-                InvalidateVisual();
-            };
-
-            panel.Children.Add(isClosedLabel);
-            panel.Children.Add(isClosedCheckBox);
-            AddElementToControlPanel(panel);
+            _controls.Add("IsClosed", isClosedCheckBox);
         }
     }
 }

@@ -6,22 +6,25 @@ namespace Modeling_Canvas.UIElements
     {
         protected virtual void AddPointControls()
         {
-            AddDefaultPointControls(
-                "Point",
-                this,
-                "Position.X",
-                "Position.Y",
-                (x) =>
-                {
-                    Position = new Point(x, Position.Y);
-                    InvalidateCanvas();
-                },
-                (y) =>
-                {
-                    Position = new Point(Position.X, y);
-                    InvalidateCanvas();
-                }
-            );
+            var positionPosition = 
+                WpfHelper.CreateDefaultPointControls(
+                    "Point",
+                    this,
+                    "Position.X",
+                    "Position.Y",
+                    (x) =>
+                    {
+                        Position = new Point(x, Position.Y);
+                        InvalidateCanvas();
+                    },
+                    (y) =>
+                    {
+                        Position = new Point(Position.X, y);
+                        InvalidateCanvas();
+                    }
+                );
+
+            _controls.Add("Point Position", positionPosition);
         }
     }
 }
