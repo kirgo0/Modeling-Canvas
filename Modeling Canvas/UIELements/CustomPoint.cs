@@ -1,21 +1,20 @@
 ﻿using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
+using Modeling_Canvas.UIElements.Interfaces;
 using System.Windows;
 using System.Windows.Media;
 
-
 namespace Modeling_Canvas.UIElements
 {
-    public class CustomPoint : CustomElement
+    public class CustomPoint : CustomElement, IPoint
     {
         public double Radius { get; set; } = 10;
         public PointShape Shape { get; set; } = PointShape.Circle;
+        public int PositionPrecision { get; set; } = 3;
         public double X { get => Position.X; }
         public double Y { get => Position.Y; }
-        public int PositionPrecision { get; set; } = 3;
-
         protected Point _position;
-        public virtual Point Position
+        public Point Position
         {
             get => _position;
             set
@@ -63,6 +62,7 @@ namespace Modeling_Canvas.UIElements
         {
             return new Point(Position.X + Radius / UnitSize, Position.Y + Radius / UnitSize);
         }
+
         public override Point GetBottomRightPosition()
         {
             return new Point(Position.X - Radius / UnitSize, Position.Y - Radius / UnitSize);

@@ -1,4 +1,5 @@
 ﻿using Modeling_Canvas.Enums;
+using Modeling_Canvas.UIElements.Interfaces;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -8,7 +9,7 @@ using System.Windows.Media;
 
 namespace Modeling_Canvas.UIElements
 {
-    public abstract partial class CustomElement : FrameworkElement, INotifyPropertyChanged
+    public abstract partial class CustomElement : FrameworkElement, INotifyPropertyChanged, IMovableElement
     {
         public Brush Fill { get; set; } = null;
         public Brush Stroke { get; set; } = Brushes.Black;
@@ -110,6 +111,7 @@ namespace Modeling_Canvas.UIElements
             InitChildren();
             InitControlPanel();
         }
+        
         protected virtual void InitChildren()
         {
             if (HasAnchorPoint)
@@ -136,30 +138,37 @@ namespace Modeling_Canvas.UIElements
                 Panel.SetZIndex(AnchorPoint, Canvas.Children.Count + 1);
             }
         }
+        
         protected virtual void InitControlPanel()
         {
 
         }
+       
         public virtual Point GetOriginPoint(Size arrangedSize)
         {
             return new Point(0, 0);
         }
+
         protected virtual Point GetAnchorDefaultPosition()
         {
             return new Point(0, 0);
         }
+
         public virtual Point GetTopLeftPosition()
         {
             return new Point(0, 0);
         }
+
         public virtual Point GetBottomRightPosition()
         {
             return new Point(0, 0);
         }
+
         protected virtual void OnAnchorPointMove(DraggablePoint point, Vector offset)
         {
             OverrideAnchorPoint = true;
         }
+
         protected virtual void OnPointMouseLeftButtonDown(MouseButtonEventArgs e)
         {
             e.Handled = true;

@@ -95,7 +95,7 @@ namespace Modeling_Canvas.UIElements
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-            DrawGridCustomInfinityRender(dc);
+            DrawGrid(dc);
         }
 
         public Point GetTransformedUnitCoordinates(Point pixelCoordinates)

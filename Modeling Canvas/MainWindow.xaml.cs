@@ -20,7 +20,7 @@ namespace Modeling_Canvas
             InitializeComponent();
             CenterWindowOnScreen();
 
-            //InitFigure();
+            InitFigure();
             //var a = new Hypocycloid(MyCanvas, 4, 1);
             //MyCanvas.Children.Add(a);
             //a.Center = new Point(5, 5);
