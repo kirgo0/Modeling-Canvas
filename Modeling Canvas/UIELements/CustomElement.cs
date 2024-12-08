@@ -267,14 +267,7 @@ namespace Modeling_Canvas.UIElements
                 {
                     Mouse.OverrideCursor = Cursors.SizeAll;
                     Vector offset = currentMousePosition - _lastMousePosition;
-                    if (Canvas.RenderMode is RenderMode.Affine)
-                    {
-                        offset = currentMousePosition.ReverseAffineTransformation(Canvas.AffineParams) - _lastMousePosition.ReverseAffineTransformation(Canvas.AffineParams);
-                    }
-                    else if (Canvas.RenderMode is RenderMode.Projective)
-                    {
-                        offset = currentMousePosition.ReverseProjectiveTransformation(Canvas.ProjectiveParams) - _lastMousePosition.ReverseProjectiveTransformation(Canvas.ProjectiveParams);
-                    }
+                    offset = Canvas.ReverseTransformPoint(currentMousePosition) - Canvas.ReverseTransformPoint(_lastMousePosition);
                     MoveElement(offset);
 
                 }

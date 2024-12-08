@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 
 namespace Modeling_Canvas
 {
@@ -15,6 +16,7 @@ namespace Modeling_Canvas
     {
         public MainWindow()
         {
+            RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.Default;
             InitializeComponent();
             CenterWindowOnScreen();
 
@@ -132,6 +134,7 @@ namespace Modeling_Canvas
             if (DefaultTab.IsSelected) MyCanvas.RenderMode = Modeling_Canvas.Enums.RenderMode.Default;
             else if (AffineTab.IsSelected) MyCanvas.RenderMode = Enums.RenderMode.Affine;
             else if (ProjectiveTab.IsSelected) MyCanvas.RenderMode = Enums.RenderMode.Projective;
+            else if (ProjectiveTabV2.IsSelected) MyCanvas.RenderMode = Enums.RenderMode.ProjectiveV2;
 
         }
 

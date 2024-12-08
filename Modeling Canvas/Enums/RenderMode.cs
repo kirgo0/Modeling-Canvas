@@ -4,6 +4,7 @@
     {
         Default,
         Affine,
-        Projective
+        Projective,
+        ProjectiveV2,
     }
 }

@@ -20,7 +20,7 @@
 
         <local:CustomCanvas x:Name="MyCanvas" Focusable="True" Background="White" Panel.ZIndex="0" Grid.Column="0">
         </local:CustomCanvas>
-        <Label x:Name="MousePositionLabel" Content="X: Y:&#xD;&#xA;Pixels: " HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="109" Height="50" Panel.ZIndex="5" HorizontalContentAlignment="Right"/>
+        <Label x:Name="MousePositionLabel" Content="X: Y:&#xD;&#xA;Pixels: " HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="109" Height="59" Panel.ZIndex="5" HorizontalContentAlignment="Right" Margin="0,0,5,10"/>
 
         <Grid Grid.Column="1" Panel.ZIndex="1" Background="White">
             <Grid.RowDefinitions>
@@ -84,8 +84,9 @@
                             <TextBox Text="{Binding ElementName=MyCanvas, Path=AffineParams.Oy, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource FloatConverter}}" 
                      HorizontalAlignment="Left" Margin="39,69,0,0" VerticalAlignment="Top" Width="86" Grid.Column="1"/>
 
-                            <Button Content="Apply" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="9,0,0,0" Grid.Row="1" VerticalAlignment="Center" Width="250" 
-        Command="{Binding ElementName=MyCanvas, Path=InvalidateCanvasCommand}"/>
+                            <Button Content="Apply" HorizontalAlignment="Center" Grid.Row="1" VerticalAlignment="Center" 
+        Command="{Binding ElementName=MyCanvas, Path=InvalidateCanvasCommand}" Width="106"/>
+                            <CheckBox IsChecked="{Binding AllowInfinityRender, ElementName=MyCanvas}" IsTabStop="False" Focusable="False" Content="Infinite render" HorizontalAlignment="Center" VerticalAlignment="Center" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked" Grid.Column="1" Grid.Row="1" RenderTransformOrigin="0.497,0.734"/>
                         </Grid>
                     </Grid>
                 </TabItem>
@@ -143,6 +144,63 @@
                     HorizontalAlignment="Center" Command="{Binding ElementName=MyCanvas, Path=InvalidateCanvasCommand}" 
                     VerticalAlignment="Center" Width="90"/>
                             <CheckBox IsChecked="{Binding ElementName=MyCanvas, Path=AllowInfinityRender}" IsTabStop="False" Focusable="False" Content="Infinite render" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="66,0,0,0" VerticalAlignment="Center" Grid.Row="1" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked"/>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+                <TabItem x:Name="ProjectiveTabV2" Header="ProjectiveV2" Margin="-2,-2,-2,0" BorderBrush="{x:Null}" Background="{x:Null}" Foreground="{x:Null}">
+                    <Grid Background="#FFE5E5E5">
+                        <Grid RenderTransformOrigin="0.468,0.494">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="102*"/>
+                                <RowDefinition Height="35*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="104*"/>
+                                <ColumnDefinition Width="104*"/>
+                                <ColumnDefinition Width="104*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Bind ProjectiveModel Properties -->
+                            <Label Content="Xx" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                            <TextBox Text="{Binding ProjectiveParams.Xx, Converter={StaticResource FloatConverter}, ElementName=MyCanvas, UpdateSourceTrigger=PropertyChanged}" 
+                                HorizontalAlignment="Left" Margin="40,13,0,69" Width="50" Grid.ColumnSpan="2"/>
+
+                            <Label Content="Yx" HorizontalAlignment="Left" Margin="10,35,0,0" VerticalAlignment="Top"/>
+                            <TextBox Text="{Binding ProjectiveParams.Yx, Converter={StaticResource FloatConverter}, ElementName=MyCanvas, UpdateSourceTrigger=PropertyChanged}" 
+                                HorizontalAlignment="Left" Margin="40,38,0,44" Width="50" Grid.ColumnSpan="2"/>
+
+                            <Label Content="Ox" HorizontalAlignment="Left" Margin="10,60,0,0" VerticalAlignment="Top"/>
+                            <TextBox Text="{Binding ProjectiveParams.Ox, Converter={StaticResource FloatConverter}, ElementName=MyCanvas, UpdateSourceTrigger=PropertyChanged}" 
+                                HorizontalAlignment="Left" Margin="40,63,0,19" Width="50" Grid.ColumnSpan="2"/>
+
+                            <Label Content="Xy" Grid.Column="1" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                            <TextBox Text="{Binding ProjectiveParams.Xy, Converter={StaticResource FloatConverter}, ElementName=MyCanvas, UpdateSourceTrigger=PropertyChanged}" 
+                                HorizontalAlignment="Left" Margin="39,13,0,69" Grid.Column="1" Width="50"/>
+
+                            <Label Content="Yy" Grid.Column="1" HorizontalAlignment="Left" Margin="10,35,0,0" VerticalAlignment="Top"/>
+                            <TextBox Text="{Binding ProjectiveParams.Yy, Converter={StaticResource FloatConverter}, ElementName=MyCanvas, UpdateSourceTrigger=PropertyChanged}" 
+                                HorizontalAlignment="Left" Margin="39,38,0,44" Grid.Column="1" Width="50"/>
+
+                            <Label Content="Oy" Grid.Column="1" HorizontalAlignment="Left" Margin="10,60,0,0" VerticalAlignment="Top"/>
+                            <TextBox Text="{Binding ProjectiveParams.Oy, Converter={StaticResource FloatConverter}, ElementName=MyCanvas, UpdateSourceTrigger=PropertyChanged}" 
+                                HorizontalAlignment="Left" Margin="39,63,0,19" Grid.Column="1" Width="50"/>
+
+                            <Label Content="wX" Grid.Column="2" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                            <TextBox Text="{Binding ProjectiveParams.wX, Converter={StaticResource FloatConverter}, ElementName=MyCanvas, UpdateSourceTrigger=PropertyChanged}" 
+                                HorizontalAlignment="Left" Margin="37,13,0,69" Grid.Column="2" Width="50"/>
+
+                            <Label Content="wY" Grid.Column="2" HorizontalAlignment="Left" Margin="10,35,0,0" VerticalAlignment="Top"/>
+                            <TextBox Text="{Binding ProjectiveParams.wY, Converter={StaticResource FloatConverter}, ElementName=MyCanvas, UpdateSourceTrigger=PropertyChanged}" 
+                                HorizontalAlignment="Left" Margin="37,38,0,44" Grid.Column="2" Width="50"/>
+
+                            <Label Content="wO" Grid.Column="2" HorizontalAlignment="Left" Margin="10,60,0,0" VerticalAlignment="Top"/>
+                            <TextBox Text="{Binding ProjectiveParams.wO, Converter={StaticResource FloatConverter}, ElementName=MyCanvas, UpdateSourceTrigger=PropertyChanged}" 
+                                HorizontalAlignment="Left" Margin="37,63,0,19" Grid.Column="2" Width="50"/>
+
+                            <Button Content="Apply" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                HorizontalAlignment="Center" Command="{Binding InvalidateCanvasCommand, ElementName=MyCanvas}" 
+                                VerticalAlignment="Center" Width="90"/>
+                            <CheckBox IsChecked="{Binding AllowInfinityRender, ElementName=MyCanvas}" IsTabStop="False" Focusable="False" Content="Infinite render" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Left" Margin="66,0,0,0" VerticalAlignment="Center" Grid.Row="1" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked"/>
                         </Grid>
                     </Grid>
                 </TabItem>

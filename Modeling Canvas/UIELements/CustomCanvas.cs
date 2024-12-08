@@ -69,7 +69,18 @@ namespace Modeling_Canvas.UIElements
         public HashSet<CustomElement> SelectedElements { get; set; } = new();
 
         private Point previousMousePosition;
-        public bool AllowInfinityRender { get; set; } = false;
+        public bool _allowInfinityRender = false;
+        public bool AllowInfinityRender {
+            get => _allowInfinityRender;
+            set
+            {
+                if (_allowInfinityRender != value)
+                {
+                    _allowInfinityRender = value;
+                    OnPropertyChanged(nameof(AllowInfinityRender));
+                }
+            }
+        }
 
         private DispatcherTimer timer;
         public CustomCanvas()
@@ -84,19 +95,12 @@ namespace Modeling_Canvas.UIElements
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-            DrawGrid(dc);
+            DrawGridCustomInfinityRender(dc);
         }
 
         public Point GetTransformedUnitCoordinates(Point pixelCoordinates)
         {
-            if (RenderMode is RenderMode.Affine)
-            {
-                pixelCoordinates = pixelCoordinates.ReverseAffineTransformation(AffineParams);
-            }
-            else if (RenderMode is RenderMode.Projective)
-            {
-                pixelCoordinates = pixelCoordinates.ReverseProjectiveTransformation(ProjectiveParams);
-            }
+            pixelCoordinates = ReverseTransformPoint(pixelCoordinates);
             pixelCoordinates = new Point((pixelCoordinates.X - ActualWidth / 2 - XOffset) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y - YOffset) / UnitSize);
             return pixelCoordinates;
         }
@@ -126,6 +130,23 @@ namespace Modeling_Canvas.UIElements
                     return point.ApplyAffineTransformation(AffineParams);
                 case RenderMode.Projective:
                     return point.ApplyProjectiveTransformation(ProjectiveParams);
+                case RenderMode.ProjectiveV2:
+                    return point.ApplyProjectiveV2Transformation(ProjectiveParams);
+                default:
+                    return point;
+            }
+        }
+
+        public Point ReverseTransformPoint(Point point)
+        {
+            switch (RenderMode)
+            {
+                case RenderMode.Affine:
+                    return point.ReverseAffineTransformation(AffineParams);
+                case RenderMode.Projective:
+                    return point.ReverseProjectiveTransformation(ProjectiveParams);
+                case RenderMode.ProjectiveV2:
+                    return point.ReverseProjectiveV2Transformation(ProjectiveParams);
                 default:
                     return point;
             }
@@ -168,12 +189,17 @@ namespace Modeling_Canvas.UIElements
 
         protected void DrawGrid(DrawingContext dc)
         {
+
             double width = ActualWidth;
             double height = ActualHeight;
             double halfWidth = width / 2 + XOffset;
             double halfHeight = height / 2 - YOffset;
 
             Pen gridPen = new Pen(Brushes.Black, 0.1);
+
+            if(RenderMode is RenderMode.Projective || RenderMode is RenderMode.ProjectiveV2)
+                gridPen = new Pen(Brushes.Black, 0.4);
+
             Pen axisPen = new Pen(Brushes.Black, 2);
 
             if (UnitSize < 0 || GridFrequency < 0)
@@ -184,16 +210,16 @@ namespace Modeling_Canvas.UIElements
             var calculatedFrequency = GetOptimalGridFrequency();
 
             double minX = 0, minY = 0, maxX = width, maxY = height;
-
-            if (RenderMode is RenderMode.Affine)
+            
+            if(AllowInfinityRender)
             {
                 var corners = new[]
-                {
-                    new Point(0, 0).ReverseAffineTransformation(AffineParams),
-                    new Point(width, 0).ReverseAffineTransformation(AffineParams),
-                    new Point(0, height).ReverseAffineTransformation(AffineParams),
-                    new Point(width, height).ReverseAffineTransformation(AffineParams),
-                };
+                    {
+                        ReverseTransformPoint(new Point(0, 0)),
+                        ReverseTransformPoint(new Point(width, 0)),
+                        ReverseTransformPoint(new Point(0, height)),
+                        ReverseTransformPoint(new Point(width, height)),
+                    };
 
                 // Calculate bounds of the transformed canvas
                 minX = corners.Min(c => c.X);
@@ -201,22 +227,7 @@ namespace Modeling_Canvas.UIElements
                 minY = corners.Min(c => c.Y);
                 maxY = corners.Max(c => c.Y);
             }
-            else if (AllowInfinityRender && RenderMode is RenderMode.Projective)
-            {
-                var corners = new[]
-                {
-                    new Point(0, 0).ReverseProjectiveTransformation(ProjectiveParams),
-                    new Point(width, 0).ReverseProjectiveTransformation(ProjectiveParams),
-                    new Point(0, height).ReverseProjectiveTransformation(ProjectiveParams),
-                    new Point(width, height).ReverseProjectiveTransformation(ProjectiveParams),
-                };
 
-                minX = corners.Min(c => c.X);
-                maxX = corners.Max(c => c.X);
-                minY = corners.Min(c => c.Y);
-                maxY = corners.Max(c => c.Y);
-
-            }
             // Draw vertical grid lines
             for (double x = halfWidth; x < maxX; x += UnitSize * calculatedFrequency)
             {
@@ -293,41 +304,32 @@ namespace Modeling_Canvas.UIElements
             double startY = (halfHeight - height) / UnitSize;
             double endY = halfHeight / UnitSize;
 
-            //double gridStartX = Math.Floor(startX / calculatedFrequency) * calculatedFrequency;
-            //double gridEndX = Math.Ceiling(endX / calculatedFrequency) * calculatedFrequency;
+            double gridStartX = Math.Floor(startX / calculatedFrequency) * calculatedFrequency;
+            double gridEndX = Math.Ceiling(endX / calculatedFrequency) * calculatedFrequency;
             double gridStartY = Math.Floor(startY / calculatedFrequency) * calculatedFrequency;
             double gridEndY = Math.Ceiling(endY / calculatedFrequency) * calculatedFrequency;
 
             if (AllowInfinityRender)
             {
-                var minX = new Point(0, height).ReverseProjectiveTransformation(ProjectiveParams);
+                var corners = new[]
+                    {
+                        ReverseTransformPoint(new Point(0, 0)),
+                        ReverseTransformPoint(new Point(width, 0)),
+                        ReverseTransformPoint(new Point(0, height)),
+                        ReverseTransformPoint(new Point(width, height)),
+                    };
 
-                var middleX = new Point(halfWidth, height).ReverseProjectiveTransformation(ProjectiveParams);
+                // Calculate bounds of the transformed canvas
+                var minX = 0;
+                var maxX = corners.Max(c => c.X) / UnitSize;
+                var minY = 0;
+                var maxY = corners.Max(c => c.Y) / UnitSize;
 
-                var maxX = new Point(width, height).ReverseProjectiveTransformation(ProjectiveParams);
-
-                startX = (minX.X - middleX.X) / UnitSize;
-                endX = (maxX.X - middleX.X) / UnitSize; 
-
-                var minY = new Point(0, 0).ReverseProjectiveTransformation(ProjectiveParams);
-
-                var middleY = new Point(0, halfHeight).ReverseProjectiveTransformation(ProjectiveParams);
-
-                var maxY = new Point(0, height).ReverseProjectiveTransformation(ProjectiveParams);
-
-                startY = (middleY.Y - minY.Y) / UnitSize;
-                endY = (middleY.Y - maxY.Y) / UnitSize;
-
-                halfWidth = middleX.X;
-                width = maxX.X;
-
-                halfHeight = middleY.Y;
-                height = minY.Y;
-
+                gridStartX = Math.Floor(minX / calculatedFrequency) * calculatedFrequency;
+                gridEndX = Math.Ceiling(maxX / calculatedFrequency) * calculatedFrequency;
+                gridStartY = Math.Floor(minY / calculatedFrequency) * calculatedFrequency;
+                gridEndY = Math.Ceiling(maxY / calculatedFrequency) * calculatedFrequency;
             }
-            double gridStartX = Math.Floor(startX / calculatedFrequency) * calculatedFrequency;
-
-            double gridEndX = Math.Ceiling(endX / calculatedFrequency) * calculatedFrequency;
             // Малювання вертикальних ліній
             for (double x = gridStartX; x <= gridEndX; x += calculatedFrequency)
             {
@@ -434,17 +436,10 @@ namespace Modeling_Canvas.UIElements
                 var deltaX = currentMousePosition.X - previousMousePosition.X;
                 var deltaY = currentMousePosition.Y - previousMousePosition.Y;
 
-                if (RenderMode is RenderMode.Affine)
-                {
-                    var cmpA = currentMousePosition.ReverseAffineTransformation(AffineParams);
-                    var pmpA = previousMousePosition.ReverseAffineTransformation(AffineParams);
-                    deltaX = cmpA.X - pmpA.X;
-                    deltaY = cmpA.Y - pmpA.Y;
-                }
-                else if (RenderMode is RenderMode.Projective)
-                {
-
-                }
+                var cmpA = ReverseTransformPoint(currentMousePosition);
+                var pmpA = ReverseTransformPoint(previousMousePosition);
+                deltaX = cmpA.X - pmpA.X;
+                deltaY = cmpA.Y - pmpA.Y;
 
                 // Update offsets
                 XOffset += deltaX;
@@ -510,7 +505,7 @@ namespace Modeling_Canvas.UIElements
                 {
                     mainWindow.MousePositionLabel.Content = $"X: {Math.Round(unitPosition.X, 2)} Y: {Math.Round(unitPosition.Y, 2)}\np.X: {Math.Round(position.X, 2)} p.Y: {Math.Round(position.Y, 2)}" + uiElement;
                 }
-                mainWindow.MousePositionLabel.Content = $"X: {Math.Round(unitPosition.X, 2)} Y: {Math.Round(unitPosition.Y, 2)}\np.X: {Math.Round(position.X, 2)} p.Y: {Math.Round(position.Y, 2)}";
+                mainWindow.MousePositionLabel.Content = $"X: {Math.Round(unitPosition.X, 2)} Y: {Math.Round(unitPosition.Y, 2)}\np.X: {Math.Round(position.X, 2)} p.Y: {Math.Round(position.Y, 2)}\nUnitSize: {UnitSize}";
 
             }
         }
