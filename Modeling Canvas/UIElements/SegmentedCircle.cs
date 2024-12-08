@@ -38,6 +38,14 @@ namespace Modeling_Canvas.UIElements
         {
             dc.DrawCircleWithArcs(Canvas, Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, StartDegrees, EndDegrees, Precision, 10);
         }
+        protected override void OnRender(DrawingContext dc)
+        {
+            StartDegreesPoint.Visibility = ControlsVisibility;
+            EndDegreesPoint.Visibility = ControlsVisibility;
+            StartDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(StartRadians), Center.Y - Radius * Math.Sin(StartRadians));
+            EndDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(EndRadians), Center.Y - Radius * Math.Sin(EndRadians));
+            base.OnRender(dc);
+        }
 
         protected override void RenderControlPanel()
         {
@@ -105,14 +113,6 @@ namespace Modeling_Canvas.UIElements
             EndDegrees = Helpers.NormalizeAngle(EndDegrees);
         }
 
-        protected override void UpdateUIControls()
-        {
-            StartDegreesPoint.Visibility = ControlsVisibility;
-            EndDegreesPoint.Visibility = ControlsVisibility;
-            StartDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(StartRadians), Center.Y - Radius * Math.Sin(StartRadians));
-            EndDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(EndRadians), Center.Y - Radius * Math.Sin(EndRadians));
-            base.UpdateUIControls();
-        }
         public override string ToString()
         {
             return $"X: {Center.X} \nY: {Center.Y} \nRadius: {Radius}\nStart: {StartDegrees}\nEnd: {EndDegrees}\nTL: {GetTopLeftPosition()}\nBR: {GetBottomRightPosition()}";

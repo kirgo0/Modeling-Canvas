@@ -4,7 +4,7 @@ namespace Modeling_Canvas.Models
 {
     public class ProjectiveModel : INotifyPropertyChanged
     {
-        private double _xx = 250, _yx, _ox, _xy, _yy = 250, _oy, _wx, _wy, _wo = 500;
+        private double _xx = 250, _yx, _ox, _xy, _yy = 250, _oy, _wx = 1, _wy = 1, _wo = 500;
 
         public double Xx { get => _xx; set { _xx = value; OnPropertyChanged(nameof(Xx)); } }
         public double Yx { get => _yx; set { _yx = value; OnPropertyChanged(nameof(Yx)); } }

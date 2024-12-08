@@ -66,7 +66,10 @@ namespace Modeling_Canvas.UIElements
 
         protected override void OnRender(DrawingContext dc)
         {
-            UpdateUIControls();
+            CenterPoint.Visibility = ControlsVisibility;
+            RadiusPoint.Visibility = ControlsVisibility;
+            RadiusPoint.Position = new Point(Center.X + (Radius + RadiusControlDistance) * Math.Cos(Helpers.DegToRad(0)), Center.Y - Radius * Math.Sin(0));
+            CenterPoint.Position = Center;
             base.OnRender(dc);
         }
 
@@ -74,7 +77,6 @@ namespace Modeling_Canvas.UIElements
         {
             dc.DrawCircle(Canvas, Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, Precision, 10);
         }
-
 
         protected override void RenderControlPanel()
         {
@@ -91,6 +93,10 @@ namespace Modeling_Canvas.UIElements
             return new Point(Center.X - Radius - StrokeThickness / UnitSize, Center.Y + Radius + StrokeThickness / UnitSize);
         }
 
+        protected override Point GetAnchorDefaultPosition()
+        {
+            return Center;
+        }
         public override Point GetBottomRightPosition()
         {
             return new Point(Center.X + Radius + StrokeThickness / UnitSize, Center.Y - Radius - StrokeThickness / UnitSize);
@@ -152,16 +158,9 @@ namespace Modeling_Canvas.UIElements
 
         public override void InvalidateCanvas()
         {
-            UpdateUIControls();
             base.InvalidateCanvas();
         }
-        protected virtual void UpdateUIControls()
-        {
-            CenterPoint.Visibility = ControlsVisibility;
-            RadiusPoint.Visibility = ControlsVisibility;
-            RadiusPoint.Position = new Point(Center.X + (Radius + RadiusControlDistance) * Math.Cos(Helpers.DegToRad(0)), Center.Y - Radius * Math.Sin(0));
-            CenterPoint.Position = Center;
-        }
+
         public override string ToString()
         {
             return $"X: {Center.X} \nY: {Center.Y} \nRadius: {Radius}";

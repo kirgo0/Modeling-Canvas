@@ -25,8 +25,8 @@ namespace Modeling_Canvas
             MyCanvas.Children.Add(a);
             //a.Center = new Point(5, 5);
 
-            //var b = new SegmentedCircle(MyCanvas);
-            //MyCanvas.Children.Add(b);
+            var b = new SegmentedCircle(MyCanvas);
+            MyCanvas.Children.Add(b);
 
             //var a = new CustomLine(MyCanvas, new Point(0, 2), new Point(2, 7));
             //MyCanvas.Children.Add(a);

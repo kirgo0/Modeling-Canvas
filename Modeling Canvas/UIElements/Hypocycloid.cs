@@ -256,7 +256,15 @@ namespace Modeling_Canvas.UIElements
         }
         protected override void OnRender(DrawingContext dc)
         {
-            UpdateUIControls();
+            LargeCircle.Center = Center;
+            SmallCircle.Center = GetSmallCircleCenter(Model.Angle + Model.RotationAngle);
+
+            LargeCircle.Visibility = ControlsVisibility;
+            SmallCircle.Visibility = ControlsVisibility;
+            EndPoint.Visibility = ControlsVisibility;
+
+            LargeCircle.ControlsVisible = ControlsVisibility is Visibility.Visible;
+            SmallCircle.ControlsVisible = ControlsVisibility is Visibility.Visible;
             if (InputManager.AltPressed)
             {
                 var t = FindNearestPoint(Mouse.GetPosition(Canvas));
@@ -540,20 +548,6 @@ namespace Modeling_Canvas.UIElements
             Center = Center.ScalePoint(anchorPoint, scaleVector);
             Model.LargeRadius *= ScaleFactor;
             Model.SmallRadius *= ScaleFactor;
-        }
-
-        public void UpdateUIControls()
-        {
-            LargeCircle.Center = Center;
-
-            SmallCircle.Center = GetSmallCircleCenter(Model.Angle + Model.RotationAngle);
-
-            LargeCircle.Visibility = ControlsVisibility;
-            SmallCircle.Visibility = ControlsVisibility;
-            EndPoint.Visibility = ControlsVisibility;
-
-            LargeCircle.ControlsVisible = ControlsVisibility is Visibility.Visible;
-            SmallCircle.ControlsVisible = ControlsVisibility is Visibility.Visible;
         }
 
         public override string ToString()
