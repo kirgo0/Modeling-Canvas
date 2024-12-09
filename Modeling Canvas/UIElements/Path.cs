@@ -11,7 +11,7 @@ namespace Modeling_Canvas.UIElements
     {
         public int PointsRadius { get; set; } = 5;
 
-        public List<T> Points { get; } = new();
+        public List<T> Points { get; set; } = new();
 
         public bool _isClosed = true;
         public bool IsClosed {
@@ -146,6 +146,14 @@ namespace Modeling_Canvas.UIElements
 
             AddChildren(customPoint);
         }
+        public virtual void RemovePoint(T point)
+        {
+            if (Points.Contains(point))
+            {
+                Points.Remove(point);
+                Canvas.Children.Remove(point);
+            }
+        }
 
         public void InsertPointAt(int pointIndex)
         {
@@ -186,15 +194,6 @@ namespace Modeling_Canvas.UIElements
                 var avgX = (prevPoint.X + nextPoint.X) / 2.0;
                 var avgY = (prevPoint.Y + nextPoint.Y) / 2.0;
                 return new Point(avgX, avgY);
-            }
-        }
-
-        public void RemovePoint(T point)
-        {
-            if (Points.Contains(point))
-            {
-                Points.Remove(point);
-                Canvas.Children.Remove(point);
             }
         }
 

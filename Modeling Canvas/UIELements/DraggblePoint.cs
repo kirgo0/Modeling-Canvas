@@ -15,6 +15,12 @@ namespace Modeling_Canvas.UIElements
         {
             LabelText = "D.Point";
         }
+        
+        public DraggablePoint(DraggablePoint other) : base(other.Canvas, other.HasAnchorPoint)
+        {
+            LabelText = "D.Point";
+            Position = other.Position;
+        }
 
         protected override void DefaultRender(DrawingContext dc)
         {

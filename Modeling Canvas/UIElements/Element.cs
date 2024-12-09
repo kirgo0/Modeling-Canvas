@@ -1,6 +1,7 @@
 ﻿using Modeling_Canvas.Enums;
 using Modeling_Canvas.UIElements.Interfaces;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -57,7 +58,7 @@ namespace Modeling_Canvas.UIElements
 
         protected virtual bool SnappingEnabled { get => AllowSnapping ? InputManager.ShiftPressed : false; }
 
-        public bool ControlsVisible { get; set; } = false;
+        public bool ControlsVisible { get; set; } = true;
 
         public Brush Fill {
             get => _fill;
@@ -104,8 +105,22 @@ namespace Modeling_Canvas.UIElements
             get => _strokePen is null ? new Pen(Stroke, StrokeThickness) : _strokePen;
             set => _strokePen = value;
         }
-        public virtual Visibility ControlsVisibility { get => Canvas.SelectedElements.Contains(this) || ControlsVisible ? Visibility.Visible : Visibility.Hidden; }
 
+        private Visibility _controlsVisibility = Visibility.Hidden; 
+
+        //public virtual Visibility ControlsVisibility { get => Canvas.SelectedElements.Contains(this) || ControlsVisible ? Visibility.Visible : Visibility.Hidden; }
+
+        public Visibility ControlsVisibility {
+            get => ControlsVisible ? _controlsVisibility : Visibility.Hidden; 
+            set
+            {
+                if(_controlsVisibility != value)
+                {
+                    _controlsVisibility = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public bool AnchorVisible {
             get => _anchorVisible;
@@ -167,6 +182,19 @@ namespace Modeling_Canvas.UIElements
             Focusable = false;
             FocusVisualStyle = null;
             HasAnchorPoint = hasAnchorPoint;
+            Canvas.SelectedElementsChanged += (s, e) =>
+            {
+                if(e.SelectedElement is not null 
+                && Canvas.SelectedElements.Contains(this)
+                || Canvas.SelectedElements.Contains(this.LogicalParent)
+                )
+                {
+                    ControlsVisibility = Visibility.Visible;
+                } else
+                {
+                    ControlsVisibility = Visibility.Hidden;
+                }
+            };
         }
 
         protected override void OnRender(DrawingContext dc)
@@ -372,9 +400,9 @@ namespace Modeling_Canvas.UIElements
             RenderControlPanel();
             if (!InputManager.ShiftPressed && !Canvas.SelectedElements.Contains(this) && !Canvas.SelectedElements.Contains(LogicalParent))
             {
-                Canvas.SelectedElements.Clear();
+                Canvas.ClearSelection();
             }
-            Canvas.SelectedElements.Add(this);
+            Canvas.SelectElement(this);
             e.Handled = true;
         }
 

@@ -20,7 +20,7 @@ namespace Modeling_Canvas.UIElements
 
         private Point _bottomRightPosition = new Point(0, 0);
 
-        public override Visibility ControlsVisibility => AnyItemIsSelected ? Visibility.Visible : Visibility.Hidden;
+        //public override Visibility ControlsVisibility => AnyItemIsSelected ? Visibility.Visible : Visibility.Hidden;
 
         public Pen DashedPen
         {

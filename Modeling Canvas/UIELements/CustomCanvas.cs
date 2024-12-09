@@ -3,6 +3,8 @@ using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
 using System.ComponentModel;
+using System.Diagnostics.Tracing;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -44,7 +46,7 @@ namespace Modeling_Canvas.UIElements
         public ICommand InvalidateCanvasCommand { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         public double UnitSize
         {
@@ -69,7 +71,9 @@ namespace Modeling_Canvas.UIElements
         public HashSet<Element> SelectedElements { get; set; } = new();
 
         private Point previousMousePosition;
+
         public bool _allowInfinityRender = false;
+
         public bool AllowInfinityRender {
             get => _allowInfinityRender;
             set
@@ -428,6 +432,22 @@ namespace Modeling_Canvas.UIElements
                 mainWindow.ClearControlStack();
             }
         }
+
+        public event EventHandler<CanvasSelectionChangedEventArgs> SelectedElementsChanged;
+
+        public void SelectElement(Element element)
+        {
+            SelectedElements.Add(element);
+            SelectedElementsChanged?.Invoke(this, new CanvasSelectionChangedEventArgs(element));
+        }
+
+        public void ClearSelection()
+        {
+            SelectedElements.Clear();
+            SelectedElementsChanged?.Invoke(this, new CanvasSelectionChangedEventArgs(null));
+        }
+
+
         protected override void OnMouseMove(MouseEventArgs e)
         {
             if (InputManager.SpacePressed && InputManager.LeftMousePressed)
@@ -456,7 +476,7 @@ namespace Modeling_Canvas.UIElements
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
-            SelectedElements.Clear();
+            ClearSelection();
             InvalidateVisual();
             ClearControlPanel();
             previousMousePosition = e.GetPosition(this);
