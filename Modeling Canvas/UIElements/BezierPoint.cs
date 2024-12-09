@@ -29,27 +29,41 @@ namespace Modeling_Canvas.UIElements
             ControlPreviousPoint = new DraggablePoint(Canvas, false)
             {
                 Radius = 8,
-                //OverrideRenderControlPanelAction = true,
+                Opacity = 0.5,
                 Stroke = Brushes.Black,
                 StrokeThickness = 2,
                 Fill = Brushes.DarkMagenta,
                 IsSelectable = false
             };
-            AddChildren(ControlPreviousPoint);
+            AddChildren(ControlPreviousPoint, 9999);
 
             ControlNextPoint = new DraggablePoint(Canvas, false)
             {
                 Radius = 8,
-                //OverrideRenderControlPanelAction = true,
+                Opacity = 0.5,
                 Stroke = Brushes.Black,
                 StrokeThickness = 2,
                 Fill = Brushes.DarkGreen,
                 IsSelectable = false
             };
-            AddChildren(ControlNextPoint);
+            AddChildren(ControlNextPoint, 9999);
 
             base.InitChildren();
 
+        }
+
+        protected override void DefaultRender(DrawingContext dc)
+        {
+            ControlPreviousPoint.Visibility = ShowPrevControl ? ControlsVisibility : Visibility.Hidden;
+            ControlNextPoint.Visibility = ShowNextControl ? ControlsVisibility : Visibility.Hidden;
+            if (ControlsVisibility is Visibility.Visible)
+            {
+                if (ShowPrevControl)
+                    dc.DrawLine(Canvas, ControlPrevLinePen, PixelPosition, ControlPreviousPoint.PixelPosition);
+                if (ShowNextControl)
+                    dc.DrawLine(Canvas, ControlNextLinePen, PixelPosition, ControlNextPoint.PixelPosition);
+            }
+            base.DefaultRender(dc);
         }
 
         public override void MoveElement(Vector offset)
@@ -73,18 +87,5 @@ namespace Modeling_Canvas.UIElements
             ControlNextPoint.ScaleElement(anchorPoint, scaleVector, ScaleFactor);
         }
 
-        protected override void DefaultRender(DrawingContext dc)
-        {
-            ControlPreviousPoint.Visibility = ShowPrevControl ? ControlsVisibility : Visibility.Hidden;
-            ControlNextPoint.Visibility = ShowNextControl ? ControlsVisibility : Visibility.Hidden;
-            if(ControlsVisibility is Visibility.Visible)
-            {
-                if(ShowPrevControl)
-                    dc.DrawLine(Canvas, ControlPrevLinePen, PixelPosition, ControlPreviousPoint.PixelPosition);
-                if(ShowNextControl)
-                    dc.DrawLine(Canvas, ControlNextLinePen, PixelPosition, ControlNextPoint.PixelPosition);
-            }
-            base.DefaultRender(dc);
-        }
     }
 }

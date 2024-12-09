@@ -9,13 +9,19 @@ namespace Modeling_Canvas.UIElements
 {
     public partial class CustomCircle : GroupableElement
     {
+        private double _radius = 5;
+
         public double MinRadiusValue { get; set; } = 0.5;
 
         private double _maxRadiusValue = 10;
 
         public int Precision { get; set; } = 100;
 
-        private double _radius = 5;
+        public double RadiusControlDistance { get; set; } = 1;
+
+        public DraggablePoint CenterPoint { get; set; }
+
+        public DraggablePoint RadiusPoint { get; set; }
 
         public double MaxRadiusValue
         {
@@ -50,17 +56,13 @@ namespace Modeling_Canvas.UIElements
             set => CenterPoint.Position = value;
         }
 
-        public DraggablePoint CenterPoint { get; set; }
-
-        public DraggablePoint RadiusPoint { get; set; }
-
-        public double RadiusControlDistance { get; set; } = 1;
 
         public CustomCircle(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
             canvas.MouseWheel += (o, e) => MaxRadiusValue = CalculateMaxCircleRadius();
             Initialized += (o, e) => MaxRadiusValue = CalculateMaxCircleRadius();
         }
+
         protected override void InitChildren()
         {
             RadiusPoint = new DraggablePoint(Canvas, false)
@@ -72,9 +74,7 @@ namespace Modeling_Canvas.UIElements
                 IsSelectable = false
                 //OverrideRenderControlPanelAction = true
             };
-            Canvas.Children.Add(RadiusPoint);
-            Panel.SetZIndex(RadiusPoint, Canvas.Children.Count + 1);
-
+            AddChildren(RadiusPoint);
 
             CenterPoint = new DraggablePoint(Canvas, false)
             {
@@ -84,8 +84,7 @@ namespace Modeling_Canvas.UIElements
                 Position = new Point(0, 0),
                 IsSelectable = false
             };
-            Canvas.Children.Add(CenterPoint);
-            Panel.SetZIndex(CenterPoint, Canvas.Children.Count + 1);
+            AddChildren(CenterPoint);
             base.InitChildren();
         }
 
@@ -112,17 +111,6 @@ namespace Modeling_Canvas.UIElements
             AddStrokeThicknessControls();
             AddRadiusControls();
         }
-
-        //protected override void RenderControlPanel()
-        //{
-        //    base.RenderControlPanel();
-        //    AddCenterControls();
-        //    AddFillColorControls();
-        //    AddStrokeColorControls();
-        //    AddStrokeThicknessControls();
-        //    AddRadiusControls();
-        //}
-
 
         protected override Point GetAnchorDefaultPosition() => Center;
 
@@ -176,6 +164,7 @@ namespace Modeling_Canvas.UIElements
         }
 
         public bool OverrideScaleAction { get; set; } = false;
+
         public Action<Point, Vector, double>? ScaleAction;
         public override void ScaleElement(Point anchorPoint, Vector scaleVector, double scaleFactor)
         {

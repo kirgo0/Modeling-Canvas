@@ -1,4 +1,5 @@
-﻿using Modeling_Canvas.Enums;
+﻿using MathNet.Numerics;
+using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
 using System.Windows;
 using System.Windows.Media;
@@ -8,6 +9,21 @@ namespace Modeling_Canvas.UIElements
     public class BezierCurve : Path<BezierPoint>
     {
         public PointShape PointsShape { get; set; } = PointShape.Circle;
+
+        private int _curvePrecision = 100;
+        public int CurvePrecision {
+            get => _curvePrecision;
+            set
+            {
+                if (_curvePrecision != value)
+                {
+                    _curvePrecision = value;
+                    OnPropertyChanged();
+                    InvalidateCanvas();
+                }
+            }
+        }
+
         public BezierCurve(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
             PropertyChanged += (o, e) =>
@@ -23,6 +39,23 @@ namespace Modeling_Canvas.UIElements
                     }
                 }
             };
+        }
+
+        protected override void InitChildren()
+        {
+            var precisionSlider =
+                WpfHelper.CreateSliderControl(
+                    "Precision",
+                    this,
+                    nameof(CurvePrecision),
+                    5,
+                    500,
+                    2.5
+                );
+
+            _uiControls.Add("Presicion", precisionSlider);
+
+            base.InitChildren();
         }
 
         protected override void OnRender(DrawingContext dc)
@@ -55,7 +88,7 @@ namespace Modeling_Canvas.UIElements
                 Point p3 = end.PixelPosition;
 
                 // Draw the segment
-                dc.DrawBezierCurve(Canvas, StrokePen, p0, c1, c2, p3, 10);
+                dc.DrawBezierCurve(Canvas, StrokePen, p0, c1, c2, p3, CurvePrecision, 10);
             }
 
             // Handle closed curves
@@ -70,10 +103,9 @@ namespace Modeling_Canvas.UIElements
                 Point p3 = end.PixelPosition;
 
                 // Draw the closing segment
-                dc.DrawBezierCurve(Canvas, StrokePen, p0, c1, c2, p3, 10);
+                dc.DrawBezierCurve(Canvas, StrokePen, p0, c1, c2, p3, CurvePrecision, 10);
             }
         }
-
 
         protected override BezierPoint OnPointInit(Point point)
         {
@@ -82,15 +114,8 @@ namespace Modeling_Canvas.UIElements
             customPoint.Shape = PointsShape;
             customPoint.Radius = PointsRadius;
             customPoint.IsSelectable = false;
-            //customPoint.OnRenderControlPanel = OnPointClickRenderControlPanel;
             return customPoint;
         }
-
-        //protected void OnPointClickRenderControlPanel(DraggablePoint point)
-        //{
-        //    SelectedPoint = point;
-        //    RenderControlPanelLabel();
-        //}
 
         public override string ToString()
         {

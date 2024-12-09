@@ -39,16 +39,8 @@ namespace Modeling_Canvas.UIElements
             customPoint.Shape = PointsShape;
             customPoint.Radius = PointsRadius;
             customPoint.IsSelectable = false;
-            //customPoint.OnRenderControlPanel = OnPointClickRenderControlPanel;
-
             return customPoint;
         }
-
-        //protected void OnPointClickRenderControlPanel(DraggablePoint point)
-        //{
-        //    SelectedPoint = point;
-        //    RenderControlPanelLabel();
-        //}
 
         public override string ToString()
         {

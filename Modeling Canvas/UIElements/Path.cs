@@ -156,8 +156,7 @@ namespace Modeling_Canvas.UIElements
             var customPoint = OnPointInit(point);
 
             Points.Insert(pointIndex, customPoint);
-            Canvas.Children.Add(customPoint);
-            Panel.SetZIndex(customPoint, Canvas.Children.Count + 1);
+            AddChildren(customPoint);
         }
 
         public Point GetAvaragePoint(int index)

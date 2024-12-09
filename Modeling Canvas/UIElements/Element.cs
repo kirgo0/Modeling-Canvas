@@ -209,12 +209,10 @@ namespace Modeling_Canvas.UIElements
                     {
                         return $"Anchor point\nX: {e.Position.X}\nY: {e.Position.Y}";
                     },
-                    //OverrideRenderControlPanelAction = true,
                     IsSelectable = false
                 };
                 AnchorPoint.Position = GetAnchorDefaultPosition();
-                Canvas.Children.Add(AnchorPoint);
-                Panel.SetZIndex(AnchorPoint, Canvas.Children.Count + 1);
+                AddChildren(AnchorPoint);
             }
         }
         
@@ -245,11 +243,11 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        protected virtual void AddChildren(Element element)
+        protected virtual void AddChildren(Element element, int index = 999)
         {
             element.LogicalParent = this;
             Canvas.Children.Add(element);
-            Panel.SetZIndex(element, Canvas.Children.Count + 1);
+            Panel.SetZIndex(element, index);
         }
 
         public virtual Point GetOriginPoint(Size arrangedSize) => new Point(0, 0);
@@ -395,7 +393,6 @@ namespace Modeling_Canvas.UIElements
         
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
-            //base.OnMouseLeftButtonUp(e);
             _isDragging = false;
             _isRotating = false;
             ReleaseMouseCapture();
@@ -404,7 +401,6 @@ namespace Modeling_Canvas.UIElements
         protected override void OnMouseRightButtonDown(MouseButtonEventArgs e)
         {
             if (!IsInteractable) return;
-            //base.OnMouseRightButtonDown(e);
             if (HasAnchorPoint)
             {
                 _isRotating = true;
@@ -415,7 +411,6 @@ namespace Modeling_Canvas.UIElements
         
         protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
         {
-            //base.OnMouseRightButtonUp(e);
             if (HasAnchorPoint)
             {
                 _isRotating = false;

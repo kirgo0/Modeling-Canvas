@@ -225,9 +225,8 @@ namespace Modeling_Canvas.Extensions
             }
         }
 
-        public static void DrawBezierCurve(this DrawingContext dc, CustomCanvas canvas, Pen pen, Point p0, Point c1, Point c2, Point p3, double transparentThickness = 0)
+        public static void DrawBezierCurve(this DrawingContext dc, CustomCanvas canvas, Pen pen, Point p0, Point c1, Point c2, Point p3, int steps = 100, double transparentThickness = 0)
         {
-            const int steps = 100; // Number of points to approximate the curve
             Point prevPoint = p0;
 
             for (int i = 1; i <= steps; i++)

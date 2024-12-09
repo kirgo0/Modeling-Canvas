@@ -10,8 +10,20 @@ namespace Modeling_Canvas.UIElements
 {
     public partial class Hypocycloid : Element
     {
-        private int _maxPointCount = 2000;
-        public int PointsCount { 
+        private int _maxPointCount = 1000;
+
+        public int MaxPointCount { 
+            get => _maxPointCount; 
+            set {
+                if (_maxPointCount != value)
+                {
+                    _maxPointCount = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int Precision {
             get {
                 var maxQualityPointsCount = Model.Angle / 360 * _maxPointCount;
                 var calculatedCount = Canvas.UnitSize > 1 ? (maxQualityPointsCount / (20 / Canvas.UnitSize)) : _maxPointCount;
@@ -114,10 +126,7 @@ namespace Modeling_Canvas.UIElements
             };
 
         }
-        protected override Point GetAnchorDefaultPosition()
-        {
-            return Center;
-        }
+
         protected override void InitChildren()
         {
             LargeCircle = new CustomCircle(Canvas, false)
@@ -132,15 +141,6 @@ namespace Modeling_Canvas.UIElements
 
             LargeCircle.IsSelectable = false;
             SmallCircle.IsSelectable = false;
-
-            LargeCircle.OverrideMoveAction = true;
-            SmallCircle.OverrideMoveAction = true;
-
-            LargeCircle.OverrideRotateAction = true;
-            SmallCircle.OverrideRotateAction = true;
-
-            LargeCircle.OverrideScaleAction = true;
-            SmallCircle.OverrideScaleAction = true;
 
             LargeCircle.IsInteractable = false;
             SmallCircle.IsInteractable = false;
@@ -173,6 +173,17 @@ namespace Modeling_Canvas.UIElements
 
         protected override void InitControlPanel()
         {
+            var precisionSlider =
+                WpfHelper.CreateSliderControl<double>(
+                    "Max points count",
+                    this,
+                    nameof(MaxPointCount),
+                    5,
+                    10000,
+                    5
+                );
+            _uiControls.Add(nameof(MaxPointCount), precisionSlider);
+
             var arcLengthText = WpfHelper.CreateValueTextBlock(
                 "Arc Length",
                 CalculatedValues,
@@ -321,9 +332,9 @@ namespace Modeling_Canvas.UIElements
             double cosRotation = Math.Cos(rotationAngle);
             double sinRotation = Math.Sin(rotationAngle);
 
-            for (int i = 0; i < PointsCount; i++)
+            for (int i = 0; i < Precision; i++)
             {
-                double t = Helpers.DegToRad(model.Angle) * i / PointsCount;
+                double t = Helpers.DegToRad(model.Angle) * i / Precision;
                 double x = constant1 * Math.Cos(t) + d * Math.Cos(constant2 * t);
                 double y = constant1 * Math.Sin(t) - d * Math.Sin(constant2 * t);
 
@@ -349,9 +360,9 @@ namespace Modeling_Canvas.UIElements
             double prevRadius = 0;
             double prevDerivative = 0;
 
-            for (int i = 0; i <= PointsCount; i++)
+            for (int i = 0; i <= Precision; i++)
             {
-                double t = Helpers.DegToRad(model.Angle) * i / PointsCount;
+                double t = Helpers.DegToRad(model.Angle) * i / Precision;
 
                 double x = (R - r) * Math.Cos(t) + d * Math.Cos((R - r) / r * t);
                 double y = (R - r) * Math.Sin(t) - d * Math.Sin((R - r) / r * t);
@@ -432,7 +443,7 @@ namespace Modeling_Canvas.UIElements
 
             var center = LargeCircle.CenterPoint.PixelPosition;
 
-            double t = Helpers.DegToRad(Model.Angle) * tParameter / PointsCount;
+            double t = Helpers.DegToRad(Model.Angle) * tParameter / Precision;
             double x = (R - r) * Math.Cos(t) + d * Math.Cos((R - r) / r * t);
             double y = (R - r) * Math.Sin(t) - d * Math.Sin((R - r) / r * t);
 
@@ -501,8 +512,8 @@ namespace Modeling_Canvas.UIElements
             double initialAngle = Model.Angle;
             double targetAngle = AnimationModel.Angle;
 
-            double initialRotationAngle = Model.RotationAngle;
-            double targetRotationAngle = AnimationModel.RotationAngle;
+            //double initialRotationAngle = Model.RotationAngle;
+            //double targetRotationAngle = AnimationModel.RotationAngle;
 
             // Set up the timer
             var timer = new DispatcherTimer(TimeSpan.FromMilliseconds(16), DispatcherPriority.Render, (s, e) =>
@@ -515,7 +526,7 @@ namespace Modeling_Canvas.UIElements
                 Model.SmallRadius = Lerp(initialSmallRadius, targetSmallRadius, progress);
                 Model.Distance = Lerp(initialDistance, targetDistance, progress);
                 Model.Angle = Lerp(initialAngle, targetAngle, progress);
-                Model.RotationAngle = Lerp(initialRotationAngle, targetRotationAngle, progress);
+                //Model.RotationAngle = Lerp(initialRotationAngle, targetRotationAngle, progress);
 
                 // Stop the timer when the animation is complete
                 if (progress >= 1.0)
@@ -534,6 +545,11 @@ namespace Modeling_Canvas.UIElements
         private static double Lerp(double start, double end, double t)
         {
             return start + (end - start) * t;
+        }
+
+        protected override Point GetAnchorDefaultPosition()
+        {
+            return Center;
         }
 
         public override void MoveElement(Vector offset)

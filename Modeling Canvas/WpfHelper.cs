@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -12,9 +13,9 @@ namespace Modeling_Canvas
         public static FrameworkElement CreateSliderControl(
             string labelText,
             object model,
-            string labelBindingPath,
-            string minBindingPath,
-            string maxBindingPath,
+            string valueBindingPath,
+            string? minBindingPath = null,
+            string? maxBindingPath = null,
             double tickFrequency = 0.5,
             double marginBottom = 30,
             Orientation panelOrientation = Orientation.Vertical
@@ -28,7 +29,7 @@ namespace Modeling_Canvas
                 HorizontalAlignment = HorizontalAlignment.Center
             };
 
-            var labelBinding = new Binding(labelBindingPath)
+            var labelBinding = new Binding(valueBindingPath)
             {
                 Source = model,
                 Mode = BindingMode.OneWay,
@@ -44,7 +45,7 @@ namespace Modeling_Canvas
                 Width = 200
             };
 
-            var valueBinding = new Binding(labelBindingPath)
+            var valueBinding = new Binding(valueBindingPath)
             {
                 Source = model,
                 Mode = BindingMode.TwoWay,
@@ -62,7 +63,7 @@ namespace Modeling_Canvas
                 };
                 slider.SetBinding(Slider.MinimumProperty, minBinding);
             }
-
+                
             if (!string.IsNullOrEmpty(maxBindingPath))
             {
                 var maxBinding = new Binding(maxBindingPath)
@@ -73,6 +74,59 @@ namespace Modeling_Canvas
                 };
                 slider.SetBinding(Slider.MaximumProperty, maxBinding);
             }
+
+            panel.Children.Add(label);
+            panel.Children.Add(slider);
+
+            return panel;
+        }
+
+        public static FrameworkElement CreateSliderControl<T>(
+            string labelText,
+            object model,
+            string valueBindingPath,
+            T minValue,
+            T maxValue,
+            double tickFrequency = 0.5,
+            double marginBottom = 30,
+            Orientation panelOrientation = Orientation.Vertical
+        ) where T : struct, IComparable, IConvertible, IFormattable
+        {
+            var panel = CreateDefaultPanel(marginBottom, panelOrientation);
+
+            var label = new TextBlock
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            var labelBinding = new Binding(valueBindingPath)
+            {
+                Source = model,
+                Mode = BindingMode.OneWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                StringFormat = $"{labelText}: {{0:F2}}"
+            };
+            label.SetBinding(TextBlock.TextProperty, labelBinding);
+
+            var slider = new Slider
+            {
+                TickFrequency = tickFrequency,
+                IsSnapToTickEnabled = true,
+                Width = 200
+            };
+
+            var valueBinding = new Binding(valueBindingPath)
+            {
+                Source = model,
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            };
+            slider.SetBinding(Slider.ValueProperty, valueBinding);
+
+            slider.Minimum = Convert.ToDouble(minValue);
+
+            slider.Maximum = Convert.ToDouble(maxValue);
 
             panel.Children.Add(label);
             panel.Children.Add(slider);

@@ -26,7 +26,7 @@ namespace Modeling_Canvas.UIElements
             set
             {
                 _position = new Point(Math.Round(value.X, PositionPrecision), Math.Round(value.Y, PositionPrecision));
-                //OnPropertyChanged();
+                OnPropertyChanged();
             }
         }
 
