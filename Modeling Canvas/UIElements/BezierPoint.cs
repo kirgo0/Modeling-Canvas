@@ -7,8 +7,12 @@ namespace Modeling_Canvas.UIElements
 {
     public class BezierPoint : DraggablePoint
     {
-        public DraggablePoint ControlPoint { get; set; }
-        public Pen ControlLinePen { get; set; } = new Pen(Brushes.Magenta, 1);
+        public bool ShowPrevControl { get; set; } = true;
+        public bool ShowNextControl { get; set; } = true;
+        public Pen ControlPrevLinePen { get; set; } = new Pen(Brushes.Magenta, 1);
+        public Pen ControlNextLinePen { get; set; } = new Pen(Brushes.Green, 1);
+        public DraggablePoint ControlPreviousPoint { get; set; }
+        public DraggablePoint ControlNextPoint { get; set; }
 
         public BezierPoint(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
@@ -22,17 +26,25 @@ namespace Modeling_Canvas.UIElements
 
         protected override void InitChildren()
         {
-            ControlPoint = new DraggablePoint(Canvas, false)
+            ControlPreviousPoint = new DraggablePoint(Canvas, false)
             {
                 Radius = 8,
-                Opacity = 0.7,
                 OverrideRenderControlPanelAction = true,
                 Stroke = Brushes.Black,
                 StrokeThickness = 2,
                 Fill = Brushes.DarkMagenta
             };
-            Canvas.Children.Add(ControlPoint);
-            Panel.SetZIndex(ControlPoint, Canvas.Children.Count + 1);
+            AddChildren(ControlPreviousPoint);
+
+            ControlNextPoint = new DraggablePoint(Canvas, false)
+            {
+                Radius = 8,
+                OverrideRenderControlPanelAction = true,
+                Stroke = Brushes.Black,
+                StrokeThickness = 2,
+                Fill = Brushes.DarkGreen
+            };
+            AddChildren(ControlNextPoint);
 
             base.InitChildren();
 
@@ -40,16 +52,21 @@ namespace Modeling_Canvas.UIElements
 
         public override void MoveElement(Vector offset)
         {
-            ControlPoint.MoveElement(offset);
+            ControlPreviousPoint.MoveElement(offset);
+            ControlNextPoint.MoveElement(offset);
             base.MoveElement(offset);
         }
 
         protected override void DefaultRender(DrawingContext dc)
         {
-            ControlPoint.Visibility = ControlsVisibility;
+            ControlPreviousPoint.Visibility = ShowPrevControl ? ControlsVisibility : Visibility.Hidden;
+            ControlNextPoint.Visibility = ShowNextControl ? ControlsVisibility : Visibility.Hidden;
             if(ControlsVisibility is Visibility.Visible)
             {
-                dc.DrawLine(Canvas, ControlLinePen, PixelPosition, ControlPoint.PixelPosition);
+                if(ShowPrevControl)
+                    dc.DrawLine(Canvas, ControlPrevLinePen, PixelPosition, ControlPreviousPoint.PixelPosition);
+                if(ShowNextControl)
+                    dc.DrawLine(Canvas, ControlNextLinePen, PixelPosition, ControlNextPoint.PixelPosition);
             }
             base.DefaultRender(dc);
         }

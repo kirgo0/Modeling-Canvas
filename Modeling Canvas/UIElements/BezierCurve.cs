@@ -10,6 +10,19 @@ namespace Modeling_Canvas.UIElements
         public PointShape PointsShape { get; set; } = PointShape.Circle;
         public BezierCurve(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
+            PropertyChanged += (o, e) =>
+            {
+                if (e.PropertyName.Equals(nameof(IsClosed)))
+                {
+                    var p1 = Points.First();
+                    var p2 = Points.Last();
+                    if(p1 != null && p2 != null)
+                    {
+                        p1.ShowPrevControl = IsClosed;
+                        p2.ShowNextControl = IsClosed;
+                    }
+                }
+            };
         }
 
         protected override void OnRender(DrawingContext dc)
@@ -29,32 +42,38 @@ namespace Modeling_Canvas.UIElements
 
         protected override void DefaultRender(DrawingContext dc)
         {
+            if (Points.Count < 2) return;
+
             for (int i = 0; i < Points.Count - 1; i++)
             {
                 BezierPoint start = Points[i];
                 BezierPoint end = Points[i + 1];
 
                 Point p0 = start.PixelPosition;
-                Point c1 = start.ControlPoint.PixelPosition;
-                Point c2 = end.ControlPoint.PixelPosition;
+                Point c1 = start.ControlNextPoint.PixelPosition;
+                Point c2 = end.ControlPreviousPoint.PixelPosition; 
                 Point p3 = end.PixelPosition;
 
+                // Draw the segment
                 dc.DrawBezierCurve(Canvas, StrokePen, p0, c1, c2, p3, 10);
             }
 
+            // Handle closed curves
             if (IsClosed)
             {
-                BezierPoint start = Points.First();
-                BezierPoint end = Points.Last();
+                BezierPoint start = Points.Last();
+                BezierPoint end = Points.First();
 
                 Point p0 = start.PixelPosition;
-                Point c1 = start.ControlPoint.PixelPosition;
-                Point c2 = end.ControlPoint.PixelPosition;
+                Point c1 = start.ControlNextPoint.PixelPosition;
+                Point c2 = end.ControlPreviousPoint.PixelPosition;
                 Point p3 = end.PixelPosition;
 
+                // Draw the closing segment
                 dc.DrawBezierCurve(Canvas, StrokePen, p0, c1, c2, p3, 10);
             }
         }
+
 
         protected override BezierPoint OnPointInit(Point point)
         {
@@ -78,7 +97,7 @@ namespace Modeling_Canvas.UIElements
             base.RotateElement(anchorPoint, degrees);
             foreach (var point in Points)
             {
-                point.ControlPoint.Position = point.ControlPoint.Position.RotatePoint(anchorPoint, degrees);
+                point.ControlPreviousPoint.Position = point.ControlPreviousPoint.Position.RotatePoint(anchorPoint, degrees);
             }
         }
 
@@ -87,7 +106,7 @@ namespace Modeling_Canvas.UIElements
             base.ScaleElement(anchorPoint, scaleVector, ScaleFactor);
             foreach (var point in Points)
             {
-                point.ControlPoint.Position = point.ControlPoint.Position.ScalePoint(anchorPoint, scaleVector);
+                point.ControlPreviousPoint.Position = point.ControlPreviousPoint.Position.ScalePoint(anchorPoint, scaleVector);
             }
         }
 
