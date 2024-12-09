@@ -68,7 +68,8 @@ namespace Modeling_Canvas.UIElements
                 OverrideMoveAction = StartDegreesPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
                 Fill = Brushes.Red,
-                OverrideRenderControlPanelAction = true
+                //OverrideRenderControlPanelAction = true,
+                IsSelectable = false
             };
             Canvas.Children.Add(StartDegreesPoint);
             Panel.SetZIndex(StartDegreesPoint, Canvas.Children.Count + 1);
@@ -79,7 +80,8 @@ namespace Modeling_Canvas.UIElements
                 OverrideMoveAction = EndDegreesPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
                 Fill = Brushes.Blue,
-                OverrideRenderControlPanelAction = true
+                //OverrideRenderControlPanelAction = true,
+                IsSelectable = false
             };
             Canvas.Children.Add(EndDegreesPoint);
             Panel.SetZIndex(EndDegreesPoint, Canvas.Children.Count + 1);

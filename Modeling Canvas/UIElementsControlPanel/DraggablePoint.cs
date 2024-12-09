@@ -24,7 +24,7 @@ namespace Modeling_Canvas.UIElements
                     }
                 );
 
-            _controls.Add("Point Position", positionPosition);
+            _uiControls.Add("Point Position", positionPosition);
         }
     }
 }

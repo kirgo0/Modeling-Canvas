@@ -13,7 +13,7 @@
                     nameof(MaxDegrees)
                 );
 
-            _controls.Add("Start Degrees", startDeg);
+            _uiControls.Add("Start Degrees", startDeg);
             
             var endDeg =
                 WpfHelper.CreateSliderControl(
@@ -24,7 +24,7 @@
                     nameof(MaxDegrees)
                 );
 
-            _controls.Add("End Degrees", endDeg);
+            _uiControls.Add("End Degrees", endDeg);
         }
     }
 }

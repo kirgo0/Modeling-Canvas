@@ -1,12 +1,13 @@
 ﻿using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
+using Modeling_Canvas.UIElements.Interfaces;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace Modeling_Canvas.UIElements
 {
-    public partial class CustomCircle : CustomElement
+    public partial class CustomCircle : GroupableElement
     {
         public double MinRadiusValue { get; set; } = 0.5;
 
@@ -68,7 +69,8 @@ namespace Modeling_Canvas.UIElements
                 Opacity = 0.7,
                 OverrideMoveAction = RadiusPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
-                OverrideRenderControlPanelAction = true
+                IsSelectable = false
+                //OverrideRenderControlPanelAction = true
             };
             Canvas.Children.Add(RadiusPoint);
             Panel.SetZIndex(RadiusPoint, Canvas.Children.Count + 1);
@@ -78,8 +80,9 @@ namespace Modeling_Canvas.UIElements
             {
                 Radius = 3,
                 OverrideMoveAction = CenterPointMoveAction,
-                OverrideRenderControlPanelAction = true,
-                Position = new Point(0, 0)
+                //OverrideRenderControlPanelAction = true,
+                Position = new Point(0, 0),
+                IsSelectable = false
             };
             Canvas.Children.Add(CenterPoint);
             Panel.SetZIndex(CenterPoint, Canvas.Children.Count + 1);
@@ -120,19 +123,12 @@ namespace Modeling_Canvas.UIElements
         //    AddRadiusControls();
         //}
 
-        public override Point GetTopLeftPosition()
-        {
-            return new Point(Center.X - Radius - StrokeThickness / UnitSize, Center.Y + Radius + StrokeThickness / UnitSize);
-        }
 
-        protected override Point GetAnchorDefaultPosition()
-        {
-            return Center;
-        }
-        public override Point GetBottomRightPosition()
-        {
-            return new Point(Center.X + Radius + StrokeThickness / UnitSize, Center.Y - Radius - StrokeThickness / UnitSize);
-        }
+        protected override Point GetAnchorDefaultPosition() => Center;
+
+        public override Point GetTopLeftPosition() => new Point(Center.X - Radius - StrokeThickness / UnitSize, Center.Y + Radius + StrokeThickness / UnitSize);
+
+        public override Point GetBottomRightPosition() => new Point(Center.X + Radius + StrokeThickness / UnitSize, Center.Y - Radius - StrokeThickness / UnitSize);
 
         public event EventHandler<RadiusChangeEventArgs> OnRadiusChange;
 
@@ -149,6 +145,7 @@ namespace Modeling_Canvas.UIElements
             }
             OnRadiusChange?.Invoke(this, new RadiusChangeEventArgs(previousRadius, Radius, offset.X));
         }
+        
         public virtual void CenterPointMoveAction(DraggablePoint point, Vector offset)
         {
             MoveElement(offset);

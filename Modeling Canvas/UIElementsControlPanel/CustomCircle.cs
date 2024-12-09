@@ -16,7 +16,7 @@ namespace Modeling_Canvas.UIElements
                     nameof(MaxRadiusValue)
                 );
 
-            _controls.Add("Radius", radiusSlider);
+            _uiControls.Add("Radius", radiusSlider);
         }
 
         protected virtual void AddCenterControls()
@@ -45,7 +45,7 @@ namespace Modeling_Canvas.UIElements
                     }
                 );
 
-            _controls.Add("Center", centerPosition);
+            _uiControls.Add("Center", centerPosition);
         }
     }
 }

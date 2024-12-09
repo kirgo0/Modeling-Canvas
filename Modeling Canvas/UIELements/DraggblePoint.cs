@@ -50,6 +50,16 @@ namespace Modeling_Canvas.UIElements
             Position = SnappingEnabled ? Position.OffsetAndSpanPoint(offset) : Position.OffsetPoint(offset);
         }
 
+        public override void RotateElement(Point anchorPoint, double degrees)
+        {
+            Position = Position.RotatePoint(anchorPoint, degrees);
+        }
+
+        public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
+        {
+            Position = Position.ScalePoint(anchorPoint, scaleVector);
+        }
+
         public Action<MouseButtonEventArgs> MouseLeftButtonDownAction { get; set; }
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
@@ -60,21 +70,6 @@ namespace Modeling_Canvas.UIElements
         }
 
         public Action<DraggablePoint>? OnRenderControlPanel { get; set; }
-        public bool OverrideRenderControlPanelAction { get; set; } = false;
-
-        //protected override void RenderControlPanel()
-        //{
-        //    if (!OverrideRenderControlPanelAction)
-        //    {
-        //        ClearControlPanel();
-        //        RenderControlPanelLabel();
-        //        AddPointControls();
-        //        OnRenderControlPanel?.Invoke(this);
-        //    }
-        //    else
-        //    {
-        //        OnRenderControlPanel?.Invoke(this);
-        //    }
 
         public Func<DraggablePoint, string>? OverrideToStringAction;
         public override string ToString()

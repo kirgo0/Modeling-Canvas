@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using Modeling_Canvas.UIElements.Interfaces;
+using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -7,10 +9,19 @@ namespace Modeling_Canvas.UIElements
     public class ElementsGroup : CustomLine
     {
         public static int Counter { get; set; } = 1;
+
         public string Name { get; set; } = string.Empty;
+
         public double RectPadding { get; set; } = 0.5;
 
+        public bool AnyItemIsSelected { get => Canvas.SelectedElements.Intersect(Children).Any(); }
+
+        private Point _topLeftPosition = new Point(0, 0);
+
+        private Point _bottomRightPosition = new Point(0, 0);
+
         public override Visibility ControlsVisibility => AnyItemIsSelected ? Visibility.Visible : Visibility.Hidden;
+
         public Pen DashedPen
         {
             get =>
@@ -21,12 +32,7 @@ namespace Modeling_Canvas.UIElements
                 };
         }
 
-        public List<CustomElement> Children { get; set; } = new();
-
-        public bool AnyItemIsSelected { get => Canvas.SelectedElements.Intersect(Children).Any(); }
-
-        private Point _topLeftPosition = new Point(0, 0);
-        private Point _bottomRightPosition = new Point(0, 0);
+        public List<GroupableElement> Children { get; set; } = new();
 
         public ElementsGroup(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
@@ -39,11 +45,6 @@ namespace Modeling_Canvas.UIElements
             AddPoint(new Point(0, 0));
             AddPoint(new Point(0, 0));
 
-            foreach (var point in Points)
-            {
-                //point.OnRenderControlPanel = RenderControlPanel;
-                point.OverrideRenderControlPanelAction = true;
-            }
         }
         protected override void OnRender(DrawingContext dc)
         {
@@ -55,14 +56,14 @@ namespace Modeling_Canvas.UIElements
 
         protected override void InitControlPanel()
         {
-            base.InitControlPanel();
-            //AddStrokeColorControls();
-            //AddStrokeThicknessControls();
+            AddAnchorControls();
+            AddOffsetControls();
+            AddRotateControls();
+            AddScaleControls();
+            AddStrokeColorControls();
+            AddStrokeThicknessControls();
         }
 
-        public override void AddPoint(double x, double y)
-        {
-        }
         protected override void InitChildren()
         {
             base.InitChildren();
@@ -87,22 +88,7 @@ namespace Modeling_Canvas.UIElements
             Points[3].Position = new Point(_topLeftPosition.X, _bottomRightPosition.Y);
         }
 
-        //protected override void RenderControlPanel()
-        //{
-        //    ClearControlPanel();
-        //    AddOffsetControls();
-        //    AddRotateControls();
-        //    AddAnchorControls();
-        //    AddStrokeColorControls();
-        //    AddStrokeThicknessControls();
-        //}
-
-        //protected void RenderControlPanel(DraggablePoint point)
-        //{
-        //    RenderControlPanel();
-        //}
-
-        public void AddChild(CustomElement child)
+        public void AddChild(GroupableElement child)
         {
             if (!Canvas.Children.Contains(child))
             {
@@ -111,7 +97,7 @@ namespace Modeling_Canvas.UIElements
             Children.Add(child);
         }
 
-        public void RemoveChild(CustomElement child)
+        public void RemoveChild(GroupableElement child)
         {
             if (Children.Contains(child))
             {
@@ -121,14 +107,7 @@ namespace Modeling_Canvas.UIElements
 
         protected override void OnElementSelected(MouseButtonEventArgs e)
         {
-            if (!InputManager.ShiftPressed && !Canvas.SelectedElements.Contains(this) && !AnyItemIsSelected)
-            {
-                Canvas.SelectedElements.Clear();
-            }
-            else if (!Canvas.SelectedElements.Contains(this))
-            {
-                Canvas.SelectedElements.Add(this);
-            }
+            RenderControlPanel();
             e.Handled = true;
         }
 

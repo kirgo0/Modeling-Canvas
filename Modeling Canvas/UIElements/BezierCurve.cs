@@ -81,7 +81,7 @@ namespace Modeling_Canvas.UIElements
 
             customPoint.Shape = PointsShape;
             customPoint.Radius = PointsRadius;
-            customPoint.OverrideRenderControlPanelAction = true;
+            customPoint.IsSelectable = false;
             //customPoint.OnRenderControlPanel = OnPointClickRenderControlPanel;
             return customPoint;
         }
@@ -91,24 +91,6 @@ namespace Modeling_Canvas.UIElements
         //    SelectedPoint = point;
         //    RenderControlPanelLabel();
         //}
-
-        public override void RotateElement(Point anchorPoint, double degrees)
-        {
-            base.RotateElement(anchorPoint, degrees);
-            foreach (var point in Points)
-            {
-                point.ControlPreviousPoint.Position = point.ControlPreviousPoint.Position.RotatePoint(anchorPoint, degrees);
-            }
-        }
-
-        public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
-        {
-            base.ScaleElement(anchorPoint, scaleVector, ScaleFactor);
-            foreach (var point in Points)
-            {
-                point.ControlPreviousPoint.Position = point.ControlPreviousPoint.Position.ScalePoint(anchorPoint, scaleVector);
-            }
-        }
 
         public override string ToString()
         {

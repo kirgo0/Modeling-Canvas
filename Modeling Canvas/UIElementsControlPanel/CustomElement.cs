@@ -4,7 +4,7 @@ using Xceed.Wpf.Toolkit.PropertyGrid.Converters;
 
 namespace Modeling_Canvas.UIElements
 {
-    public abstract partial class CustomElement
+    public abstract partial class Element
     {
         protected virtual void AddAnchorControls()
         {
@@ -15,7 +15,7 @@ namespace Modeling_Canvas.UIElements
                     nameof(AnchorVisible)
                 );
 
-            _controls.Add("Anchor visible", isAnchorVisibleCheckbox);
+            _uiControls.Add("Anchor visible", isAnchorVisibleCheckbox);
 
             var anchorControls = 
                 WpfHelper.CreateDefaultPointControls(
@@ -37,7 +37,7 @@ namespace Modeling_Canvas.UIElements
                     }
                 );
 
-            _controls.Add("Anchor Point", anchorControls);
+            _uiControls.Add("Anchor Point", anchorControls);
         }
 
         protected virtual void AddFillColorControls()
@@ -49,7 +49,7 @@ namespace Modeling_Canvas.UIElements
                     nameof(Fill)
                 );
 
-            _controls.Add("Fill Color", fillColor);
+            _uiControls.Add("Fill Color", fillColor);
         }
 
         protected virtual void AddStrokeColorControls()
@@ -61,7 +61,7 @@ namespace Modeling_Canvas.UIElements
                     nameof(Stroke)
                 );
 
-            _controls.Add("Stroke Color", strokeColor);
+            _uiControls.Add("Stroke Color", strokeColor);
         }
 
         protected virtual void AddStrokeThicknessControls()
@@ -75,7 +75,7 @@ namespace Modeling_Canvas.UIElements
                     nameof(MaxStrokeThickness)
 
                 );
-            _controls.Add("Stroke Thickness", strokeThickness);
+            _uiControls.Add("Stroke Thickness", strokeThickness);
         }
 
         protected virtual void AddOffsetControls()
@@ -128,7 +128,7 @@ namespace Modeling_Canvas.UIElements
             panel.Children.Add(panelX);
             panel.Children.Add(panelY);
             panel.Children.Add(offsetButton);
-            _controls.Add("Offset", panel);
+            _uiControls.Add("Offset", panel);
         }
 
         protected virtual void AddRotateControls()
@@ -161,7 +161,7 @@ namespace Modeling_Canvas.UIElements
             panel.Children.Add(label);
             panel.Children.Add(input);
             panel.Children.Add(rotateButton);
-            _controls.Add("Rotate", panel);
+            _uiControls.Add("Rotate", panel);
         }
 
         protected virtual void AddScaleControls()
@@ -215,7 +215,7 @@ namespace Modeling_Canvas.UIElements
             panel.Children.Add(panelX);
             panel.Children.Add(panelY);
             panel.Children.Add(offsetButton);
-            _controls.Add("Scale", panel);
+            _uiControls.Add("Scale", panel);
         }
 
         protected void AddElementToControlPanel(UIElement control)

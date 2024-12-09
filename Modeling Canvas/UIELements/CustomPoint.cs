@@ -6,21 +6,27 @@ using System.Windows.Media;
 
 namespace Modeling_Canvas.UIElements
 {
-    public class CustomPoint : CustomElement, IPoint
+    public class CustomPoint : GroupableElement, IPoint
     {
         public double Radius { get; set; } = 10;
+
         public PointShape Shape { get; set; } = PointShape.Circle;
+
         public int PositionPrecision { get; set; } = 3;
+
         public double X { get => Position.X; }
+
         public double Y { get => Position.Y; }
+
         protected Point _position;
+
         public Point Position
         {
             get => _position;
             set
             {
                 _position = new Point(Math.Round(value.X, PositionPrecision), Math.Round(value.Y, PositionPrecision));
-                OnPropertyChanged();
+                //OnPropertyChanged();
             }
         }
 
@@ -56,27 +62,13 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        public override Point GetTopLeftPosition()
-        {
-            return new Point(Position.X + Radius / UnitSize, Position.Y + Radius / UnitSize);
-        }
-
-        public override Point GetBottomRightPosition()
-        {
-            return new Point(Position.X - Radius / UnitSize, Position.Y - Radius / UnitSize);
-        }
-
+        public override Point GetTopLeftPosition() => new Point(Position.X + Radius / UnitSize, Position.Y + Radius / UnitSize);
+        
+        public override Point GetBottomRightPosition() =>  new Point(Position.X - Radius / UnitSize, Position.Y - Radius / UnitSize);
+        
         protected override Size MeasureOverride(Size availableSize)
         {
             return new Size(Radius, Radius);
-        }
-
-        public override void RotateElement(Point anchorPoint, double degrees)
-        {
-        }
-
-        public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
-        {
         }
 
         public override string ToString()

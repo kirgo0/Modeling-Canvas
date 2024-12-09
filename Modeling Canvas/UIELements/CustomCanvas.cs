@@ -66,7 +66,7 @@ namespace Modeling_Canvas.UIElements
             DependencyProperty.Register(nameof(GridFrequency), typeof(double), typeof(CustomCanvas),
                 new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.AffectsRender));
 
-        public HashSet<CustomElement> SelectedElements { get; set; } = new();
+        public HashSet<Element> SelectedElements { get; set; } = new();
 
         private Point previousMousePosition;
         public bool _allowInfinityRender = false;
@@ -160,7 +160,7 @@ namespace Modeling_Canvas.UIElements
             for (var i = 0; i < InternalChildren.Count; i++)
             {
                 var child = InternalChildren[i];
-                if (child is CustomElement element)
+                if (child is Element element)
                 {
                     var point = element.GetOriginPoint(arrangeSize);
                     element.Arrange(new Rect(point, element.DesiredSize));

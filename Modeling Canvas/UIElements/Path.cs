@@ -3,10 +3,11 @@ using Modeling_Canvas.UIElements.Interfaces;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Xceed.Wpf.AvalonDock.Converters;
 
 namespace Modeling_Canvas.UIElements
 {
-    public class Path<T> : CustomElement where T : CustomElement, IPoint
+    public class Path<T> : GroupableElement where T : GroupableElement, IPoint
     {
         public int PointsRadius { get; set; } = 5;
 
@@ -80,7 +81,7 @@ namespace Modeling_Canvas.UIElements
                     "Add point"
                 );
 
-            _controls.Add("Add Point", addPointbutton);
+            _uiControls.Add("Add Point", addPointbutton);
 
             var removePointbutton =
                 WpfHelper.CreateButton(
@@ -92,7 +93,7 @@ namespace Modeling_Canvas.UIElements
                     "Remove point"
                 );
 
-            _controls.Add("Remove Point", removePointbutton);
+            _uiControls.Add("Remove Point", removePointbutton);
 
             var isClosedCheckBox =
                 WpfHelper.CreateLabeledCheckBox(
@@ -101,7 +102,7 @@ namespace Modeling_Canvas.UIElements
                     nameof(IsClosed)
                 );
 
-            _controls.Add("IsClosed", isClosedCheckBox);
+            _uiControls.Add("IsClosed", isClosedCheckBox);
         }
 
         protected override Point GetAnchorDefaultPosition()
@@ -115,14 +116,9 @@ namespace Modeling_Canvas.UIElements
             return new Point(centerX, centerY);
         }
 
-        public override Point GetTopLeftPosition()
-        {
-            return new Point(Points.Min(x => x.Position.X) - PointsRadius / UnitSize, Points.Max(y => y.Position.Y) + PointsRadius / UnitSize);
-        }
-        public override Point GetBottomRightPosition()
-        {
-            return new Point(Points.Max(x => x.Position.X) + PointsRadius / UnitSize, Points.Min(y => y.Position.Y) - PointsRadius / UnitSize);
-        }
+        public override Point GetTopLeftPosition() => new Point(Points.Min(x => x.Position.X) - PointsRadius / UnitSize, Points.Max(y => y.Position.Y) + PointsRadius / UnitSize);
+        
+        public override Point GetBottomRightPosition() => new Point(Points.Max(x => x.Position.X) + PointsRadius / UnitSize, Points.Min(y => y.Position.Y) - PointsRadius / UnitSize);
 
         // helper add method
         public virtual void AddPoint(double x, double y)
@@ -149,8 +145,6 @@ namespace Modeling_Canvas.UIElements
             Points.Add(customPoint);
 
             AddChildren(customPoint);
-            //Canvas.Children.Add(customPoint);
-            //Panel.SetZIndex(customPoint, Canvas.Children.Count + 1);
         }
 
         public void InsertPointAt(int pointIndex)
@@ -217,14 +211,14 @@ namespace Modeling_Canvas.UIElements
         {
             foreach (var point in Points)
             {
-                point.Position = point.Position.RotatePoint(anchorPoint, degrees);
+                point.RotateElement(anchorPoint, degrees);
             }
         }
         public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
         {
             foreach (var point in Points)
             {
-                point.Position = point.Position.ScalePoint(anchorPoint, scaleVector);
+                point.ScaleElement(anchorPoint, scaleVector, ScaleFactor);
             }
         }
 

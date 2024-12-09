@@ -8,13 +8,13 @@ using System.Windows.Threading;
 
 namespace Modeling_Canvas.UIElements
 {
-    public partial class Hypocycloid : CustomElement
+    public partial class Hypocycloid : Element
     {
-        private int maxPointCount = 2000;
+        private int _maxPointCount = 2000;
         public int PointsCount { 
             get {
-                var maxQualityPointsCount = Model.Angle / 360 * maxPointCount;
-                var calculatedCount = (maxQualityPointsCount / (20 / Canvas.UnitSize));
+                var maxQualityPointsCount = Model.Angle / 360 * _maxPointCount;
+                var calculatedCount = Canvas.UnitSize > 1 ? (maxQualityPointsCount / (20 / Canvas.UnitSize)) : _maxPointCount;
                 return calculatedCount > maxQualityPointsCount ? (int)maxQualityPointsCount : (int) calculatedCount;
             }
         }
@@ -181,7 +181,7 @@ namespace Modeling_Canvas.UIElements
 
             arcLengthText.AddVisibilityBinding(CalculatedValues,nameof(HypocycloidCalculationsModel.ShowArcLength));
 
-            _controls.Add(nameof(HypocycloidCalculationsModel.ArcLength), arcLengthText);
+            _uiControls.Add(nameof(HypocycloidCalculationsModel.ArcLength), arcLengthText);
 
             var areaText = WpfHelper.CreateValueTextBlock(
                 "Area",
@@ -191,19 +191,19 @@ namespace Modeling_Canvas.UIElements
 
             areaText.AddVisibilityBinding(CalculatedValues, nameof(HypocycloidCalculationsModel.ShowArcLength));
 
-            _controls.Add(nameof(HypocycloidCalculationsModel.ShowHypocycloidArea), areaText);
+            _uiControls.Add(nameof(HypocycloidCalculationsModel.ShowHypocycloidArea), areaText);
 
             var showInflectionPointsCheckbox = WpfHelper.CreateLabeledCheckBox("Inflection points", CalculatedValues, nameof(HypocycloidCalculationsModel.ShowInflectionPoints));
 
-            _controls.Add(nameof(HypocycloidCalculationsModel.ShowInflectionPoints), showInflectionPointsCheckbox);
+            _uiControls.Add(nameof(HypocycloidCalculationsModel.ShowInflectionPoints), showInflectionPointsCheckbox);
 
             var animateMenuCheckbox = WpfHelper.CreateLabeledCheckBox("Animate", this, nameof(ShowAnimationControls));
 
-            _controls.Add(nameof(ShowAnimationControls), animateMenuCheckbox);
+            _uiControls.Add(nameof(ShowAnimationControls), animateMenuCheckbox);
 
             var hypoControls = CreateHypocycloidControls(Model);
 
-            _controls = _controls.Concat(hypoControls).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            _uiControls = _uiControls.Concat(hypoControls).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
             _animationControls = CreateHypocycloidControls(AnimationModel, "Animate to ");
 
@@ -222,7 +222,7 @@ namespace Modeling_Canvas.UIElements
                 );
             timeSlider.AddVisibilityBinding(this, nameof(ShowAnimationControls));
 
-            _controls.Add("TimeSlider", timeSlider);
+            _uiControls.Add("TimeSlider", timeSlider);
 
             var startAnimationButton = WpfHelper.CreateButton(
                 content: "Animate",
@@ -233,7 +233,7 @@ namespace Modeling_Canvas.UIElements
 
             startAnimationButton.AddIsDisabledBinding(this, nameof(IsNotAnimating));
 
-            _controls.Add("AnimateButton", startAnimationButton);
+            _uiControls.Add("AnimateButton", startAnimationButton);
 
             base.InitControlPanel();
 
@@ -242,7 +242,7 @@ namespace Modeling_Canvas.UIElements
         protected override void RenderControlPanel()
         {
             ClearControlPanel();
-            foreach (var control in _controls)
+            foreach (var control in _uiControls)
             {
                 AddElementToControlPanel(control.Value);
 

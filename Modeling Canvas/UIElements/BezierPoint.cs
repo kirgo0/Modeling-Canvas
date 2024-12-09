@@ -29,20 +29,22 @@ namespace Modeling_Canvas.UIElements
             ControlPreviousPoint = new DraggablePoint(Canvas, false)
             {
                 Radius = 8,
-                OverrideRenderControlPanelAction = true,
+                //OverrideRenderControlPanelAction = true,
                 Stroke = Brushes.Black,
                 StrokeThickness = 2,
-                Fill = Brushes.DarkMagenta
+                Fill = Brushes.DarkMagenta,
+                IsSelectable = false
             };
             AddChildren(ControlPreviousPoint);
 
             ControlNextPoint = new DraggablePoint(Canvas, false)
             {
                 Radius = 8,
-                OverrideRenderControlPanelAction = true,
+                //OverrideRenderControlPanelAction = true,
                 Stroke = Brushes.Black,
                 StrokeThickness = 2,
-                Fill = Brushes.DarkGreen
+                Fill = Brushes.DarkGreen,
+                IsSelectable = false
             };
             AddChildren(ControlNextPoint);
 
@@ -55,6 +57,20 @@ namespace Modeling_Canvas.UIElements
             ControlPreviousPoint.MoveElement(offset);
             ControlNextPoint.MoveElement(offset);
             base.MoveElement(offset);
+        }
+
+        public override void RotateElement(Point anchorPoint, double degrees)
+        {
+            base.RotateElement(anchorPoint, degrees);
+            ControlPreviousPoint.RotateElement(anchorPoint, degrees);
+            ControlNextPoint.RotateElement(anchorPoint, degrees);
+        }
+
+        public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
+        {
+            base.ScaleElement(anchorPoint, scaleVector, ScaleFactor);
+            ControlPreviousPoint.ScaleElement(anchorPoint, scaleVector, ScaleFactor);
+            ControlNextPoint.ScaleElement(anchorPoint, scaleVector, ScaleFactor);
         }
 
         protected override void DefaultRender(DrawingContext dc)

@@ -9,11 +9,56 @@ using System.Windows.Media;
 
 namespace Modeling_Canvas.UIElements
 {
-    public abstract partial class CustomElement : FrameworkElement, INotifyPropertyChanged, IMovableElement
+    public abstract partial class Element : FrameworkElement, INotifyPropertyChanged, IMovableElement
     {
-        public CustomElement? LogicalParent { get; set; } = null;
+        public Element? LogicalParent { get; set; } = null;
 
         private Brush _fill = null;
+
+        private double _strokeThickness = 1;
+
+        private Brush _stroke = Brushes.Black;
+
+        private Pen _strokePen = null;
+
+        private bool _overrideAnchorPoint = false;
+
+        protected Point _lastMousePosition;
+
+        protected double _lastRotationDegrees = 0;
+
+        protected bool _isDragging = false;
+
+        protected bool _isRotating = false;
+
+        private bool _anchorVisible = true;
+
+        protected Dictionary<string, FrameworkElement> _uiControls = new();
+
+        private DraggablePoint _anchorPoint;
+
+        public double MinStrokeThickness { get; set; } = 0.1;
+
+        public double MaxStrokeThickness { get; set; } = 25;
+
+        public bool HasAnchorPoint { get; } = true;
+
+        public bool IsSelectable { get; set; } = true;
+
+        public bool IsInteractable { get; set; } = true;
+
+        public CustomCanvas Canvas { get; set; }
+
+        public double UnitSize { get => Canvas.UnitSize; }
+
+        public bool AllowSnapping { get; set; } = true;
+
+        public string LabelText { get; set; } = "Default Label";
+
+        protected virtual bool SnappingEnabled { get => AllowSnapping ? InputManager.ShiftPressed : false; }
+
+        public bool ControlsVisible { get; set; } = false;
+
         public Brush Fill {
             get => _fill;
             set
@@ -26,8 +71,6 @@ namespace Modeling_Canvas.UIElements
                 }
             }
         }
-
-        private Brush _stroke = Brushes.Black;
 
         public Brush Stroke
         {
@@ -43,10 +86,6 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        public double MinStrokeThickness { get; set; } = 0.1;
-        public double MaxStrokeThickness { get; set; } = 25;
-        
-        private double _strokeThickness = 1;
         public double StrokeThickness { 
             get => _strokeThickness;
             set
@@ -60,16 +99,14 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        private Pen _strokePen = null;
         public Pen StrokePen
         {
             get => _strokePen is null ? new Pen(Stroke, StrokeThickness) : _strokePen;
             set => _strokePen = value;
         }
-        public bool ControlsVisible { get; set; } = false;
         public virtual Visibility ControlsVisibility { get => Canvas.SelectedElements.Contains(this) || ControlsVisible ? Visibility.Visible : Visibility.Hidden; }
 
-        private bool _anchorVisible = true;
+
         public bool AnchorVisible {
             get => _anchorVisible;
             set
@@ -91,29 +128,29 @@ namespace Modeling_Canvas.UIElements
                 else return Visibility.Hidden;
             }
         }
-        public bool HasAnchorPoint { get; } = true;
 
-        private bool overrideAnchorPoint = false;
         public bool OverrideAnchorPoint
         {
-            get => HasAnchorPoint ? overrideAnchorPoint : false;
+            get => HasAnchorPoint ? _overrideAnchorPoint : false;
             set
             {
                 if (HasAnchorPoint && !value)
                 {
                     AnchorPoint.Position = GetAnchorDefaultPosition();
                 }
-                overrideAnchorPoint = value;
+                _overrideAnchorPoint = value;
             }
         }
 
-        private DraggablePoint _anchorPoint;
         public DraggablePoint AnchorPoint
         {
             get => HasAnchorPoint ? _anchorPoint : null;
             private set
             {
-                _anchorPoint = value;
+                if (HasAnchorPoint)
+                {
+                    _anchorPoint = value;
+                }
             }
         }
 
@@ -123,26 +160,8 @@ namespace Modeling_Canvas.UIElements
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        public bool IsSelectable { get; set; } = true;
-        public bool IsInteractable { get; set; } = true;
-        public CustomCanvas Canvas { get; set; }
-        public double UnitSize { get => Canvas.UnitSize; }
 
-        protected Point _lastMousePosition;
-        public bool AllowSnapping { get; set; } = true;
-        protected virtual bool SnappingEnabled { get => AllowSnapping ? InputManager.ShiftPressed : false; }
-
-        public string LabelText { get; set; } = "Default Label";
-
-        protected double _lastRotationDegrees = 0;
-
-        protected bool _isDragging = false;
-
-        protected bool _isRotating = false;
-
-        protected Dictionary<string, FrameworkElement> _controls = new();
-
-        protected CustomElement(CustomCanvas canvas, bool hasAnchorPoint = true)
+        protected Element(CustomCanvas canvas, bool hasAnchorPoint = true)
         {
             Canvas = canvas;
             Focusable = false;
@@ -163,6 +182,7 @@ namespace Modeling_Canvas.UIElements
             DefaultRender(dc);
 
         }
+
         protected abstract void DefaultRender(DrawingContext dc);
 
         protected override void OnInitialized(EventArgs e)
@@ -189,7 +209,8 @@ namespace Modeling_Canvas.UIElements
                     {
                         return $"Anchor point\nX: {e.Position.X}\nY: {e.Position.Y}";
                     },
-                    OverrideRenderControlPanelAction = true
+                    //OverrideRenderControlPanelAction = true,
+                    IsSelectable = false
                 };
                 AnchorPoint.Position = GetAnchorDefaultPosition();
                 Canvas.Children.Add(AnchorPoint);
@@ -208,6 +229,7 @@ namespace Modeling_Canvas.UIElements
                 AddAnchorControls();
             }
         }
+
         protected virtual void RenderControlPanelLabel()
         {
             var label = new TextBlock { Text = $"| {LabelText} |", TextAlignment = TextAlignment.Center, FontWeight = FontWeight.FromOpenTypeWeight(600) };
@@ -217,38 +239,22 @@ namespace Modeling_Canvas.UIElements
         protected virtual void RenderControlPanel()
         {
             ClearControlPanel();
-            foreach (var control in _controls)
+            foreach (var control in _uiControls)
             {
                 AddElementToControlPanel(control.Value);
             }
         }
 
-        protected virtual void AddChildren(CustomElement element)
+        protected virtual void AddChildren(Element element)
         {
             element.LogicalParent = this;
             Canvas.Children.Add(element);
             Panel.SetZIndex(element, Canvas.Children.Count + 1);
         }
 
-        public virtual Point GetOriginPoint(Size arrangedSize)
-        {
-            return new Point(0, 0);
-        }
+        public virtual Point GetOriginPoint(Size arrangedSize) => new Point(0, 0);
 
-        protected virtual Point GetAnchorDefaultPosition()
-        {
-            return new Point(0, 0);
-        }
-
-        public virtual Point GetTopLeftPosition()
-        {
-            return new Point(0, 0);
-        }
-
-        public virtual Point GetBottomRightPosition()
-        {
-            return new Point(0, 0);
-        }
+        protected virtual Point GetAnchorDefaultPosition() => new Point(0, 0);
 
         protected virtual void OnAnchorPointMove(DraggablePoint point, Vector offset)
         {
@@ -259,7 +265,6 @@ namespace Modeling_Canvas.UIElements
         {
             e.Handled = true;
         }
-
 
         protected override void OnMouseEnter(MouseEventArgs e)
         {
@@ -281,16 +286,14 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        private bool _lastAnchorState = false;
-
         protected override void OnMouseMove(MouseEventArgs e)
         {
+            if (!IsInteractable) return;
             var window = App.Current.MainWindow as MainWindow;
             if (window != null)
             {
                 window.CurrentElementLabel.Content = ToString();
             }
-            if (!IsInteractable) return;
             // Move and scale logic
             if (_isDragging && !InputManager.RightMousePressed)
             {
@@ -368,6 +371,7 @@ namespace Modeling_Canvas.UIElements
 
         protected virtual void OnElementSelected(MouseButtonEventArgs e)
         {
+            RenderControlPanel();
             if (!InputManager.ShiftPressed && !Canvas.SelectedElements.Contains(this) && !Canvas.SelectedElements.Contains(LogicalParent))
             {
                 Canvas.SelectedElements.Clear();
@@ -387,12 +391,11 @@ namespace Modeling_Canvas.UIElements
             _lastMousePosition = e.GetPosition(Canvas);
             CaptureMouse();
             InvalidateCanvas();
-            RenderControlPanel();
         }
         
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
-            base.OnMouseLeftButtonUp(e);
+            //base.OnMouseLeftButtonUp(e);
             _isDragging = false;
             _isRotating = false;
             ReleaseMouseCapture();
@@ -401,7 +404,7 @@ namespace Modeling_Canvas.UIElements
         protected override void OnMouseRightButtonDown(MouseButtonEventArgs e)
         {
             if (!IsInteractable) return;
-            base.OnMouseRightButtonDown(e);
+            //base.OnMouseRightButtonDown(e);
             if (HasAnchorPoint)
             {
                 _isRotating = true;
@@ -412,7 +415,7 @@ namespace Modeling_Canvas.UIElements
         
         protected override void OnMouseRightButtonUp(MouseButtonEventArgs e)
         {
-            base.OnMouseRightButtonUp(e);
+            //base.OnMouseRightButtonUp(e);
             if (HasAnchorPoint)
             {
                 _isRotating = false;
@@ -440,7 +443,6 @@ namespace Modeling_Canvas.UIElements
         // Helper method to invalidate the parent canvas
         public virtual void InvalidateCanvas()
         {
-            // Request the canvas to re-render by invalidating it
             Canvas.InvalidateVisual();
             InvalidateVisual();
         }
