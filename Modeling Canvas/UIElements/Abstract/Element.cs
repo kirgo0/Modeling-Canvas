@@ -453,6 +453,7 @@ namespace Modeling_Canvas.UIElements
             }
             else if(HasAnchorPoint) 
             {
+                var a = this;
                 AnchorPoint.Position = GetAnchorDefaultPosition();
             }
         }

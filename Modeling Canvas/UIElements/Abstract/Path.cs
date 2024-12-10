@@ -8,11 +8,18 @@ namespace Modeling_Canvas.UIElements.Abstract
 {
     public abstract class Path<T> : GroupableElement where T : GroupableElement, IPoint
     {
+        private bool _isClosed = true;
+
+        private bool _showRemovePointButton;
+
+        private bool _enableRemovePointButton;
+
+        private T? _selectedPoint;
+
         public int PointsRadius { get; set; } = 5;
 
         public List<T> Points { get; set; } = new();
 
-        public bool _isClosed = true;
         public bool IsClosed
         {
             get => _isClosed;
@@ -35,8 +42,6 @@ namespace Modeling_Canvas.UIElements.Abstract
             } 
         }
 
-        private T? _selectedPoint;
-
         public T? SelectedPoint 
         { 
             get => _selectedPoint;
@@ -45,19 +50,30 @@ namespace Modeling_Canvas.UIElements.Abstract
                 if (_selectedPoint != value)
                 {
                     _selectedPoint = value;
-                    EnableRemovePointButton = value is not null;
+                    ShowRemovePointButton = value is not null;
                 }
             } 
         }
 
-        private bool _enableRemovePointButton;
+        public bool ShowRemovePointButton
+        {
+            get => _showRemovePointButton;
+            set 
+            { 
+                if(_showRemovePointButton != value)
+                {
+                    _showRemovePointButton = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public bool EnableRemovePointButton
         {
             get => _enableRemovePointButton;
-            set 
-            { 
-                if(_enableRemovePointButton != value)
+            set
+            {
+                if (_enableRemovePointButton != value)
                 {
                     _enableRemovePointButton = value;
                     OnPropertyChanged();
@@ -104,18 +120,15 @@ namespace Modeling_Canvas.UIElements.Abstract
 
         protected override void InitControlPanel()
         {
-            base.InitControlPanel();
-            AddStrokeColorControls();
-            AddStrokeThicknessControls();
-
             var addPointbutton =
                 WpfHelper.CreateButton(
                     () =>
                     {
-                        if(SelectedPoint is null)
+                        if (SelectedPoint is null)
                         {
                             AddPoint(GetAnchorDefaultPosition());
-                        } else
+                        }
+                        else
                         {
                             InsertPointAt(Points.IndexOf(SelectedPoint));
                         }
@@ -136,6 +149,11 @@ namespace Modeling_Canvas.UIElements.Abstract
                     "Remove point"
                 );
 
+            removePointbutton.AddVisibilityBinding(
+                this,
+                nameof(ShowRemovePointButton)
+                );
+
             removePointbutton.AddIsDisabledBinding(
                 this,
                 nameof(EnableRemovePointButton)
@@ -151,6 +169,9 @@ namespace Modeling_Canvas.UIElements.Abstract
                 );
 
             _uiControls.Add("IsClosed", isClosedCheckBox);
+            AddStrokeColorControls();
+            AddStrokeThicknessControls();
+            base.InitControlPanel();
         }
 
         protected override Point GetAnchorDefaultPosition()
@@ -187,16 +208,19 @@ namespace Modeling_Canvas.UIElements.Abstract
             {
                 SelectedPoint = customPoint;
             };
+            EnableRemovePointButton = true;
             return customPoint;
         }
 
-        public void AddPoint(Point point)
+        public T AddPoint(Point point)
         {
             var customPoint = OnPointInit(point);
 
             Points.Add(customPoint);
 
             AddChildren(customPoint);
+
+            return customPoint;
         }
 
         public virtual void RemovePoint(T point)
@@ -205,10 +229,11 @@ namespace Modeling_Canvas.UIElements.Abstract
             {
                 Points.Remove(point);
                 Canvas.Children.Remove(point);
+                if (Points.Count < 2) EnableRemovePointButton = false;
             }
         }
 
-        public void InsertPointAt(int pointIndex)
+        public virtual void InsertPointAt(int pointIndex)
         {
             if (pointIndex >= Points.Count) pointIndex = Points.Count - 1;
 
@@ -217,6 +242,7 @@ namespace Modeling_Canvas.UIElements.Abstract
             var customPoint = OnPointInit(point);
 
             Points.Insert(pointIndex, customPoint);
+
             AddChildren(customPoint);
         }
 

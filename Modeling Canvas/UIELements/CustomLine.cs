@@ -5,7 +5,7 @@ using System.Windows.Media;
 
 namespace Modeling_Canvas.UIElements
 {
-    public partial class CustomLine : Path<DraggablePoint>
+    public class CustomLine : Path<DraggablePoint>
     {
         public PointShape PointsShape { get; set; } = PointShape.Circle;
 

@@ -4,22 +4,25 @@ using Modeling_Canvas.Models;
 using Modeling_Canvas.UIElements.Abstract;
 using System.Globalization;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace Modeling_Canvas.UIElements
 {
-    public class BezierCurve : Path<BezierPoint>
+    public partial class BezierCurve : Path<BezierPoint>
     {
         public PointShape PointsShape { get; set; } = PointShape.Circle;
 
-        private int _curvePrecision = 100;
         public Dictionary<double, List<BezierPointFrameModel>> AnimationFrames { get; set; } = new();
 
+        private int _curvePrecision = 100;
+
         private double _selectedFrameKey = 0;
+
+        private bool _isNotAnimating = true;
+
+        private bool _isInfiniteAnimation = false;
 
         public int CurvePrecision {
             get => _curvePrecision;
@@ -34,7 +37,6 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        private bool _isNotAnimating = true;
         public bool IsNotAnimating
         {
             get => _isNotAnimating;
@@ -43,6 +45,19 @@ namespace Modeling_Canvas.UIElements
                 if (_isNotAnimating != value)
                 {
                     _isNotAnimating = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsInfiniteAnimation
+        {
+            get => _isInfiniteAnimation;
+            set 
+            { 
+                if(_isInfiniteAnimation != value)
+                {
+                    _isInfiniteAnimation = value;
                     OnPropertyChanged();
                 }
             }
@@ -73,68 +88,12 @@ namespace Modeling_Canvas.UIElements
                     }
                 }
             };
-
         }
 
         protected override void OnInitialized(EventArgs e)
         {
             AnimationFrames.Add(SelectedFrameKey, Points.Select(p => p.GetFramePosition()).ToList());
             base.OnInitialized(e);
-        }
-
-        protected override void InitControlPanel()
-        {
-            var mainPanel = WpfHelper.CreateDefaultPanel();
-
-            var scrollView = new ScrollViewer
-            {
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                Height = 300
-            };
-
-            var framesPanel = WpfHelper.CreateDefaultPanel(orientation: Orientation.Vertical);
-            scrollView.Content = framesPanel;
-
-            UpdateFramesPanel(framesPanel);
-
-            var addFrameButton = WpfHelper.CreateButton(
-                clickAction: () =>
-                {
-                    AddNewFrame();
-                    UpdateFramesPanel(framesPanel);
-                },
-                content: "+"
-            );
-
-            mainPanel.Children.Add(scrollView);
-            mainPanel.Children.Add(addFrameButton);
-
-            _uiControls.Add("AnimationFrames", mainPanel);
-
-            var startAnimationButton =
-                WpfHelper.CreateButton(
-                    content: "Animate",
-                    clickAction: () =>
-                    {
-                        Animate();
-                    }
-                );
-
-            _uiControls.Add("StartAnimation", startAnimationButton);
-
-            var precisionSlider =
-                WpfHelper.CreateSliderControl(
-                    "Precision",
-                    this,
-                    nameof(CurvePrecision),
-                    5,
-                    500,
-                    2.5
-                );
-
-            _uiControls.Add("Presicion", precisionSlider);
-
-            base.InitControlPanel();
         }
 
         protected override void OnRender(DrawingContext dc)
@@ -164,11 +123,9 @@ namespace Modeling_Canvas.UIElements
                 Point c2 = end.ControlPrevPoint.PixelPosition; 
                 Point p3 = end.PixelPosition;
 
-                // Draw the segment
                 dc.DrawBezierCurve(Canvas, StrokePen, p0, c1, c2, p3, CurvePrecision, 10);
             }
 
-            // Handle closed curves
             if (IsClosed)
             {
                 BezierPoint start = Points.Last();
@@ -179,19 +136,62 @@ namespace Modeling_Canvas.UIElements
                 Point c2 = end.ControlPrevPoint.PixelPosition;
                 Point p3 = end.PixelPosition;
 
-                // Draw the closing segment
                 dc.DrawBezierCurve(Canvas, StrokePen, p0, c1, c2, p3, CurvePrecision, 10);
             }
+        }
+
+        public virtual void AddBezierPoint(Point position, Point prevControl, Point nextControl)
+        {
+            var point = AddPoint(position);
+            point.ControlPrevPoint.Position = prevControl;
+            point.ControlNextPoint.Position = nextControl;
+        }
+
+        protected override BezierPoint OnPointInit(Point point)
+        {
+            var customPoint = base.OnPointInit(point);
+
+            customPoint.Shape = PointsShape;
+            customPoint.Radius = PointsRadius;
+            customPoint.IsSelectable = false;
+            customPoint.ControlsVisibility = ControlsVisibility;
+            customPoint.Visibility = ControlsVisibility;
+
+            PropertyChanged += (s, e) => {
+                if (e.PropertyName.Equals(nameof(ControlsVisibility)))
+                {
+                    customPoint.Visibility = ControlsVisibility;
+                }
+            };
+            return customPoint;
+        }
+
+        public override void InsertPointAt(int pointIndex)
+        {
+            if (!IsClosed && (pointIndex <= 0 || pointIndex >= Points.Count - 1))
+            {
+                var p1 = Points.First();
+                var p2 = Points.Last();
+                p1.ShowPrevControl = true;
+                p2.ShowNextControl = true;
+            }
+            base.InsertPointAt(pointIndex);
+        }
+
+        public override void RemovePoint(BezierPoint point)
+        {
+            base.RemovePoint(point);
+            Canvas.Children.Remove(point.ControlNextPoint);
+            Canvas.Children.Remove(point.ControlPrevPoint);
         }
 
         private void Animate()
         {
             if (AnimationFrames.Count < 2)
             {
-                throw new InvalidOperationException("At least two frames are required for animation.");
+                return;
             }
 
-            // Отримуємо список ключів (часів кадрів) у відсортованому порядку
             var sortedFrameKeys = AnimationFrames.Keys.OrderBy(key => key).ToList();
 
             int currentFrameIndex = 0;
@@ -199,13 +199,19 @@ namespace Modeling_Canvas.UIElements
 
             SelectFrame(sortedFrameKeys.First());
 
-            // Налаштування таймера для анімації
+            IsNotAnimating = false;
             var timer = new DispatcherTimer(TimeSpan.FromMilliseconds(16), DispatcherPriority.Render, (s, e) =>
             {
                 if (currentFrameIndex >= sortedFrameKeys.Count - 1)
                 {
+                    if (IsInfiniteAnimation)
+                    {
+                        currentFrameIndex = 0;
+                        return;
+                    }
                     ((DispatcherTimer)s).Stop();
                     SelectedFrameKey = sortedFrameKeys.Last();
+                    IsNotAnimating = true;
                     return;
                 }
 
@@ -270,124 +276,12 @@ namespace Modeling_Canvas.UIElements
             timer.Start();
         }
 
-
         private static Point Lerp(Point start, Point end, double t)
         {
             return new Point(
                 start.X + (end.X - start.X) * t,
                 start.Y + (end.Y - start.Y) * t
             );
-        }
-
-        protected override BezierPoint OnPointInit(Point point)
-        {
-            var customPoint = base.OnPointInit(point);
-
-            customPoint.Shape = PointsShape;
-            customPoint.Radius = PointsRadius;
-            customPoint.IsSelectable = false;
-            customPoint.ControlsVisibility = ControlsVisibility;
-            customPoint.Visibility = ControlsVisibility;
-
-            PropertyChanged += (s, e) => {
-                if (e.PropertyName.Equals(nameof(ControlsVisibility))) {
-                    customPoint.Visibility = ControlsVisibility;
-                }
-            };
-            return customPoint;
-        }
-
-        public override void RemovePoint(BezierPoint point)
-        {
-            base.RemovePoint(point);
-            Canvas.Children.Remove(point.ControlNextPoint);
-            Canvas.Children.Remove(point.ControlPrevPoint);
-        }
-
-
-        private void UpdateFramesPanel(StackPanel framesPanel)
-        {
-            framesPanel.Children.Clear();
-
-            foreach (var frame in AnimationFrames.OrderBy(x => x.Key))
-            {
-                var framePanel = new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    Margin = new Thickness(5)
-                };
-
-                // Прив'язка до фону
-                var binding = new Binding("SelectedFrameKey")
-                {
-                    Source = this,
-                    Converter = new SelectedFrameKeyToBackgroundConverter(),
-                    ConverterParameter = frame.Key
-                };
-
-                BindingOperations.SetBinding(framePanel, StackPanel.BackgroundProperty, binding);
-
-                // Текстове поле для часу кадру
-                var timeTextBox = new TextBox
-                {
-                    Width = 50,
-                    Text = frame.Key.ToString()
-                };
-
-                var previousTime = frame.Key;
-
-                timeTextBox.PreviewTextInput += (s, e) =>
-                {
-                    if (double.TryParse(timeTextBox.Text, out var newTime) && newTime != previousTime) {
-                        timeTextBox.Background = Brushes.Gray;
-                    } else
-                    {
-                        timeTextBox.Background = Brushes.White;
-                    }
-                };
-
-                timeTextBox.PreviewKeyDown += (s, e) =>
-                {
-                    if (e.Key == Key.Enter)
-                    {
-                        if (double.TryParse(timeTextBox.Text, out var newTime) && !AnimationFrames.ContainsKey(newTime))
-                        {
-                            var points = AnimationFrames[frame.Key];
-                            AnimationFrames.Remove(frame.Key);
-                            AnimationFrames[newTime] = points;
-
-                            if (SelectedFrameKey == previousTime) SelectedFrameKey = newTime;
-                            previousTime = newTime;
-
-                            UpdateFramesPanel(framesPanel);
-
-                            timeTextBox.BorderBrush = SystemColors.ControlDarkBrush;
-                        } else
-                        {
-                            timeTextBox.Background = Brushes.IndianRed;
-                        }
-                    }
-                    else if (e.Key == Key.Escape) // Optional: Revert on Escape
-                    {
-                        timeTextBox.Text = previousTime.ToString();
-                        timeTextBox.BorderBrush = SystemColors.ControlDarkBrush;
-                    }
-                };
-
-
-                var switchButton = WpfHelper.CreateButton(
-                    clickAction: () =>
-                    {
-                        SelectFrame(frame.Key);
-                    },
-                    content: "Switch To"
-                );
-
-
-                framePanel.Children.Add(timeTextBox);
-                framePanel.Children.Add(switchButton);
-                framesPanel.Children.Add(framePanel);
-            }
         }
 
         protected void SelectFrame(double key)
@@ -452,6 +346,23 @@ namespace Modeling_Canvas.UIElements
 
             AnimationFrames[newKey] = newFrame;
             SelectFrame(newKey);
+        }
+
+        private void RemoveFrame(double key)
+        {
+            if (AnimationFrames.Count > 1 && AnimationFrames.TryGetValue(key, out var frame)) {
+
+                var keys = AnimationFrames.Select(f => f.Key).Order().ToList();
+                var nextKeyIndex = keys.IndexOf(key);
+                keys.Remove(key);
+
+                if (nextKeyIndex > keys.Count - 1) nextKeyIndex--;
+                var nextKey = keys[nextKeyIndex];
+
+                AnimationFrames.Remove(key);
+
+                SelectFrame(nextKey);
+            }
         }
 
         public class SelectedFrameKeyToBackgroundConverter : IValueConverter
