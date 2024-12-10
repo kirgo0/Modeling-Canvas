@@ -12,6 +12,7 @@ namespace Modeling_Canvas.Models
         public double StrokeThickness { get; set; }
         public bool HasAnchorPoint { get; set; }
         public Point? AnchorPointPosition { get; set; }
+        public Dictionary<double, List<BezierPointFrameModel>> AnimationFrames { get; set; }
     }
 
 

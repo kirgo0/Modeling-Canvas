@@ -99,7 +99,6 @@ namespace Modeling_Canvas.UIElements
             };
         }
 
-
         public override void MoveElement(Vector offset)
         {
             ControlPrevPoint.MoveElement(offset);

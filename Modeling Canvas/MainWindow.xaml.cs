@@ -21,10 +21,10 @@ namespace Modeling_Canvas
             PointExtensions.Canvas = MainCanvas;
             CenterWindowOnScreen();
 
-            //InitFigure();
-            //var a = new Hypocycloid(MyCanvas, 4, 1);
-            //MyCanvas.Children.Add(a);
-            //a.Center = new Point(5, 5);
+            InitFigure();
+            var a = new Hypocycloid(MainCanvas, 4, 1);
+            MainCanvas.Children.Add(a);
+            a.Center = new Point(5, 5);
 
             //var b = new SegmentedCircle(MyCanvas);
             //MyCanvas.Children.Add(b);
@@ -32,19 +32,19 @@ namespace Modeling_Canvas
             //var c = new CustomCircle(MyCanvas);
             //MyCanvas.Children.Add(c);
 
-            var d = new BezierCurve(MainCanvas);
+            //var d = new BezierCurve(MainCanvas);
 
-            d.AddPoint(2, 3);
-            d.AddPoint(3, 3);
-            MainCanvas.Children.Add(d);
+            //d.AddPoint(2, 3);
+            //d.AddPoint(3, 3);
+            //MainCanvas.Children.Add(d);
 
-            var ball = new BezierCurve(MainCanvas);
+            //var ball = new BezierCurve(MainCanvas);
 
-            ball.AddPoint(2, 3);
-            ball.AddPoint(1, 1);
-            ball.AddPoint(-2, 3);
-            ball.AddPoint(3, -4);
-            MainCanvas.Children.Add(ball);
+            //ball.AddPoint(2, 3);
+            //ball.AddPoint(1, 1);
+            //ball.AddPoint(-2, 3);
+            //ball.AddPoint(3, -4);
+            //MainCanvas.Children.Add(ball);
 
             PreviewKeyDown += MainCanvas.OnKeyDown;
             PreviewKeyUp += MainCanvas.OnKeyUp;
@@ -143,8 +143,8 @@ namespace Modeling_Canvas
         {
             if (DefaultTab.IsSelected) MainCanvas.RenderMode = Modeling_Canvas.Enums.RenderMode.Default;
             else if (AffineTab.IsSelected) MainCanvas.RenderMode = Enums.RenderMode.Affine;
-            else if (ProjectiveTab.IsSelected) MainCanvas.RenderMode = Enums.RenderMode.Projective;
-            else if (ProjectiveTabV2.IsSelected) MainCanvas.RenderMode = Enums.RenderMode.ProjectiveV2;
+            else if (ProjectiveTab.IsSelected) MainCanvas.RenderMode = Enums.RenderMode.ProjectiveV2;
+            else if (ProjectiveTabV2.IsSelected) MainCanvas.RenderMode = Enums.RenderMode.Projective;
 
         }
 

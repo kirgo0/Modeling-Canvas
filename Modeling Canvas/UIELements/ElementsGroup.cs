@@ -109,6 +109,7 @@ namespace Modeling_Canvas.UIElements
         protected override void OnElementSelected(MouseButtonEventArgs e)
         {
             RenderControlPanel();
+            Canvas.SelectElement(this);
             e.Handled = true;
         }
 

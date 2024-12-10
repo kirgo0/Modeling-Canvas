@@ -16,7 +16,7 @@ namespace Modeling_Canvas.UIElements
 
         public Dictionary<double, List<BezierPointFrameModel>> AnimationFrames { get; set; } = new();
 
-        private int _curvePrecision = 100;
+        private int _curvePrecision = 30;
 
         private double _selectedFrameKey = 0;
 

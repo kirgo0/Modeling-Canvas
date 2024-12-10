@@ -1,9 +1,7 @@
 ﻿using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
 using Modeling_Canvas.UIElements.Abstract;
-using Modeling_Canvas.UIElements.Interfaces;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace Modeling_Canvas.UIElements

@@ -34,15 +34,24 @@ namespace Modeling_Canvas.UIElements
             }
         }
         public CustomCircle LargeCircle { get; set; }
+
         public CustomCircle SmallCircle { get; set; }
+
         public CustomPoint EndPoint { get; set; }
+
         public HypocycloidModel Model { get; set; }
+
         public HypocycloidModel AnimationModel { get; set; }
+
         public HypocycloidCalculationsModel CalculatedValues { get; set; }
+
         public double MinAnimationDuration { get; } = 0.3;
+
         public double MaxAnimationDuration { get; } = 10;
 
+
         private double _animationDuration = 3;
+
         public double AnimationDuration {
 
             get => _animationDuration;
@@ -92,6 +101,7 @@ namespace Modeling_Canvas.UIElements
             get => LargeCircle.Center;
             set => LargeCircle.Center = value;
         }
+
         public Hypocycloid(CustomCanvas canvas, double largeRadius, double smallRadius, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
             Model = new();

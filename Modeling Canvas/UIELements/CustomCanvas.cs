@@ -3,60 +3,62 @@ using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
 using System.ComponentModel;
-using System.Diagnostics.Tracing;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Threading;
 
 namespace Modeling_Canvas.UIElements
 {
     public class CustomCanvas : Canvas, INotifyPropertyChanged
     {
-        public double XOffset { get; set; } = 0;
-        public double YOffset { get; set; } = 0;
+        private Point previousMousePosition;
 
-        public RenderMode _renderMode = RenderMode.Default;
-        public RenderMode RenderMode
-        {
-            get => _renderMode;
-            set
-            {
-                _renderMode = value;
-                InvalidateVisual();
-            }
-        }
-        public int RotationPrecision { get; set; } = 4;
+        private bool _allowInfinityRender = false;
+
         private AffineModel _affineParams = new AffineModel();
-        public AffineModel AffineParams
-        {
-            get => _affineParams;
-            set { _affineParams = value; OnPropertyChanged(nameof(AffineParams)); }
-        }
 
         private ProjectiveModel _projectiveParams = new ProjectiveModel();
-        public ProjectiveModel ProjectiveParams
-        {
-            get => _projectiveParams;
-            set { _projectiveParams = value; OnPropertyChanged(nameof(ProjectiveParams)); }
-        }
+        
+        private RenderMode _renderMode = RenderMode.Default;
+        
+        public double XOffset { get; set; } = 0;
+
+        public double YOffset { get; set; } = 0;
+
+        public HashSet<Element> SelectedElements { get; set; } = new();
+
+        public int RotationPrecision { get; set; } = 4;
 
         public ICommand InvalidateCanvasCommand { get; }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        public AffineModel AffineParams
+        {
+            get => _affineParams;
+            set { 
+                _affineParams = value;
+                OnPropertyChanged(nameof(AffineParams));
+            }
+        }
+
+        public ProjectiveModel ProjectiveParams
+        {
+            get => _projectiveParams;
+            set { 
+                _projectiveParams = value; 
+                OnPropertyChanged(nameof(ProjectiveParams));
+            }
+        }
 
         public double UnitSize
         {
             get => (double)GetValue(UnitSizeProperty);
-            set => SetValue(UnitSizeProperty, value);
+            set {
+                CanvasGridChanged?.Invoke(this, new EventArgs());
+                SetValue(UnitSizeProperty, value);
+            }
         }
-
-        public static readonly DependencyProperty UnitSizeProperty =
-            DependencyProperty.Register(nameof(UnitSize), typeof(double), typeof(CustomCanvas),
-                new FrameworkPropertyMetadata(20.0, FrameworkPropertyMetadataOptions.AffectsRender));
 
         public double GridFrequency
         {
@@ -64,17 +66,8 @@ namespace Modeling_Canvas.UIElements
             set => SetValue(GridFrequencyProperty, value);
         }
 
-        public static readonly DependencyProperty GridFrequencyProperty =
-            DependencyProperty.Register(nameof(GridFrequency), typeof(double), typeof(CustomCanvas),
-                new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.AffectsRender));
-
-        public HashSet<Element> SelectedElements { get; set; } = new();
-
-        private Point previousMousePosition;
-
-        public bool _allowInfinityRender = false;
-
-        public bool AllowInfinityRender {
+        public bool AllowInfinityRender
+        {
             get => _allowInfinityRender;
             set
             {
@@ -86,7 +79,32 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        private DispatcherTimer timer;
+        public RenderMode RenderMode
+        {
+            get => _renderMode;
+            set
+            {
+                _renderMode = value;
+                CanvasGridChanged?.Invoke(this, new EventArgs());
+                InvalidateVisual();
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public event EventHandler CanvasGridChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+
+        public static readonly DependencyProperty UnitSizeProperty =
+            DependencyProperty.Register(nameof(UnitSize), typeof(double), typeof(CustomCanvas),
+                new FrameworkPropertyMetadata(20.0, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        public static readonly DependencyProperty GridFrequencyProperty =
+            DependencyProperty.Register(nameof(GridFrequency), typeof(double), typeof(CustomCanvas),
+                new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.AffectsRender));
+
         public CustomCanvas()
         {
             InvalidateCanvasCommand = new RelayCommand(_ =>
@@ -94,6 +112,15 @@ namespace Modeling_Canvas.UIElements
                 Keyboard.Focus(this);
                 InvalidateVisual();
             });
+            AffineParams.PropertyChanged += (s, e) => CanvasGridChanged?.Invoke(this, new EventArgs());
+            ProjectiveParams.PropertyChanged += (s, e) => CanvasGridChanged?.Invoke(this, new EventArgs());
+        }
+
+        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+        {
+            CanvasGridChanged?.Invoke(this, new EventArgs());
+            base.OnRenderSizeChanged(sizeInfo);
+            InvalidateVisual();
         }
 
         protected override void OnRender(DrawingContext dc)
@@ -169,8 +196,6 @@ namespace Modeling_Canvas.UIElements
                     var point = element.GetOriginPoint(arrangeSize);
                     element.Arrange(new Rect(point, element.DesiredSize));
                     element.InvalidateVisual();
-                    element.InvalidateMeasure();
-                    element.InvalidateArrange();
                 }
             }
 
@@ -467,6 +492,7 @@ namespace Modeling_Canvas.UIElements
 
                 previousMousePosition = currentMousePosition;
 
+                CanvasGridChanged?.Invoke(this, new EventArgs());
                 // Redraw canvas
                 InvalidateVisual();
             }
@@ -505,9 +531,10 @@ namespace Modeling_Canvas.UIElements
                 if (e.Delta != 0)
                 {
                     // Adjust UnitSize based on delta multiplier
-                    UnitSize += Math.Round(e.Delta * deltaMultiplier, 4);
-                    if (UnitSize < 0.1) UnitSize = 0.1;
-                    if (UnitSize > 5) UnitSize = Math.Round(UnitSize);
+                    var calculatedSize = UnitSize + Math.Round(e.Delta * deltaMultiplier, 4);
+                    if (calculatedSize < 0.1) calculatedSize = 0.1;
+                    if (calculatedSize > 5) calculatedSize = Math.Round(calculatedSize);
+                    UnitSize = calculatedSize;
                 }
                 UpdateMouseLabel();
             }
@@ -534,8 +561,11 @@ namespace Modeling_Canvas.UIElements
         {
             XOffset = 0;
             YOffset = 0;
+
+            CanvasGridChanged?.Invoke(this, new EventArgs());
             InvalidateVisual();
         }
+
         public void ResetScaling()
         {
             UnitSize = 40;

@@ -284,6 +284,7 @@ namespace Modeling_Canvas.UIElements.Abstract
             }
             base.MoveElement(offset);
         }
+
         public override void RotateElement(Point anchorPoint, double degrees)
         {
             foreach (var point in Points)
@@ -291,6 +292,7 @@ namespace Modeling_Canvas.UIElements.Abstract
                 point.RotateElement(anchorPoint, degrees);
             }
         }
+
         public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
         {
             foreach (var point in Points)

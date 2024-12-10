@@ -389,6 +389,7 @@ namespace Modeling_Canvas.UIElements
             else
             {
                 Mouse.OverrideCursor = null;
+                return;
             }
             InvalidateCanvas();
         }
@@ -396,7 +397,10 @@ namespace Modeling_Canvas.UIElements
         protected virtual void OnElementSelected(MouseButtonEventArgs e)
         {
             RenderControlPanel();
-            if (!InputManager.ShiftPressed && !Canvas.SelectedElements.Contains(this) && !Canvas.SelectedElements.Contains(LogicalParent))
+            if (
+                !InputManager.ShiftPressed && 
+                !Canvas.SelectedElements.Contains(this) && 
+                !Canvas.SelectedElements.Contains(LogicalParent))
             {
                 Canvas.ClearSelection();
             }

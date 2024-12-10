@@ -6,7 +6,7 @@ namespace Modeling_Canvas.UIElements
     {
         protected virtual void AddPointControls()
         {
-            var positionPosition = 
+            var positionPosition =
                 WpfHelper.CreateDefaultPointControls(
                     "Point",
                     this,

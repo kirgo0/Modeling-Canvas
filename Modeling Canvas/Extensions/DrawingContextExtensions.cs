@@ -14,7 +14,7 @@ namespace Modeling_Canvas.Extensions
             dc.DrawLine(new Pen(Brushes.Transparent, pen.Thickness + transparentThickness), p1, p2);
         }
 
-        public static void DrawCircle(this DrawingContext dc, CustomCanvas canvas, Brush fill, Pen strokePen, Point center, double radius, int precision,
+        public static StreamGeometry DrawCircle(this DrawingContext dc, CustomCanvas canvas, Brush fill, Pen strokePen, Point center, double radius, int precision,
             double transparentThickness = 0, bool applyShapeTransform = true)
         {
             var geometry = new StreamGeometry();
@@ -56,9 +56,10 @@ namespace Modeling_Canvas.Extensions
             geometry.Freeze(); // Freeze for performance
             dc.DrawGeometry(fill, strokePen, geometry);
             dc.DrawGeometry(null, new Pen(Brushes.Transparent, transparentThickness), geometry);
+            return geometry;
         }
 
-        public static void DrawAnchorPoint(this DrawingContext dc, CustomCanvas canvas, Brush fill, Pen strokePen, Point center, double radius, int precision, double lineLength, bool applyShapeTransform = true)
+        public static StreamGeometry DrawAnchorPoint(this DrawingContext dc, CustomCanvas canvas, Brush fill, Pen strokePen, Point center, double radius, int precision, double lineLength, bool applyShapeTransform = true)
         {
             var geometry = new StreamGeometry();
 
@@ -121,9 +122,10 @@ namespace Modeling_Canvas.Extensions
 
             geometry.Freeze(); // Freeze for performance
             dc.DrawGeometry(fill, strokePen, geometry);
+            return geometry;
         }
 
-        public static void DrawSquare(this DrawingContext dc, CustomCanvas canvas, Brush fill, Pen strokePen, Point center, double sideLength, bool applyTransform = true)
+        public static StreamGeometry DrawSquare(this DrawingContext dc, CustomCanvas canvas, Brush fill, Pen strokePen, Point center, double sideLength, bool applyTransform = true)
         {
             var geometry = new StreamGeometry();
 
@@ -159,6 +161,7 @@ namespace Modeling_Canvas.Extensions
 
             geometry.Freeze(); // Freeze for performance
             dc.DrawGeometry(fill, strokePen, geometry);
+            return geometry;
         }
 
         public static void DrawCircleWithArcs(
