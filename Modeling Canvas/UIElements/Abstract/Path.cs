@@ -1,20 +1,20 @@
 ﻿using Modeling_Canvas.Extensions;
 using Modeling_Canvas.UIElements.Interfaces;
 using System.Windows;
-using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
-using Xceed.Wpf.AvalonDock.Converters;
 
-namespace Modeling_Canvas.UIElements
+namespace Modeling_Canvas.UIElements.Abstract
 {
-    public class Path<T> : GroupableElement where T : GroupableElement, IPoint
+    public abstract class Path<T> : GroupableElement where T : GroupableElement, IPoint
     {
         public int PointsRadius { get; set; } = 5;
 
         public List<T> Points { get; set; } = new();
 
         public bool _isClosed = true;
-        public bool IsClosed {
+        public bool IsClosed
+        {
             get => _isClosed;
             set
             {
@@ -27,7 +27,43 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        public T? SelectedPoint { get; set; }
+        public override Visibility ControlsVisibility { 
+            get => base.ControlsVisibility; 
+            set {
+                if (value is Visibility.Hidden) SelectedPoint = null;
+                base.ControlsVisibility = value; 
+            } 
+        }
+
+        private T? _selectedPoint;
+
+        public T? SelectedPoint 
+        { 
+            get => _selectedPoint;
+            set 
+            {
+                if (_selectedPoint != value)
+                {
+                    _selectedPoint = value;
+                    EnableRemovePointButton = value is not null;
+                }
+            } 
+        }
+
+        private bool _enableRemovePointButton;
+
+        public bool EnableRemovePointButton
+        {
+            get => _enableRemovePointButton;
+            set 
+            { 
+                if(_enableRemovePointButton != value)
+                {
+                    _enableRemovePointButton = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public Path(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
@@ -76,7 +112,13 @@ namespace Modeling_Canvas.UIElements
                 WpfHelper.CreateButton(
                     () =>
                     {
-                        AddPoint(GetAnchorDefaultPosition());
+                        if(SelectedPoint is null)
+                        {
+                            AddPoint(GetAnchorDefaultPosition());
+                        } else
+                        {
+                            InsertPointAt(Points.IndexOf(SelectedPoint));
+                        }
                     },
                     "Add point"
                 );
@@ -87,10 +129,16 @@ namespace Modeling_Canvas.UIElements
                 WpfHelper.CreateButton(
                     () =>
                     {
-                        //RemovePoint();
+                        RemovePoint(SelectedPoint);
+                        SelectedPoint = null;
                         RenderControlPanel();
                     },
                     "Remove point"
+                );
+
+            removePointbutton.AddIsDisabledBinding(
+                this,
+                nameof(EnableRemovePointButton)
                 );
 
             _uiControls.Add("Remove Point", removePointbutton);
@@ -117,7 +165,7 @@ namespace Modeling_Canvas.UIElements
         }
 
         public override Point GetTopLeftPosition() => new Point(Points.Min(x => x.Position.X) - PointsRadius / UnitSize, Points.Max(y => y.Position.Y) + PointsRadius / UnitSize);
-        
+
         public override Point GetBottomRightPosition() => new Point(Points.Max(x => x.Position.X) + PointsRadius / UnitSize, Points.Min(y => y.Position.Y) - PointsRadius / UnitSize);
 
         // helper add method
@@ -135,6 +183,10 @@ namespace Modeling_Canvas.UIElements
 
             customPoint.Position = point;
 
+            customPoint.MouseLeftButtonDownAction = (e) =>
+            {
+                SelectedPoint = customPoint;
+            };
             return customPoint;
         }
 
@@ -146,9 +198,10 @@ namespace Modeling_Canvas.UIElements
 
             AddChildren(customPoint);
         }
+
         public virtual void RemovePoint(T point)
         {
-            if (Points.Contains(point))
+            if (point is not null && Points.Contains(point))
             {
                 Points.Remove(point);
                 Canvas.Children.Remove(point);
@@ -218,6 +271,12 @@ namespace Modeling_Canvas.UIElements
             {
                 point.ScaleElement(anchorPoint, scaleVector, ScaleFactor);
             }
+        }
+
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            SelectedPoint = null;
+            base.OnMouseLeftButtonDown(e);
         }
 
         public override string ToString()

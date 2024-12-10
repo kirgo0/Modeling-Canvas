@@ -1,4 +1,5 @@
-﻿using Modeling_Canvas.UIElements.Interfaces;
+﻿using Modeling_Canvas.UIElements.Abstract;
+using Modeling_Canvas.UIElements.Interfaces;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -20,7 +21,7 @@ namespace Modeling_Canvas.UIElements
 
         private Point _bottomRightPosition = new Point(0, 0);
 
-        //public override Visibility ControlsVisibility => AnyItemIsSelected ? Visibility.Visible : Visibility.Hidden;
+        public override Visibility ControlsVisibility => AnyItemIsSelected ? Visibility.Visible : Visibility.Hidden;
 
         public Pen DashedPen
         {

@@ -18,6 +18,7 @@ namespace Modeling_Canvas
         {
             RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.Default;
             InitializeComponent();
+            PointExtensions.Canvas = MyCanvas;
             CenterWindowOnScreen();
 
             //InitFigure();
@@ -28,9 +29,6 @@ namespace Modeling_Canvas
             //var b = new SegmentedCircle(MyCanvas);
             //MyCanvas.Children.Add(b);
 
-            //var a = new CustomLine(MyCanvas, new Point(0, 2), new Point(2, 7));
-            //MyCanvas.Children.Add(a);
-
             //var c = new CustomCircle(MyCanvas);
             //MyCanvas.Children.Add(c);
 
@@ -40,11 +38,18 @@ namespace Modeling_Canvas
             d.AddPoint(1, 1);
             d.AddPoint(-2, 3);
             d.AddPoint(3, -4);
-
             MyCanvas.Children.Add(d);
 
+            var ball = new BezierCurve(MyCanvas);
 
-            PointExtensions.Canvas = MyCanvas;
+            ball.AddPoint(2, 3);
+            ball.AddPoint(1, 1);
+            ball.AddPoint(-2, 3);
+            ball.AddPoint(3, -4);
+
+            MyCanvas.Children.Add(ball);
+
+
 
             PreviewKeyDown += MyCanvas.OnKeyDown;
             PreviewKeyUp += MyCanvas.OnKeyUp;

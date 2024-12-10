@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Input;
 
 namespace Modeling_Canvas.UIElements.Interfaces
 {
@@ -9,5 +10,6 @@ namespace Modeling_Canvas.UIElements.Interfaces
         public double X { get; }
         public double Y { get; }
         public Point PixelPosition { get; }
+        public Action<MouseButtonEventArgs> MouseLeftButtonDownAction { get; set; }
     }
 }

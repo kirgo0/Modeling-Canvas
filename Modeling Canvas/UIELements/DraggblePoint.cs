@@ -66,15 +66,6 @@ namespace Modeling_Canvas.UIElements
             Position = Position.ScalePoint(anchorPoint, scaleVector);
         }
 
-        public Action<MouseButtonEventArgs> MouseLeftButtonDownAction { get; set; }
-
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
-        {
-            MouseLeftButtonDownAction?.Invoke(e);
-            e.Handled = true;
-            base.OnMouseLeftButtonDown(e);
-        }
-
         public Action<DraggablePoint>? OnRenderControlPanel { get; set; }
 
         public Func<DraggablePoint, string>? OverrideToStringAction;

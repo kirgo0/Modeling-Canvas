@@ -1,7 +1,9 @@
 ﻿using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
+using Modeling_Canvas.UIElements.Abstract;
 using Modeling_Canvas.UIElements.Interfaces;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Modeling_Canvas.UIElements
@@ -35,6 +37,8 @@ namespace Modeling_Canvas.UIElements
             get => new Point(Canvas.ActualWidth / 2 + Position.X * UnitSize, Canvas.ActualHeight / 2 - Position.Y * UnitSize).AddCanvasOffsets();
         }
 
+        public Action<MouseButtonEventArgs> MouseLeftButtonDownAction { get; set; }
+
         public CustomPoint(CustomCanvas canvas, bool hasAnchorPoint = false) : base(canvas, hasAnchorPoint)
         {
             Fill = Brushes.Black;
@@ -65,7 +69,14 @@ namespace Modeling_Canvas.UIElements
         public override Point GetTopLeftPosition() => new Point(Position.X + Radius / UnitSize, Position.Y + Radius / UnitSize);
         
         public override Point GetBottomRightPosition() =>  new Point(Position.X - Radius / UnitSize, Position.Y - Radius / UnitSize);
-        
+
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            MouseLeftButtonDownAction?.Invoke(e);
+            e.Handled = true;
+            base.OnMouseLeftButtonDown(e);
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             return new Size(Radius, Radius);

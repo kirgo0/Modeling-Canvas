@@ -1,5 +1,6 @@
 ﻿using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
+using Modeling_Canvas.UIElements.Abstract;
 using Modeling_Canvas.UIElements.Interfaces;
 using System.Windows;
 using System.Windows.Controls;
@@ -72,7 +73,6 @@ namespace Modeling_Canvas.UIElements
                 OverrideMoveAction = RadiusPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
                 IsSelectable = false
-                //OverrideRenderControlPanelAction = true
             };
             AddChildren(RadiusPoint);
 
@@ -80,7 +80,6 @@ namespace Modeling_Canvas.UIElements
             {
                 Radius = 3,
                 OverrideMoveAction = CenterPointMoveAction,
-                //OverrideRenderControlPanelAction = true,
                 Position = new Point(0, 0),
                 IsSelectable = false
             };

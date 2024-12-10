@@ -1,9 +1,12 @@
 ﻿using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
+using System;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Xml.Linq;
 
 
 namespace Modeling_Canvas.UIElements
@@ -162,12 +165,26 @@ namespace Modeling_Canvas.UIElements
                 StrokeThickness = 0,
                 Fill = Brushes.Red,
                 Radius = 5
-            }; 
+            };
 
-            Canvas.Children.Add(SmallCircle);
-            Canvas.Children.Add(LargeCircle);
-            Canvas.Children.Add(EndPoint);
+            LargeCircle.Visibility = ControlsVisibility;
+            SmallCircle.Visibility = ControlsVisibility;
+            EndPoint.Visibility = ControlsVisibility;
 
+            PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName.Equals(nameof(ControlsVisibility)))
+                {
+                    LargeCircle.Visibility = ControlsVisibility;
+                    SmallCircle.Visibility = ControlsVisibility;
+                    EndPoint.Visibility = ControlsVisibility;
+                }
+            };
+            var index = Panel.GetZIndex(this) - 1;
+            if (index < 0) index = 0;
+            AddChildren(SmallCircle, index);
+            AddChildren(LargeCircle, index);
+            AddChildren(EndPoint, index);
             base.InitChildren();
         }
 
@@ -269,9 +286,6 @@ namespace Modeling_Canvas.UIElements
             LargeCircle.Center = Center;
             SmallCircle.Center = GetSmallCircleCenter(Model.Angle + Model.RotationAngle);
 
-            LargeCircle.Visibility = ControlsVisibility;
-            SmallCircle.Visibility = ControlsVisibility;
-            EndPoint.Visibility = ControlsVisibility;
 
             LargeCircle.ControlsVisible = ControlsVisibility is Visibility.Visible;
             SmallCircle.ControlsVisible = ControlsVisibility is Visibility.Visible;

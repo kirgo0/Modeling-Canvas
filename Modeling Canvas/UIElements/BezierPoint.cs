@@ -50,6 +50,7 @@ namespace Modeling_Canvas.UIElements
                 IsSelectable = false
             };
             AddChildren(ControlPrevPoint, 9999);
+            ControlPrevPoint.Position = new Point(Position.X - 0.5, Position.Y + 1);
 
             ControlNextPoint = new DraggablePoint(Canvas, false)
             {
@@ -61,6 +62,7 @@ namespace Modeling_Canvas.UIElements
                 IsSelectable = false
             };
             AddChildren(ControlNextPoint, 9999);
+            ControlNextPoint.Position = new Point(Position.X + 0.5, Position.Y + 1);
 
             base.InitChildren();
 

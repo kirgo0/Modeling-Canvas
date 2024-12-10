@@ -108,9 +108,7 @@ namespace Modeling_Canvas.UIElements
 
         private Visibility _controlsVisibility = Visibility.Hidden; 
 
-        //public virtual Visibility ControlsVisibility { get => Canvas.SelectedElements.Contains(this) || ControlsVisible ? Visibility.Visible : Visibility.Hidden; }
-
-        public Visibility ControlsVisibility {
+        public virtual Visibility ControlsVisibility {
             get => ControlsVisible ? _controlsVisibility : Visibility.Hidden; 
             set
             {

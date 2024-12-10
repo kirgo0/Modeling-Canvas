@@ -1,9 +1,8 @@
-﻿
-using Modeling_Canvas.UIElements.Interfaces;
+﻿using Modeling_Canvas.UIElements.Interfaces;
 using System.Windows;
 using System.Windows.Media;
 
-namespace Modeling_Canvas.UIElements
+namespace Modeling_Canvas.UIElements.Abstract
 {
     public abstract class GroupableElement : Element, IGroupable
     {

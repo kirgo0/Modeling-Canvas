@@ -1,13 +1,14 @@
 ﻿using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
-using System.Diagnostics;
+using Modeling_Canvas.UIElements.Abstract;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Modeling_Canvas.UIElements
 {
@@ -33,15 +34,15 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        private double _animationDuration = 3;
-        public double AnimationDuration
+        private bool _isNotAnimating = true;
+        public bool IsNotAnimating
         {
-            get => _animationDuration;
+            get => _isNotAnimating;
             set
             {
-                if (_animationDuration != value)
+                if (_isNotAnimating != value)
                 {
-                    _animationDuration = value;
+                    _isNotAnimating = value;
                     OnPropertyChanged();
                 }
             }
@@ -81,7 +82,7 @@ namespace Modeling_Canvas.UIElements
             base.OnInitialized(e);
         }
 
-        protected override void InitChildren()
+        protected override void InitControlPanel()
         {
             var mainPanel = WpfHelper.CreateDefaultPanel();
 
@@ -110,6 +111,17 @@ namespace Modeling_Canvas.UIElements
 
             _uiControls.Add("AnimationFrames", mainPanel);
 
+            var startAnimationButton =
+                WpfHelper.CreateButton(
+                    content: "Animate",
+                    clickAction: () =>
+                    {
+                        Animate();
+                    }
+                );
+
+            _uiControls.Add("StartAnimation", startAnimationButton);
+
             var precisionSlider =
                 WpfHelper.CreateSliderControl(
                     "Precision",
@@ -122,14 +134,13 @@ namespace Modeling_Canvas.UIElements
 
             _uiControls.Add("Presicion", precisionSlider);
 
-            base.InitChildren();
+            base.InitControlPanel();
         }
 
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
 
-            var a = AnimationFrames;
             foreach (var point in Points)
             {
                 point.Shape = PointShape.Circle;
@@ -173,6 +184,101 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
+        private void Animate()
+        {
+            if (AnimationFrames.Count < 2)
+            {
+                throw new InvalidOperationException("At least two frames are required for animation.");
+            }
+
+            // Отримуємо список ключів (часів кадрів) у відсортованому порядку
+            var sortedFrameKeys = AnimationFrames.Keys.OrderBy(key => key).ToList();
+
+            int currentFrameIndex = 0;
+            var startTime = DateTime.Now;
+
+            SelectFrame(sortedFrameKeys.First());
+
+            // Налаштування таймера для анімації
+            var timer = new DispatcherTimer(TimeSpan.FromMilliseconds(16), DispatcherPriority.Render, (s, e) =>
+            {
+                if (currentFrameIndex >= sortedFrameKeys.Count - 1)
+                {
+                    ((DispatcherTimer)s).Stop();
+                    SelectedFrameKey = sortedFrameKeys.Last();
+                    return;
+                }
+
+                // Поточний і наступний ключ кадру
+                double startFrameKey = sortedFrameKeys[currentFrameIndex];
+                double endFrameKey = sortedFrameKeys[currentFrameIndex + 1];
+
+                // Визначення тривалості переходу між кадрами
+                var transitionDuration = TimeSpan.FromSeconds(endFrameKey - startFrameKey);
+
+                var startPoints = AnimationFrames[startFrameKey];
+                var endPoints = AnimationFrames[endFrameKey];
+
+                // Динамічне вирівнювання кількості точок
+                if (endPoints.Count > Points.Count)
+                {
+                    // Додати нові точки
+                    for (var i = Points.Count; i < endPoints.Count; i++)
+                    {
+                        AddPoint(endPoints[i].Position);
+                    }
+                }
+                else if (endPoints.Count < Points.Count)
+                {
+                    // Видалити зайві точки
+                    for (var i = Points.Count - 1; i >= endPoints.Count; i--)
+                    {
+                        RemovePoint(Points[i]);
+                    }
+                }
+
+                var elapsedTime = DateTime.Now - startTime;
+                var progress = Math.Min(1.0, elapsedTime.TotalMilliseconds / transitionDuration.TotalMilliseconds);
+
+                SelectedFrameKey = startFrameKey;
+                // Інтерполяція точок
+                for (int i = 0; i < Points.Count; i++)
+                {
+                    var startPosition = i < startPoints.Count ? startPoints[i].Position : endPoints[i].Position;
+                    var endPosition = i < endPoints.Count ? endPoints[i].Position : startPoints[i].Position;
+
+                    Points[i].Position = Lerp(startPosition, endPosition, progress);
+
+                    // Контрольні точки (якщо є)
+                    if (i < startPoints.Count && i < endPoints.Count)
+                    {
+                        Points[i].ControlNextPoint.Position = Lerp(startPoints[i].ControlNextPosition, endPoints[i].ControlNextPosition, progress);
+                        Points[i].ControlPrevPoint.Position = Lerp(startPoints[i].ControlPrevPosition, endPoints[i].ControlPrevPosition, progress);
+                    }
+                }
+
+                InvalidateCanvas();
+
+                if (progress >= 1.0)
+                {
+                    // Перехід на наступний кадр
+                    currentFrameIndex++;
+                    startTime = DateTime.Now;
+                }
+            }, Dispatcher.CurrentDispatcher);
+
+            timer.Start();
+        }
+
+
+        private static Point Lerp(Point start, Point end, double t)
+        {
+            return new Point(
+                start.X + (end.X - start.X) * t,
+                start.Y + (end.Y - start.Y) * t
+            );
+        }
+
         protected override BezierPoint OnPointInit(Point point)
         {
             var customPoint = base.OnPointInit(point);
@@ -181,6 +287,7 @@ namespace Modeling_Canvas.UIElements
             customPoint.Radius = PointsRadius;
             customPoint.IsSelectable = false;
             customPoint.ControlsVisibility = ControlsVisibility;
+            customPoint.Visibility = ControlsVisibility;
 
             PropertyChanged += (s, e) => {
                 if (e.PropertyName.Equals(nameof(ControlsVisibility))) {
@@ -197,13 +304,6 @@ namespace Modeling_Canvas.UIElements
             Canvas.Children.Remove(point.ControlPrevPoint);
         }
 
-        private static Point Lerp(Point start, Point end, double t)
-        {
-            return new Point(
-                start.X + (end.X - start.X) * t,
-                start.Y + (end.Y - start.Y) * t
-            );
-        }
 
         private void UpdateFramesPanel(StackPanel framesPanel)
         {
@@ -278,43 +378,7 @@ namespace Modeling_Canvas.UIElements
                 var switchButton = WpfHelper.CreateButton(
                     clickAction: () =>
                     {
-                        if (AnimationFrames.TryGetValue(SelectedFrameKey, out var selectedFramePoints))
-                        {
-                            // Recreate the selected frame points to match the current list
-                            selectedFramePoints.Clear();
-                            selectedFramePoints.AddRange(Points.Select(p => p.GetFramePosition()));
-                        }
-
-                        if (AnimationFrames.TryGetValue(frame.Key, out var framePoints))
-                        {
-                            // Handle points count changes
-                            if (framePoints.Count > Points.Count)
-                            {
-                                // Add missing points
-                                for (var i = Points.Count; i < framePoints.Count; i++)
-                                {
-                                    AddPoint(framePoints[i].Position);
-                                }
-                            }
-                            else if (framePoints.Count < Points.Count)
-                            {
-                                // Remove extra points
-                                for (var i = Points.Count - 1; i >= framePoints.Count; i--)
-                                {
-                                    RemovePoint(Points[i]);
-                                }
-                            }
-
-                            // Update current points with frame points
-                            for (var i = 0; i < framePoints.Count; i++)
-                            {
-                                Points[i].LoadFramePosition(framePoints[i]);
-                            }
-
-                            SelectedFrameKey = frame.Key;
-                        }
-
-                        InvalidateCanvas();
+                        SelectFrame(frame.Key);
                     },
                     content: "Switch To"
                 );
@@ -324,6 +388,48 @@ namespace Modeling_Canvas.UIElements
                 framePanel.Children.Add(switchButton);
                 framesPanel.Children.Add(framePanel);
             }
+        }
+
+        protected void SelectFrame(double key)
+        {
+
+            if (AnimationFrames.TryGetValue(SelectedFrameKey, out var selectedFramePoints))
+            {
+                // Recreate the selected frame points to match the current list
+                selectedFramePoints.Clear();
+                selectedFramePoints.AddRange(Points.Select(p => p.GetFramePosition()));
+            }
+
+            if (AnimationFrames.TryGetValue(key, out var framePoints))
+            {
+                // Handle points count changes
+                if (framePoints.Count > Points.Count)
+                {
+                    // Add missing points
+                    for (var i = Points.Count; i < framePoints.Count; i++)
+                    {
+                        AddPoint(framePoints[i].Position);
+                    }
+                }
+                else if (framePoints.Count < Points.Count)
+                {
+                    // Remove extra points
+                    for (var i = Points.Count - 1; i >= framePoints.Count; i--)
+                    {
+                        RemovePoint(Points[i]);
+                    }
+                }
+
+                // Update current points with frame points
+                for (var i = 0; i < framePoints.Count; i++)
+                {
+                    Points[i].LoadFramePosition(framePoints[i]);
+                }
+
+                SelectedFrameKey = key;
+            }
+
+            InvalidateCanvas();
         }
 
         private void AddNewFrame()
@@ -345,6 +451,7 @@ namespace Modeling_Canvas.UIElements
             var newFrame = Points.Select(p => p.GetFramePosition()).ToList();
 
             AnimationFrames[newKey] = newFrame;
+            SelectFrame(newKey);
         }
 
         public class SelectedFrameKeyToBackgroundConverter : IValueConverter
