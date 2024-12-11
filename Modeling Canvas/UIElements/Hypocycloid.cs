@@ -22,6 +22,7 @@ namespace Modeling_Canvas.UIElements
                 {
                     _maxPointCount = value;
                     OnPropertyChanged();
+                    InvalidateCanvas();
                 }
             }
         }

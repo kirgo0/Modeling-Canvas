@@ -21,10 +21,10 @@ namespace Modeling_Canvas
             PointExtensions.Canvas = MainCanvas;
             CenterWindowOnScreen();
 
-            InitFigure();
-            var a = new Hypocycloid(MainCanvas, 4, 1);
-            MainCanvas.Children.Add(a);
-            a.Center = new Point(5, 5);
+            //InitFigure();
+            //var a = new Hypocycloid(MainCanvas, 4, 1);
+            //MainCanvas.Children.Add(a);
+            //a.Center = new Point(0, 0);
 
             //var b = new SegmentedCircle(MyCanvas);
             //MyCanvas.Children.Add(b);

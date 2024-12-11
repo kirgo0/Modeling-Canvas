@@ -7,7 +7,7 @@ namespace Modeling_Canvas.Models
     {
         private bool _showRadiusCurvature;
         private bool _showHypocycloidArea = true;
-        private bool _showInfelctionPoints = true;
+        private bool _showInfelctionPoints = false;
         private bool _showRingArea;
         private bool _showArcLength = true;
 
