@@ -3,6 +3,7 @@ using Modeling_Canvas.UIElements;
 using Newtonsoft.Json;
 using System.IO;
 using System.Windows.Media;
+using Xceed.Wpf.Toolkit.Media.Animation;
 
 public static class BezierCurveSerializer
 {
@@ -18,7 +19,8 @@ public static class BezierCurveSerializer
             Stroke = bezierCurve.Stroke?.ToString(),
             StrokeThickness = bezierCurve.StrokeThickness,
             HasAnchorPoint = bezierCurve.HasAnchorPoint,
-            AnchorPointPosition = bezierCurve.HasAnchorPoint ? bezierCurve.AnchorPoint?.Position : null
+            AnchorPointPosition = bezierCurve.HasAnchorPoint ? bezierCurve.AnchorPoint?.Position : null,
+            AnimationFrames = bezierCurve.AnimationFrames
         };
 
         var json = JsonConvert.SerializeObject(dto, Newtonsoft.Json.Formatting.Indented);
@@ -59,7 +61,16 @@ public static class BezierCurveSerializer
             bezierCurve.AnchorPoint.Position = dto.AnchorPointPosition.Value;
         }
 
+        // Десеріалізувати AnimationFrames
+        if (dto.AnimationFrames != null)
+        {
+            foreach (var frame in dto.AnimationFrames)
+            {
+                bezierCurve.InitFrame(frame.Key, frame.Value);
+            }
+            bezierCurve.UpdateFramesPanel();
+        }
+
         return bezierCurve;
     }
-
 }

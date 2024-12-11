@@ -284,7 +284,7 @@ namespace Modeling_Canvas.UIElements
             );
         }
 
-        protected void SelectFrame(double key)
+        public void SelectFrame(double key)
         {
 
             if (AnimationFrames.TryGetValue(SelectedFrameKey, out var selectedFramePoints))
@@ -326,7 +326,7 @@ namespace Modeling_Canvas.UIElements
             InvalidateCanvas();
         }
 
-        private void AddNewFrame()
+        public void AddNewFrame()
         {
             var sortedKeys = AnimationFrames.Keys.OrderBy(k => k).ToList();
 
@@ -348,7 +348,18 @@ namespace Modeling_Canvas.UIElements
             SelectFrame(newKey);
         }
 
-        private void RemoveFrame(double key)
+        public void InitFrame(double key, List<BezierPointFrameModel> points)
+        {
+            if (AnimationFrames.ContainsKey(key))
+            {
+                return;
+            }
+            AnimationFrames[key] = points;
+            SelectFrame(key);
+        }
+
+
+        public void RemoveFrame(double key)
         {
             if (AnimationFrames.Count > 1 && AnimationFrames.TryGetValue(key, out var frame)) {
 

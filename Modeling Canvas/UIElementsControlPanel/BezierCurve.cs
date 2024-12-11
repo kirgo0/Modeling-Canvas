@@ -16,7 +16,8 @@ namespace Modeling_Canvas.UIElements
 {
     public partial class BezierCurve
     {
-
+        private StackPanel _framesPanel;
+        
         protected override void InitControlPanel()
         {
             var mainPanel = WpfHelper.CreateDefaultPanel();
@@ -27,16 +28,16 @@ namespace Modeling_Canvas.UIElements
                 Height = 300
             };
 
-            var framesPanel = WpfHelper.CreateDefaultPanel(orientation: Orientation.Vertical);
-            scrollView.Content = framesPanel;
+            _framesPanel = WpfHelper.CreateDefaultPanel(orientation: Orientation.Vertical);
+            scrollView.Content = _framesPanel;
 
-            UpdateFramesPanel(framesPanel);
+            UpdateFramesPanel();
 
             var addFrameButton = WpfHelper.CreateButton(
                 clickAction: () =>
                 {
                     AddNewFrame();
-                    UpdateFramesPanel(framesPanel);
+                    UpdateFramesPanel();
                 },
                 content: "+"
             );
@@ -116,9 +117,9 @@ namespace Modeling_Canvas.UIElements
             base.InitControlPanel();
         }
 
-        private void UpdateFramesPanel(StackPanel framesPanel)
+        public void UpdateFramesPanel()
         {
-            framesPanel.Children.Clear();
+            _framesPanel.Children.Clear();
 
             foreach (var frame in AnimationFrames.OrderBy(x => x.Key))
             {
@@ -181,7 +182,7 @@ namespace Modeling_Canvas.UIElements
                             if (SelectedFrameKey == previousTime) SelectedFrameKey = newTime;
                             previousTime = newTime;
 
-                            UpdateFramesPanel(framesPanel);
+                            UpdateFramesPanel();
 
                             timeTextBox.BorderBrush = SystemColors.ControlDarkBrush;
                         }
@@ -209,7 +210,7 @@ namespace Modeling_Canvas.UIElements
                         clickAction: () =>
                         {
                             RemoveFrame(frame.Key);
-                            UpdateFramesPanel(framesPanel);
+                            UpdateFramesPanel();
                         },
                         content: "-",
                         width: 30
@@ -220,7 +221,7 @@ namespace Modeling_Canvas.UIElements
                 framePanel.Children.Add(timeTextBox);
                 framePanel.Children.Add(switchButton);
                 framePanel.Children.Add(removeButton);
-                framesPanel.Children.Add(framePanel);
+                _framesPanel.Children.Add(framePanel);
             }
         }
 
