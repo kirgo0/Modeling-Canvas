@@ -2,7 +2,6 @@
 using Modeling_Canvas.Extensions;
 using Modeling_Canvas.UIElements.Abstract;
 using Modeling_Canvas.UIElements.Interfaces;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -91,7 +90,7 @@ namespace Modeling_Canvas.UIElements
             var semiTransparentFill = Fill.Clone();
             semiTransparentFill.Opacity = Opacity;
 
-             if (_isGeometryDirty)
+            if (_isGeometryDirty)
             {
                 switch (Shape)
                 {
@@ -112,8 +111,8 @@ namespace Modeling_Canvas.UIElements
         }
 
         public override Point GetTopLeftPosition() => new Point(Position.X + Radius / UnitSize, Position.Y + Radius / UnitSize);
-        
-        public override Point GetBottomRightPosition() =>  new Point(Position.X - Radius / UnitSize, Position.Y - Radius / UnitSize);
+
+        public override Point GetBottomRightPosition() => new Point(Position.X - Radius / UnitSize, Position.Y - Radius / UnitSize);
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {

@@ -19,7 +19,8 @@ namespace Modeling_Canvas.Models
         public bool ShowRadiusCurvature
         {
             get => _showRadiusCurvature;
-            set {
+            set
+            {
                 if (_showRadiusCurvature != value)
                 {
                     _showRadiusCurvature = value;

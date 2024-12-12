@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using System.Windows.Controls;
 
 namespace Modeling_Canvas.UIElements
 {
@@ -10,7 +9,7 @@ namespace Modeling_Canvas.UIElements
             var radiusSlider =
                 WpfHelper.CreateSliderControl(
                     "Radius",
-                    this, 
+                    this,
                     nameof(Radius),
                     nameof(MinRadiusValue),
                     nameof(MaxRadiusValue)
@@ -21,7 +20,7 @@ namespace Modeling_Canvas.UIElements
 
         protected virtual void AddCenterControls()
         {
-            var centerPosition = 
+            var centerPosition =
                 WpfHelper.CreateDefaultPointControls(
                     "Center",
                     this,

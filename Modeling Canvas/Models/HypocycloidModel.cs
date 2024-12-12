@@ -1,12 +1,5 @@
-﻿using Modeling_Canvas.UIElements;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
 
 namespace Modeling_Canvas.Models
 {
@@ -65,7 +58,7 @@ namespace Modeling_Canvas.Models
             {
                 if (_largeRadius != value)
                 {
-                    if(value > SmallRadius)
+                    if (value > SmallRadius)
                     {
                         _largeRadius = value;
                     }
@@ -117,7 +110,7 @@ namespace Modeling_Canvas.Models
 
             var properties = typeof(HypocycloidModel)
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(p => p.PropertyType == typeof(double)); 
+                .Where(p => p.PropertyType == typeof(double));
 
             // Compare the values of each property in both models
             foreach (var property in properties)

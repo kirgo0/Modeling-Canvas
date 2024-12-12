@@ -1,11 +1,4 @@
 ﻿using Microsoft.Win32;
-using Modeling_Canvas.Extensions;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -17,7 +10,7 @@ namespace Modeling_Canvas.UIElements
     public partial class BezierCurve
     {
         private StackPanel _framesPanel;
-        
+
         protected override void InitControlPanel()
         {
             var mainPanel = WpfHelper.CreateDefaultPanel();
@@ -83,7 +76,8 @@ namespace Modeling_Canvas.UIElements
                             {
                                 Title = "Save a New File",
                                 Filter = "JSON Files (*.json)|*.json",
-                                DefaultExt = ".json",                                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) 
+                                DefaultExt = ".json",
+                                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
                             };
 
                             if (saveFileDialog.ShowDialog() == true)
@@ -158,7 +152,8 @@ namespace Modeling_Canvas.UIElements
                         if (newTime != previousTime)
                         {
                             timeTextBox.Background = Brushes.Gray;
-                        } else
+                        }
+                        else
                         {
                             timeTextBox.Background = Brushes.White;
                         }
@@ -195,7 +190,7 @@ namespace Modeling_Canvas.UIElements
                 };
 
 
-                var switchButton = 
+                var switchButton =
                     WpfHelper.CreateButton(
                         clickAction: () =>
                         {

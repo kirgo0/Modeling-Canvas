@@ -24,7 +24,8 @@ namespace Modeling_Canvas.UIElements
 
         private bool _isInfiniteAnimation = false;
 
-        public int CurvePrecision {
+        public int CurvePrecision
+        {
             get => _curvePrecision;
             set
             {
@@ -53,9 +54,9 @@ namespace Modeling_Canvas.UIElements
         public bool IsInfiniteAnimation
         {
             get => _isInfiniteAnimation;
-            set 
-            { 
-                if(_isInfiniteAnimation != value)
+            set
+            {
+                if (_isInfiniteAnimation != value)
                 {
                     _isInfiniteAnimation = value;
                     OnPropertyChanged();
@@ -81,7 +82,7 @@ namespace Modeling_Canvas.UIElements
                 {
                     var p1 = Points.First();
                     var p2 = Points.Last();
-                    if(p1 != null && p2 != null)
+                    if (p1 != null && p2 != null)
                     {
                         p1.ShowPrevControl = IsClosed;
                         p2.ShowNextControl = IsClosed;
@@ -120,7 +121,7 @@ namespace Modeling_Canvas.UIElements
 
                 Point p0 = start.PixelPosition;
                 Point c1 = start.ControlNextPoint.PixelPosition;
-                Point c2 = end.ControlPrevPoint.PixelPosition; 
+                Point c2 = end.ControlPrevPoint.PixelPosition;
                 Point p3 = end.PixelPosition;
 
                 dc.DrawBezierCurve(Canvas, StrokePen, p0, c1, c2, p3, CurvePrecision, 10);
@@ -157,7 +158,8 @@ namespace Modeling_Canvas.UIElements
             customPoint.ControlsVisibility = ControlsVisibility;
             customPoint.Visibility = ControlsVisibility;
 
-            PropertyChanged += (s, e) => {
+            PropertyChanged += (s, e) =>
+            {
                 if (e.PropertyName.Equals(nameof(ControlsVisibility)))
                 {
                     customPoint.Visibility = ControlsVisibility;
@@ -361,7 +363,8 @@ namespace Modeling_Canvas.UIElements
 
         public void RemoveFrame(double key)
         {
-            if (AnimationFrames.Count > 1 && AnimationFrames.TryGetValue(key, out var frame)) {
+            if (AnimationFrames.Count > 1 && AnimationFrames.TryGetValue(key, out var frame))
+            {
 
                 var keys = AnimationFrames.Select(f => f.Key).Order().ToList();
                 var nextKeyIndex = keys.IndexOf(key);

@@ -34,33 +34,35 @@ namespace Modeling_Canvas.UIElements.Abstract
             }
         }
 
-        public override Visibility ControlsVisibility { 
-            get => base.ControlsVisibility; 
-            set {
+        public override Visibility ControlsVisibility
+        {
+            get => base.ControlsVisibility;
+            set
+            {
                 if (value is Visibility.Hidden) SelectedPoint = null;
-                base.ControlsVisibility = value; 
-            } 
+                base.ControlsVisibility = value;
+            }
         }
 
-        public T? SelectedPoint 
-        { 
+        public T? SelectedPoint
+        {
             get => _selectedPoint;
-            set 
+            set
             {
                 if (_selectedPoint != value)
                 {
                     _selectedPoint = value;
                     ShowRemovePointButton = value is not null;
                 }
-            } 
+            }
         }
 
         public bool ShowRemovePointButton
         {
             get => _showRemovePointButton;
-            set 
-            { 
-                if(_showRemovePointButton != value)
+            set
+            {
+                if (_showRemovePointButton != value)
                 {
                     _showRemovePointButton = value;
                     OnPropertyChanged();

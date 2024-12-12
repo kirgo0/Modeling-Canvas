@@ -1,8 +1,5 @@
 using Modeling_Canvas.Extensions;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Modeling_Canvas.UIElements
@@ -15,7 +12,7 @@ namespace Modeling_Canvas.UIElements
         {
             LabelText = "D.Point";
         }
-        
+
         public DraggablePoint(DraggablePoint other) : base(other.Canvas, other.HasAnchorPoint)
         {
             LabelText = "D.Point";
@@ -35,8 +32,6 @@ namespace Modeling_Canvas.UIElements
         }
 
         public Action<DraggablePoint, Vector> OverrideMoveAction;
-        public Action<DraggablePoint, Vector> MoveAction;
-
         public override void MoveElement(Vector offset)
         {
             if (OverrideMoveAction is not null)
@@ -46,7 +41,6 @@ namespace Modeling_Canvas.UIElements
             }
 
             base.MoveElement(offset);
-            MoveAction?.Invoke(this, offset);
 
             if (InputManager.CtrlPressed || InputManager.SpacePressed)
             {

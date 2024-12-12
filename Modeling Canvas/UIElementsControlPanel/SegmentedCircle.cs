@@ -14,7 +14,7 @@
                 );
 
             _uiControls.Add("Start Degrees", startDeg);
-            
+
             var endDeg =
                 WpfHelper.CreateSliderControl(
                     "End Degress",

@@ -130,7 +130,7 @@ namespace Modeling_Canvas.UIElements
             }
             OnRadiusChange?.Invoke(this, new RadiusChangeEventArgs(previousRadius, Radius, offset.X));
         }
-        
+
         public virtual void CenterPointMoveAction(DraggablePoint point, Vector offset)
         {
             MoveElement(offset);

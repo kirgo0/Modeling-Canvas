@@ -1,12 +1,10 @@
 ﻿using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
-using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using System.Xml.Linq;
 
 
 namespace Modeling_Canvas.UIElements
@@ -15,9 +13,11 @@ namespace Modeling_Canvas.UIElements
     {
         private int _maxPointCount = 1000;
 
-        public int MaxPointCount { 
-            get => _maxPointCount; 
-            set {
+        public int MaxPointCount
+        {
+            get => _maxPointCount;
+            set
+            {
                 if (_maxPointCount != value)
                 {
                     _maxPointCount = value;
@@ -27,11 +27,13 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        public int Precision {
-            get {
+        public int Precision
+        {
+            get
+            {
                 var maxQualityPointsCount = Model.Angle / 360 * _maxPointCount;
                 var calculatedCount = Canvas.UnitSize > 1 ? (maxQualityPointsCount / (20 / Canvas.UnitSize)) : _maxPointCount;
-                return calculatedCount > maxQualityPointsCount ? (int)maxQualityPointsCount : (int) calculatedCount;
+                return calculatedCount > maxQualityPointsCount ? (int)maxQualityPointsCount : (int)calculatedCount;
             }
         }
         public CustomCircle LargeCircle { get; set; }
@@ -53,7 +55,8 @@ namespace Modeling_Canvas.UIElements
 
         private double _animationDuration = 3;
 
-        public double AnimationDuration {
+        public double AnimationDuration
+        {
 
             get => _animationDuration;
             set
@@ -218,7 +221,7 @@ namespace Modeling_Canvas.UIElements
                 nameof(HypocycloidCalculationsModel.ArcLength)
                 );
 
-            arcLengthText.AddVisibilityBinding(CalculatedValues,nameof(HypocycloidCalculationsModel.ShowArcLength));
+            arcLengthText.AddVisibilityBinding(CalculatedValues, nameof(HypocycloidCalculationsModel.ShowArcLength));
 
             _uiControls.Add(nameof(HypocycloidCalculationsModel.ArcLength), arcLengthText);
 
@@ -307,12 +310,13 @@ namespace Modeling_Canvas.UIElements
             }
             base.OnRender(dc);
         }
+        
         protected override void DefaultRender(DrawingContext dc)
         {
             HypocycloidPoints = CalculateHypocycloidPoints(dc, Model, HypocycloidPoints);
             EndPoint.Position = Canvas.GetUnitCoordinates(HypocycloidPoints.LastOrDefault());
 
-            if(HypocycloidPoints.Count == 0)
+            if (HypocycloidPoints.Count == 0)
             {
                 dc.DrawCircle(Canvas, Brushes.DeepPink, null, LargeCircle.CenterPoint.PixelPosition, 5, 15, 0, false);
                 return;
@@ -342,7 +346,7 @@ namespace Modeling_Canvas.UIElements
 
         protected virtual List<Point> CalculateHypocycloidPoints(DrawingContext dc, HypocycloidModel model, List<Point> points = null)
         {
-            if(points is null) points = new List<Point>();
+            if (points is null) points = new List<Point>();
             else points.Clear();
 
             double R = model.LargeRadius * UnitSize;
@@ -494,13 +498,13 @@ namespace Modeling_Canvas.UIElements
 
             Point normalEnd = pointOnCurve + normal * Canvas.ActualWidth;
             dc.DrawLine(Canvas, new Pen(Brushes.Green, 2), pointOnCurve, normalEnd);
-            
+
             dc.DrawCircle(Canvas, Brushes.Red, null, pointOnCurve, 7, 15, 0, false);
         }
 
         public double? FindNearestPoint(Point targetPoint, double tolerance = 10)
         {
-            for(var i = 0; i < HypocycloidPoints.Count; i++)
+            for (var i = 0; i < HypocycloidPoints.Count; i++)
             {
                 var point = HypocycloidPoints[i];
                 double distance = Math.Sqrt(Math.Pow(point.X - targetPoint.X, 2) + Math.Pow(point.Y - targetPoint.Y, 2));
@@ -584,14 +588,14 @@ namespace Modeling_Canvas.UIElements
 
             base.MoveElement(offset);
         }
-        
+
         public override void RotateElement(Point anchorPoint, double degrees)
         {
             Model.RotationAngle -= degrees;
             Model.RotationAngle = Helpers.NormalizeAngle(Model.RotationAngle);
             Center = Center.RotatePoint(anchorPoint, degrees);
         }
-        
+
         public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
         {
             Center = Center.ScalePoint(anchorPoint, scaleVector);

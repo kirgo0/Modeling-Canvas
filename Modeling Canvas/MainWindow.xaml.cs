@@ -22,9 +22,9 @@ namespace Modeling_Canvas
             CenterWindowOnScreen();
 
             //InitFigure();
-            //var a = new Hypocycloid(MainCanvas, 4, 1);
-            //MainCanvas.Children.Add(a);
-            //a.Center = new Point(0, 0);
+            var a = new Hypocycloid(MainCanvas, 4, 1);
+            MainCanvas.Children.Add(a);
+            a.Center = new Point(0, 0);
 
             //var b = new SegmentedCircle(MyCanvas);
             //MyCanvas.Children.Add(b);
@@ -38,13 +38,13 @@ namespace Modeling_Canvas
             //d.AddPoint(3, 3);
             //MainCanvas.Children.Add(d);
 
-            //var ball = new BezierCurve(MainCanvas);
+            var ball = new BezierCurve(MainCanvas);
 
-            //ball.AddPoint(2, 3);
-            //ball.AddPoint(1, 1);
-            //ball.AddPoint(-2, 3);
-            //ball.AddPoint(3, -4);
-            //MainCanvas.Children.Add(ball);
+            ball.AddPoint(2, 3);
+            ball.AddPoint(1, 1);
+            ball.AddPoint(-2, 3);
+            ball.AddPoint(3, -4);
+            MainCanvas.Children.Add(ball);
 
             PreviewKeyDown += MainCanvas.OnKeyDown;
             PreviewKeyUp += MainCanvas.OnKeyUp;
@@ -166,7 +166,7 @@ namespace Modeling_Canvas
             HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
             source.AddHook(WndProc);
         }
-        
+
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             const int WM_SYSKEYDOWN = 0x0104; // System Key Down

@@ -1,7 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Xceed.Wpf.Toolkit.PropertyGrid.Converters;
 
 namespace Modeling_Canvas.UIElements
 {
@@ -18,7 +17,7 @@ namespace Modeling_Canvas.UIElements
 
             _uiControls.Add("Anchor visible", isAnchorVisibleCheckbox);
 
-            var anchorControls = 
+            var anchorControls =
                 WpfHelper.CreateDefaultPointControls(
                     "Anchor Point",
                     AnchorPoint,
@@ -58,7 +57,7 @@ namespace Modeling_Canvas.UIElements
             var strokeColor =
                 WpfHelper.CreateColorPicker(
                     "Stroke Color:",
-                    this, 
+                    this,
                     nameof(Stroke)
                 );
 
@@ -195,10 +194,11 @@ namespace Modeling_Canvas.UIElements
 
             inputX.PreviewTextInput += (s, e) =>
             {
-                if(double.TryParse(inputX.Text, out double X) && X > 0)
+                if (double.TryParse(inputX.Text, out double X) && X > 0)
                 {
                     inputX.Background = Brushes.White;
-                } else
+                }
+                else
                 {
                     inputX.Background = Brushes.IndianRed;
                 }
@@ -220,7 +220,7 @@ namespace Modeling_Canvas.UIElements
             {
                 if (double.TryParse(inputX.Text, out double X) && double.TryParse(inputY.Text, out double Y))
                 {
-                    if(X <= 0 || Y <= 0) return;
+                    if (X <= 0 || Y <= 0) return;
                     var factor = Math.Abs(X + Y) / 2;
                     ScaleElement(AnchorPoint.Position, new Vector(X, Y), factor);
                     InvalidateCanvas();

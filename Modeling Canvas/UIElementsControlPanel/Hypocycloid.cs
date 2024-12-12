@@ -1,5 +1,5 @@
-﻿using System.Windows;
-using Modeling_Canvas.Models;
+﻿using Modeling_Canvas.Models;
+using System.Windows;
 
 namespace Modeling_Canvas.UIElements
 {
@@ -12,7 +12,7 @@ namespace Modeling_Canvas.UIElements
                 $"{labelPrefix}Distance",
                 model,
                 nameof(Model.Distance),
-                null,                      
+                null,
                 nameof(Model.SmallRadius),
                 0.1
             );
@@ -50,7 +50,7 @@ namespace Modeling_Canvas.UIElements
             return controls;
         }
 
-        
+
 
     }
 }

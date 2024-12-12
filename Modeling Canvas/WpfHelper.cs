@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -63,7 +62,7 @@ namespace Modeling_Canvas
                 };
                 slider.SetBinding(Slider.MinimumProperty, minBinding);
             }
-                
+
             if (!string.IsNullOrEmpty(maxBindingPath))
             {
                 var maxBinding = new Binding(maxBindingPath)
@@ -168,7 +167,7 @@ namespace Modeling_Canvas
         }
 
         public static FrameworkElement CreateLabeledCheckBox(
-            string labelText, 
+            string labelText,
             object bindingSource,
             string bindingPath,
             double marginBottom = 5,

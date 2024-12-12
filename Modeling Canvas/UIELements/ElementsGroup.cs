@@ -1,6 +1,4 @@
 ﻿using Modeling_Canvas.UIElements.Abstract;
-using Modeling_Canvas.UIElements.Interfaces;
-using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;

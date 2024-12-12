@@ -20,9 +20,9 @@ namespace Modeling_Canvas.UIElements
         private AffineModel _affineParams = new AffineModel();
 
         private ProjectiveModel _projectiveParams = new ProjectiveModel();
-        
+
         private RenderMode _renderMode = RenderMode.Default;
-        
+
         public double XOffset { get; set; } = 0;
 
         public double YOffset { get; set; } = 0;
@@ -36,7 +36,8 @@ namespace Modeling_Canvas.UIElements
         public AffineModel AffineParams
         {
             get => _affineParams;
-            set { 
+            set
+            {
                 _affineParams = value;
                 OnPropertyChanged(nameof(AffineParams));
             }
@@ -45,8 +46,9 @@ namespace Modeling_Canvas.UIElements
         public ProjectiveModel ProjectiveParams
         {
             get => _projectiveParams;
-            set { 
-                _projectiveParams = value; 
+            set
+            {
+                _projectiveParams = value;
                 OnPropertyChanged(nameof(ProjectiveParams));
             }
         }
@@ -54,7 +56,8 @@ namespace Modeling_Canvas.UIElements
         public double UnitSize
         {
             get => (double)GetValue(UnitSizeProperty);
-            set {
+            set
+            {
                 CanvasGridChanged?.Invoke(this, new EventArgs());
                 SetValue(UnitSizeProperty, value);
             }
@@ -226,7 +229,7 @@ namespace Modeling_Canvas.UIElements
 
             Pen gridPen = new Pen(Brushes.Black, 0.1);
 
-            if(RenderMode is RenderMode.Projective || RenderMode is RenderMode.ProjectiveV2)
+            if (RenderMode is RenderMode.Projective || RenderMode is RenderMode.ProjectiveV2)
                 gridPen = new Pen(Brushes.Black, 0.4);
 
             Pen axisPen = new Pen(Brushes.Black, 2);
@@ -239,8 +242,8 @@ namespace Modeling_Canvas.UIElements
             var calculatedFrequency = GetOptimalGridFrequency();
 
             double minX = 0, minY = 0, maxX = width, maxY = height;
-            
-            if(AllowInfinityRender)
+
+            if (AllowInfinityRender)
             {
                 var corners = new[]
                     {

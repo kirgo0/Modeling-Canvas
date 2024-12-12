@@ -1,7 +1,6 @@
 ﻿using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace Modeling_Canvas.UIElements
@@ -30,14 +29,6 @@ namespace Modeling_Canvas.UIElements
             LabelText = "Point";
         }
 
-        public BezierPoint(BezierPoint other) : base(other.Canvas, other.HasAnchorPoint)
-        {
-            Position = other.Position;
-            ControlNextPoint = new DraggablePoint(other.ControlNextPoint);
-            ControlPrevPoint = new DraggablePoint(other.ControlPrevPoint);
-        }
-
-
         protected override void InitChildren()
         {
             ControlPrevPoint = new DraggablePoint(Canvas, false)
@@ -64,6 +55,7 @@ namespace Modeling_Canvas.UIElements
             AddChildren(ControlNextPoint, 9999);
             ControlNextPoint.Position = new Point(Position.X + 0.5, Position.Y + 1);
 
+            ConfigureSmoothnessForControlPoints();
             base.InitChildren();
 
         }
@@ -80,6 +72,27 @@ namespace Modeling_Canvas.UIElements
                     dc.DrawLine(Canvas, ControlNextLinePen, PixelPosition, ControlNextPoint.PixelPosition);
             }
             base.DefaultRender(dc);
+        }
+
+        public void ConfigureSmoothnessForControlPoints()
+        {
+            ControlPrevPoint.AfterMoveAction = AlignOppositeControlPoint;
+            ControlNextPoint.AfterMoveAction = AlignOppositeControlPoint;
+        }
+
+        void AlignOppositeControlPoint(Element element)
+        {
+            var movedPoint = element as DraggablePoint;
+            if (movedPoint is null) return;
+
+            if (!InputManager.AltPressed)
+                return;
+            var isPrevControl = movedPoint == ControlPrevPoint;
+
+            var oppositeControl = isPrevControl ? ControlNextPoint : ControlPrevPoint;
+            var delta = movedPoint.Position - Position;
+
+            oppositeControl.Position = Position - delta;
         }
 
         public void LoadFramePosition(BezierPointFrameModel frame)

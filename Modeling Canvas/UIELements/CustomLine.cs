@@ -11,7 +11,7 @@ namespace Modeling_Canvas.UIElements
 
         public CustomLine(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
-            LabelText = "Line"; 
+            LabelText = "Line";
         }
 
         protected override void OnRender(DrawingContext dc)

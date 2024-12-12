@@ -24,7 +24,7 @@ namespace Modeling_Canvas.Extensions
                 // Calculate the step size for each segment in radians
                 double segmentStep = (2 * Math.PI) / precision;
 
-                if(!applyShapeTransform)
+                if (!applyShapeTransform)
                     center = canvas.TransformPoint(center);
 
                 // Calculate the start point
@@ -33,7 +33,7 @@ namespace Modeling_Canvas.Extensions
                     center.Y + radius * Math.Sin(0)
                     );
 
-                if(applyShapeTransform)
+                if (applyShapeTransform)
                     startPoint = canvas.TransformPoint(startPoint);
 
                 context.BeginFigure(startPoint, true, true); // Is filled, Is closed
@@ -44,7 +44,7 @@ namespace Modeling_Canvas.Extensions
                     double angle = i * segmentStep; // Angle in radians
                     var point = new Point(
                         center.X + radius * Math.Cos(angle),
-                        center.Y + radius * Math.Sin(angle)); 
+                        center.Y + radius * Math.Sin(angle));
 
                     if (applyShapeTransform)
                         point = canvas.TransformPoint(point);
@@ -77,7 +77,7 @@ namespace Modeling_Canvas.Extensions
                     center.X + radius * Math.Cos(0),
                     center.Y + radius * Math.Sin(0));
 
-                if(applyShapeTransform)
+                if (applyShapeTransform)
                     startPoint = canvas.TransformPoint(startPoint);
 
                 context.BeginFigure(startPoint, true, true); // Is filled, Is closed
@@ -131,7 +131,7 @@ namespace Modeling_Canvas.Extensions
 
             using (var context = geometry.Open())
             {
-                if(!applyTransform)
+                if (!applyTransform)
                 {
                     center = canvas.TransformPoint(center);
                 }
@@ -155,7 +155,7 @@ namespace Modeling_Canvas.Extensions
                 context.LineTo(topRight, true, false);
                 context.LineTo(bottomRight, true, false);
                 context.LineTo(bottomLeft, true, false);
-                context.LineTo(topLeft, true, false); 
+                context.LineTo(topLeft, true, false);
 
             }
 
@@ -165,7 +165,7 @@ namespace Modeling_Canvas.Extensions
         }
 
         public static void DrawCircleWithArcs(
-            this DrawingContext dc, 
+            this DrawingContext dc,
             CustomCanvas canvas,
             Brush fill,
             Pen strokePen,
