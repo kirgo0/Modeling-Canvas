@@ -446,8 +446,7 @@ namespace Modeling_Canvas.UIElements
         {
             double R = model.LargeRadius;
             double r = model.SmallRadius;
-            double angleFraction = model.Angle / 360.0; // Fraction of the full rotation
-
+            double angleFraction = model.Angle / 360.0;
             // Area is scaled based on the fraction of the angle
             return Math.PI * Math.Pow(R - r, 2) * angleFraction;
         }
@@ -540,9 +539,6 @@ namespace Modeling_Canvas.UIElements
 
             double initialAngle = Model.Angle;
             double targetAngle = AnimationModel.Angle;
-
-            //double initialRotationAngle = Model.RotationAngle;
-            //double targetRotationAngle = AnimationModel.RotationAngle;
 
             // Set up the timer
             var timer = new DispatcherTimer(TimeSpan.FromMilliseconds(16), DispatcherPriority.Render, (s, e) =>

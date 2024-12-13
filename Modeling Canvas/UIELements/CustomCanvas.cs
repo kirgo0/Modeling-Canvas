@@ -248,9 +248,9 @@ namespace Modeling_Canvas.UIElements
                 var corners = new[]
                     {
                         ReverseTransformPoint(new Point(0, 0)),
-                        ReverseTransformPoint(new Point(width, 0)),
+                        ReverseTransformPoint(new Point(maxX, 0)),
                         ReverseTransformPoint(new Point(0, height)),
-                        ReverseTransformPoint(new Point(width, height)),
+                        ReverseTransformPoint(new Point(maxX, height)),
                     };
 
                 // Calculate bounds of the transformed canvas
@@ -331,6 +331,7 @@ namespace Modeling_Canvas.UIElements
             double step = UnitSize * calculatedFrequency;
 
             // Межі видимої області в координатах сітки
+
             double startX = -halfWidth / UnitSize;
             double endX = (width - halfWidth) / UnitSize;
             double startY = (halfHeight - height) / UnitSize;
@@ -362,6 +363,7 @@ namespace Modeling_Canvas.UIElements
                 gridStartY = Math.Floor(minY / calculatedFrequency) * calculatedFrequency;
                 gridEndY = Math.Ceiling(maxY / calculatedFrequency) * calculatedFrequency;
             }
+            
             // Малювання вертикальних ліній
             for (double x = gridStartX; x <= gridEndX; x += calculatedFrequency)
             {
@@ -388,6 +390,7 @@ namespace Modeling_Canvas.UIElements
 
             // Малювання осей
             // X-axis
+
             var xAxisStart = TransformPoint(new Point(0, halfHeight));
             var xAxisEnd = TransformPoint(new Point(width, halfHeight));
             dc.DrawLine(axisPen, xAxisStart, xAxisEnd);
@@ -396,6 +399,7 @@ namespace Modeling_Canvas.UIElements
             var yAxisStart = TransformPoint(new Point(halfWidth, 0));
             var yAxisEnd = TransformPoint(new Point(halfWidth, height));
             dc.DrawLine(axisPen, yAxisStart, yAxisEnd);
+
         }
 
         private void DrawCoordinateLabel(DrawingContext dc, double value, Point position, double fontSize, bool isHorizontal)

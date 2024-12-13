@@ -38,13 +38,13 @@ namespace Modeling_Canvas
             //d.AddPoint(3, 3);
             //MainCanvas.Children.Add(d);
 
-            var ball = new BezierCurve(MainCanvas);
+            //var ball = new BezierCurve(MainCanvas);
 
-            ball.AddPoint(2, 3);
-            ball.AddPoint(1, 1);
-            ball.AddPoint(-2, 3);
-            ball.AddPoint(3, -4);
-            MainCanvas.Children.Add(ball);
+            //ball.AddPoint(2, 3);
+            //ball.AddPoint(1, 1);
+            //ball.AddPoint(-2, 3);
+            //ball.AddPoint(3, -4);
+            //MainCanvas.Children.Add(ball);
 
             PreviewKeyDown += MainCanvas.OnKeyDown;
             PreviewKeyUp += MainCanvas.OnKeyUp;
