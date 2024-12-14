@@ -310,7 +310,7 @@ namespace Modeling_Canvas.UIElements
             }
             base.OnRender(dc);
         }
-        
+
         protected override void DefaultRender(DrawingContext dc)
         {
             HypocycloidPoints = CalculateHypocycloidPoints(dc, Model, HypocycloidPoints);

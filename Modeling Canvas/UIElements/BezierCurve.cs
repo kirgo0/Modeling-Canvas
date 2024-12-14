@@ -360,7 +360,6 @@ namespace Modeling_Canvas.UIElements
             SelectFrame(key);
         }
 
-
         public void RemoveFrame(double key)
         {
             if (AnimationFrames.Count > 1 && AnimationFrames.TryGetValue(key, out var frame))
@@ -395,7 +394,6 @@ namespace Modeling_Canvas.UIElements
                 throw new NotImplementedException();
             }
         }
-
 
         public override string ToString()
         {

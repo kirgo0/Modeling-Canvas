@@ -363,7 +363,7 @@ namespace Modeling_Canvas.UIElements
                 gridStartY = Math.Floor(minY / calculatedFrequency) * calculatedFrequency;
                 gridEndY = Math.Ceiling(maxY / calculatedFrequency) * calculatedFrequency;
             }
-            
+
             // Малювання вертикальних ліній
             for (double x = gridStartX; x <= gridEndX; x += calculatedFrequency)
             {

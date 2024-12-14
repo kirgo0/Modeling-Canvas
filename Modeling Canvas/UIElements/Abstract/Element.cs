@@ -400,6 +400,7 @@ namespace Modeling_Canvas.UIElements
             }
             InvalidateCanvas();
         }
+
         protected virtual void OnElementSelected(MouseButtonEventArgs e)
         {
             RenderControlPanel();
