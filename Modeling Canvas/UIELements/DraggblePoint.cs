@@ -8,6 +8,10 @@ namespace Modeling_Canvas.UIElements
     {
         public double DragRadius { get; set; } = 10;
 
+        public Func<DraggablePoint, string>? OverrideToStringAction;
+
+        public Action<DraggablePoint, Vector> OverrideMoveAction;
+
         public DraggablePoint(CustomCanvas canvas, bool hasAnchorPoint = false) : base(canvas, hasAnchorPoint)
         {
             LabelText = "D.Point";
@@ -19,19 +23,18 @@ namespace Modeling_Canvas.UIElements
             Position = other.Position;
         }
 
-        protected override void DefaultRender(DrawingContext dc)
-        {
-            base.DefaultRender(dc);
-            dc.DrawCircle(Canvas, Brushes.Transparent, new Pen(Stroke, 0), PixelPosition, DragRadius, 100);
-        }
-
         protected override void InitControlPanel()
         {
             base.InitControlPanel();
             AddPointControls();
         }
 
-        public Action<DraggablePoint, Vector> OverrideMoveAction;
+        protected override void DefaultRender(DrawingContext dc)
+        {
+            base.DefaultRender(dc);
+            dc.DrawCircle(Canvas, Brushes.Transparent, new Pen(Stroke, 0), PixelPosition, DragRadius, 100);
+        }
+
         public override void MoveElement(Vector offset)
         {
             if (OverrideMoveAction is not null)
@@ -60,9 +63,6 @@ namespace Modeling_Canvas.UIElements
             Position = Position.ScalePoint(anchorPoint, scaleVector);
         }
 
-        public Action<DraggablePoint>? OnRenderControlPanel { get; set; }
-
-        public Func<DraggablePoint, string>? OverrideToStringAction;
         public override string ToString()
         {
             if (OverrideToStringAction is not null) return OverrideToStringAction.Invoke(this);

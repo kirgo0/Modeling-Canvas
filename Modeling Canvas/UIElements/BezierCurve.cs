@@ -12,10 +12,6 @@ namespace Modeling_Canvas.UIElements
 {
     public partial class BezierCurve : Path<BezierPoint>
     {
-        public PointShape PointsShape { get; set; } = PointShape.Circle;
-
-        public Dictionary<double, List<BezierPointFrameModel>> AnimationFrames { get; set; } = new();
-
         private int _curvePrecision = 30;
 
         private double _selectedFrameKey = 0;
@@ -23,6 +19,10 @@ namespace Modeling_Canvas.UIElements
         private bool _isNotAnimating = true;
 
         private bool _isInfiniteAnimation = false;
+
+        public PointShape PointsShape { get; set; } = PointShape.Circle;
+
+        public Dictionary<double, List<BezierPointFrameModel>> AnimationFrames { get; set; } = new();
 
         public int CurvePrecision
         {

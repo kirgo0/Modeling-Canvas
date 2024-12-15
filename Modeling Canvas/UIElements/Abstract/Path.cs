@@ -191,7 +191,6 @@ namespace Modeling_Canvas.UIElements.Abstract
 
         public override Point GetBottomRightPosition() => new Point(Points.Max(x => x.Position.X) + PointsRadius / UnitSize, Points.Min(y => y.Position.Y) - PointsRadius / UnitSize);
 
-        // helper add method
         public virtual void AddPoint(double x, double y)
         {
             AddPoint(new Point(x, y));

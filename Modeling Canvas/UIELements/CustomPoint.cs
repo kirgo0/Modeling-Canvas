@@ -22,6 +22,8 @@ namespace Modeling_Canvas.UIElements
 
         public int PositionPrecision { get; set; } = 3;
 
+        public Action<MouseButtonEventArgs> MouseLeftButtonDownAction { get; set; }
+
         public double Radius
         {
             get => _radius;
@@ -48,10 +50,6 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        public double X { get => Position.X; }
-
-        public double Y { get => Position.Y; }
-
         public Point Position
         {
             get => _position;
@@ -71,7 +69,10 @@ namespace Modeling_Canvas.UIElements
             get => new Point(Canvas.ActualWidth / 2 + Position.X * UnitSize, Canvas.ActualHeight / 2 - Position.Y * UnitSize).AddCanvasOffsets();
         }
 
-        public Action<MouseButtonEventArgs> MouseLeftButtonDownAction { get; set; }
+        public double X { get => Position.X; }
+
+        public double Y { get => Position.Y; }
+
 
         public CustomPoint(CustomCanvas canvas, bool hasAnchorPoint = false) : base(canvas, hasAnchorPoint)
         {

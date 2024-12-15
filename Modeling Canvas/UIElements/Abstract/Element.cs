@@ -11,7 +11,7 @@ namespace Modeling_Canvas.UIElements
 {
     public abstract partial class Element : FrameworkElement, INotifyPropertyChanged, IMovableElement
     {
-        public Element? LogicalParent { get; set; } = null;
+        
 
         private Brush _fill = null;
 
@@ -23,6 +23,8 @@ namespace Modeling_Canvas.UIElements
 
         private bool _overrideAnchorPoint = false;
 
+        private bool _anchorVisible = true;
+
         protected Point _lastMousePosition;
 
         protected double _lastRotationDegrees = 0;
@@ -30,8 +32,6 @@ namespace Modeling_Canvas.UIElements
         protected bool _isDragging = false;
 
         protected bool _isRotating = false;
-
-        private bool _anchorVisible = true;
 
         protected Dictionary<string, FrameworkElement> _uiControls = new();
 
@@ -47,19 +47,25 @@ namespace Modeling_Canvas.UIElements
 
         public bool IsInteractable { get; set; } = true;
 
-        public CustomCanvas Canvas { get; set; }
-
         public double UnitSize { get => Canvas.UnitSize; }
 
         public bool AllowSnapping { get; set; } = true;
 
         public string LabelText { get; set; } = "Default Label";
 
-        protected virtual bool SnappingEnabled { get => AllowSnapping ? InputManager.ShiftPressed : false; }
-
         public bool ControlsVisible { get; set; } = true;
 
+        public Element? LogicalParent { get; set; } = null;
+
+        public CustomCanvas Canvas { get; set; }
+
         public Action<Element> AfterMoveAction;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual bool SnappingEnabled { get => AllowSnapping ? InputManager.ShiftPressed : false; }
+
+        private Visibility _controlsVisibility = Visibility.Hidden;
 
         public Brush Fill
         {
@@ -108,8 +114,6 @@ namespace Modeling_Canvas.UIElements
             get => _strokePen is null ? new Pen(Stroke, StrokeThickness) : _strokePen;
             set => _strokePen = value;
         }
-
-        private Visibility _controlsVisibility = Visibility.Hidden;
 
         public virtual Visibility ControlsVisibility
         {
@@ -171,8 +175,6 @@ namespace Modeling_Canvas.UIElements
                 }
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {

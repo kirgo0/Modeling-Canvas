@@ -10,17 +10,29 @@ namespace Modeling_Canvas.UIElements
     {
         private double _radius = 5;
 
-        public double MinRadiusValue { get; set; } = 0.5;
-
         private double _maxRadiusValue = 10;
+
+        public double MinRadiusValue { get; set; } = 0.5;
 
         public int Precision { get; set; } = 100;
 
         public double RadiusControlDistance { get; set; } = 1;
 
+        public bool OverrideMoveAction { get; set; } = false;
+
+        public Action<Vector>? MoveAction;
+        public bool OverrideRotateAction { get; set; } = false;
+
+        public Action<Point, double>? RotateAction;
+        public bool OverrideScaleAction { get; set; } = false;
+
+        public Action<Point, Vector, double>? ScaleAction;
+
         public DraggablePoint CenterPoint { get; set; }
 
         public DraggablePoint RadiusPoint { get; set; }
+
+        public event EventHandler<RadiusChangeEventArgs> OnRadiusChange;
 
         public double MaxRadiusValue
         {
@@ -62,6 +74,16 @@ namespace Modeling_Canvas.UIElements
             Initialized += (o, e) => MaxRadiusValue = CalculateMaxCircleRadius();
         }
 
+        protected override void InitControlPanel()
+        {
+            base.InitControlPanel();
+            AddCenterControls();
+            AddFillColorControls();
+            AddStrokeColorControls();
+            AddStrokeThicknessControls();
+            AddRadiusControls();
+        }
+
         protected override void InitChildren()
         {
             RadiusPoint = new DraggablePoint(Canvas, false)
@@ -99,23 +121,11 @@ namespace Modeling_Canvas.UIElements
             dc.DrawCircle(Canvas, Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, Precision, 10);
         }
 
-        protected override void InitControlPanel()
-        {
-            base.InitControlPanel();
-            AddCenterControls();
-            AddFillColorControls();
-            AddStrokeColorControls();
-            AddStrokeThicknessControls();
-            AddRadiusControls();
-        }
-
         protected override Point GetAnchorDefaultPosition() => Center;
 
         public override Point GetTopLeftPosition() => new Point(Center.X - Radius - StrokeThickness / UnitSize, Center.Y + Radius + StrokeThickness / UnitSize);
 
         public override Point GetBottomRightPosition() => new Point(Center.X + Radius + StrokeThickness / UnitSize, Center.Y - Radius - StrokeThickness / UnitSize);
-
-        public event EventHandler<RadiusChangeEventArgs> OnRadiusChange;
 
         public virtual void RadiusPointMoveAction(DraggablePoint point, Vector offset)
         {
@@ -136,9 +146,6 @@ namespace Modeling_Canvas.UIElements
             MoveElement(offset);
         }
 
-        public bool OverrideMoveAction { get; set; } = false;
-        public Action<Vector>? MoveAction;
-
         public override void MoveElement(Vector offset)
         {
             MoveAction?.Invoke(offset);
@@ -151,8 +158,6 @@ namespace Modeling_Canvas.UIElements
             base.MoveElement(offset);
         }
 
-        public bool OverrideRotateAction { get; set; } = false;
-        public Action<Point, double>? RotateAction;
         public override void RotateElement(Point anchorPoint, double degrees)
         {
             RotateAction?.Invoke(anchorPoint, degrees);
@@ -160,9 +165,7 @@ namespace Modeling_Canvas.UIElements
             Center = Center.RotatePoint(anchorPoint, degrees);
         }
 
-        public bool OverrideScaleAction { get; set; } = false;
 
-        public Action<Point, Vector, double>? ScaleAction;
         public override void ScaleElement(Point anchorPoint, Vector scaleVector, double scaleFactor)
         {
             ScaleAction?.Invoke(anchorPoint, scaleVector, scaleFactor);

@@ -6,23 +6,22 @@ namespace Modeling_Canvas.UIElements
 {
     public partial class SegmentedCircle : CustomCircle
     {
+        private double _endDegrees = 360;
+        
+        private double _startDegrees = 0;
+        
         public double MaxDegrees { get; set; } = 360;
+        
         public double MinDegrees { get; set; } = 0;
 
-        private double _startDegrees = 0;
-        public double StartDegrees
-        {
-            get => _startDegrees;
-            set
-            {
-                _startDegrees = Math.Round(value, 1);
-                OnPropertyChanged();
-                InvalidateCanvas();
-            }
-        }
         public double StartRadians { get => Helpers.DegToRad(StartDegrees); }
 
-        private double _endDegrees = 360;
+        public double EndRadians { get => Helpers.DegToRad(EndDegrees); }
+        
+        public DraggablePoint StartDegreesPoint { get; set; }
+        
+        public DraggablePoint EndDegreesPoint { get; set; }
+
         public double EndDegrees
         {
             get => _endDegrees;
@@ -33,12 +32,21 @@ namespace Modeling_Canvas.UIElements
                 InvalidateCanvas();
             }
         }
-        public double EndRadians { get => Helpers.DegToRad(EndDegrees); }
-        public DraggablePoint StartDegreesPoint { get; set; }
-        public DraggablePoint EndDegreesPoint { get; set; }
+        public double StartDegrees
+        {
+            get => _startDegrees;
+            set
+            {
+                _startDegrees = Math.Round(value, 1);
+                OnPropertyChanged();
+                InvalidateCanvas();
+            }
+        }
+
         public SegmentedCircle(CustomCanvas canvas) : base(canvas)
         {
         }
+
         protected override void OnRender(DrawingContext dc)
         {
             StartDegreesPoint.Visibility = ControlsVisibility;
@@ -95,6 +103,7 @@ namespace Modeling_Canvas.UIElements
                 StartDegrees = Canvas.GetDegreesBetweenMouseAndPoint(Center);
             }
         }
+
         public virtual void EndDegreesPointMoveAction(DraggablePoint point, Vector offset)
         {
             if (InputManager.ShiftPressed && Math.Abs(StartDegrees - EndDegrees) < 5)
@@ -106,6 +115,7 @@ namespace Modeling_Canvas.UIElements
                 EndDegrees = Canvas.GetDegreesBetweenMouseAndPoint(Center);
             }
         }
+
         public override void RotateElement(Point anchorPoint, double degrees)
         {
             base.RotateElement(anchorPoint, degrees);

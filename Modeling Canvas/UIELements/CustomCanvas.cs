@@ -27,11 +27,19 @@ namespace Modeling_Canvas.UIElements
 
         public double YOffset { get; set; } = 0;
 
-        public HashSet<Element> SelectedElements { get; set; } = new();
-
         public int RotationPrecision { get; set; } = 4;
 
+        public int NumberFrequency { get; set; } = 1;
+
+        public HashSet<Element> SelectedElements { get; set; } = new();
+
         public ICommand InvalidateCanvasCommand { get; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public event EventHandler CanvasGridChanged;
+
+        public event EventHandler<CanvasSelectionChangedEventArgs> SelectedElementsChanged;
 
         public AffineModel AffineParams
         {
@@ -93,13 +101,6 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public event EventHandler CanvasGridChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-
         public static readonly DependencyProperty UnitSizeProperty =
             DependencyProperty.Register(nameof(UnitSize), typeof(double), typeof(CustomCanvas),
                 new FrameworkPropertyMetadata(20.0, FrameworkPropertyMetadataOptions.AffectsRender));
@@ -107,6 +108,8 @@ namespace Modeling_Canvas.UIElements
         public static readonly DependencyProperty GridFrequencyProperty =
             DependencyProperty.Register(nameof(GridFrequency), typeof(double), typeof(CustomCanvas),
                 new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         public CustomCanvas()
         {
@@ -144,12 +147,14 @@ namespace Modeling_Canvas.UIElements
             pixelCoordinates = new Point((pixelCoordinates.X - ActualWidth / 2 - XOffset) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y - YOffset) / UnitSize);
             return pixelCoordinates;
         }
+
         public double GetDegreesBetweenMouseAndPoint(Point point)
         {
             var mousePosition = GetCanvasMousePosition();
             var angleInDegrees = Math.Atan2(-(mousePosition.Y - point.Y), mousePosition.X - point.X) * (180 / Math.PI);
             return (angleInDegrees + 360) % 360;
         }
+
         public Point GetCanvasMousePosition()
         {
             var mouseOnCanvas = Mouse.GetPosition(this);
@@ -204,7 +209,6 @@ namespace Modeling_Canvas.UIElements
 
             return arrangeSize;
         }
-        public int NumberFrequency { get; set; } = 1;
 
         protected double GetOptimalGridFrequency()
         {
@@ -310,6 +314,7 @@ namespace Modeling_Canvas.UIElements
             dc.DrawLine(axisPen, TransformPoint(new Point(halfWidth, minY)), TransformPoint(new Point(halfWidth, maxY)));
 
         }
+
         protected void DrawGridCustomInfinityRender(DrawingContext dc)
         {
             double width = ActualWidth;
@@ -465,8 +470,6 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        public event EventHandler<CanvasSelectionChangedEventArgs> SelectedElementsChanged;
-
         public void SelectElement(Element element)
         {
             SelectedElements.Add(element);
@@ -478,7 +481,6 @@ namespace Modeling_Canvas.UIElements
             SelectedElements.Clear();
             SelectedElementsChanged?.Invoke(this, new CanvasSelectionChangedEventArgs(null));
         }
-
 
         protected override void OnMouseMove(MouseEventArgs e)
         {

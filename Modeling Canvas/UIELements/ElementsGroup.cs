@@ -7,17 +7,19 @@ namespace Modeling_Canvas.UIElements
 {
     public class ElementsGroup : CustomLine
     {
+        private Point _topLeftPosition = new Point(0, 0);
+
+        private Point _bottomRightPosition = new Point(0, 0);
+        
         public static int Counter { get; set; } = 1;
 
         public string Name { get; set; } = string.Empty;
 
         public double RectPadding { get; set; } = 0.5;
 
+        public List<GroupableElement> Children { get; set; } = new();
+
         public bool AnyItemIsSelected { get => Canvas.SelectedElements.Intersect(Children).Any(); }
-
-        private Point _topLeftPosition = new Point(0, 0);
-
-        private Point _bottomRightPosition = new Point(0, 0);
 
         public override Visibility ControlsVisibility => AnyItemIsSelected ? Visibility.Visible : Visibility.Hidden;
 
@@ -30,8 +32,6 @@ namespace Modeling_Canvas.UIElements
                     DashStyle = new DashStyle(new double[] { 10 }, 10)
                 };
         }
-
-        public List<GroupableElement> Children { get; set; } = new();
 
         public ElementsGroup(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
