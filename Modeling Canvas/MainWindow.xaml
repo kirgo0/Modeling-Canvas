@@ -18,7 +18,7 @@
             <ColumnDefinition Width="169*"/>
         </Grid.ColumnDefinitions>
 
-        <local:CustomCanvas x:Name="MainCanvas" Focusable="True" Background="White" Panel.ZIndex="0" Grid.Column="0">
+        <local:CustomCanvas x:Name="MainCanvas" Focusable="True" ClipToBounds="True" Background="White" Panel.ZIndex="0" Grid.Column="0">
         </local:CustomCanvas>
         <Label x:Name="MousePositionLabel" Content="X: Y:&#xD;&#xA;Pixels: " HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="109" Height="59" Panel.ZIndex="5" HorizontalContentAlignment="Right" Margin="0,0,5,10"/>
 

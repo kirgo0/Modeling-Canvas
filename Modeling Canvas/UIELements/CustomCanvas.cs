@@ -223,9 +223,84 @@ namespace Modeling_Canvas.UIElements
             return calculatedFrequency;
         }
 
+        //protected void DrawGrid(DrawingContext dc)
+        //{
+
+        //    double width = ActualWidth;
+        //    double height = ActualHeight;
+        //    double halfWidth = width / 2 + XOffset;
+        //    double halfHeight = height / 2 - YOffset;
+
+        //    Pen gridPen = new Pen(Brushes.Black, 0.1);
+
+        //    if (RenderMode is RenderMode.Projective || RenderMode is RenderMode.ProjectiveV2)
+        //        gridPen = new Pen(Brushes.Black, 0.4);
+
+        //    Pen axisPen = new Pen(Brushes.Black, 2);
+
+        //    if (UnitSize < 0 || GridFrequency < 0)
+        //    {
+        //        return;
+        //    }
+
+        //    var calculatedFrequency = GetOptimalGridFrequency();
+
+        //    double minX = 0, minY = 0, maxX = width, maxY = height;
+
+        //    // Draw vertical grid lines
+        //    for (double x = halfWidth; x < maxX; x += UnitSize * calculatedFrequency)
+        //    {
+        //        var p1 = TransformPoint(new Point(x, minY));
+        //        var p2 = TransformPoint(new Point(x, maxY));
+        //        dc.DrawLine(gridPen, p1, p2);
+
+        //        DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3),
+        //            TransformPoint(new Point(x, halfHeight)), 15, false);
+        //    }
+
+        //    for (double x = halfWidth; x > minX; x -= UnitSize * calculatedFrequency)
+        //    {
+        //        var p1 = TransformPoint(new Point(x, minY));
+        //        var p2 = TransformPoint(new Point(x, maxY));
+        //        dc.DrawLine(gridPen, p1, p2);
+
+        //        DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3),
+        //            TransformPoint(new Point(x, halfHeight)), 15, false);
+        //    }
+
+        //    //Draw horizontal grid lines
+        //    for (double y = halfHeight; y < maxY; y += UnitSize * calculatedFrequency)
+        //    {
+        //        var p1 = TransformPoint(new Point(minX, y));
+        //        var p2 = TransformPoint(new Point(maxX, y));
+        //        dc.DrawLine(gridPen, p1, p2);
+
+        //        DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3),
+        //            TransformPoint(new Point(halfWidth, y)), 15, true);
+        //    }
+
+        //    for (double y = halfHeight; y > minY; y -= UnitSize * calculatedFrequency)
+        //    {
+        //        var p1 = TransformPoint(new Point(minX, y));
+        //        var p2 = TransformPoint(new Point(maxX, y));
+        //        dc.DrawLine(gridPen, p1, p2);
+
+        //        DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3),
+        //            TransformPoint(new Point(halfWidth, y)), 15, true);
+        //    }
+
+        //    // Draw axes with transformation
+
+        //    // x axis
+        //    dc.DrawLine(axisPen, TransformPoint(new Point(minX, halfHeight)), TransformPoint(new Point(maxX, halfHeight)));
+
+        //    // y axis
+        //    dc.DrawLine(axisPen, TransformPoint(new Point(halfWidth, minY)), TransformPoint(new Point(halfWidth, maxY)));
+
+        //}
+
         protected void DrawGrid(DrawingContext dc)
         {
-
             double width = ActualWidth;
             double height = ActualHeight;
             double halfWidth = width / 2 + XOffset;
@@ -247,38 +322,22 @@ namespace Modeling_Canvas.UIElements
 
             double minX = 0, minY = 0, maxX = width, maxY = height;
 
-            if (AllowInfinityRender)
-            {
-                var corners = new[]
-                    {
-                        ReverseTransformPoint(new Point(0, 0)),
-                        ReverseTransformPoint(new Point(maxX, 0)),
-                        ReverseTransformPoint(new Point(0, height)),
-                        ReverseTransformPoint(new Point(maxX, height)),
-                    };
-
-                // Calculate bounds of the transformed canvas
-                minX = corners.Min(c => c.X);
-                maxX = corners.Max(c => c.X);
-                minY = corners.Min(c => c.Y);
-                maxY = corners.Max(c => c.Y);
-            }
-
             // Draw vertical grid lines
             for (double x = halfWidth; x < maxX; x += UnitSize * calculatedFrequency)
             {
                 var p1 = TransformPoint(new Point(x, minY));
                 var p2 = TransformPoint(new Point(x, maxY));
-                dc.DrawLine(gridPen, p1, p2);
+                DrawClippedLine(dc, gridPen, p1, p2);
 
                 DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3),
                     TransformPoint(new Point(x, halfHeight)), 15, false);
             }
+
             for (double x = halfWidth; x > minX; x -= UnitSize * calculatedFrequency)
             {
                 var p1 = TransformPoint(new Point(x, minY));
                 var p2 = TransformPoint(new Point(x, maxY));
-                dc.DrawLine(gridPen, p1, p2);
+                DrawClippedLine(dc, gridPen, p1, p2);
 
                 DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3),
                     TransformPoint(new Point(x, halfHeight)), 15, false);
@@ -289,7 +348,7 @@ namespace Modeling_Canvas.UIElements
             {
                 var p1 = TransformPoint(new Point(minX, y));
                 var p2 = TransformPoint(new Point(maxX, y));
-                dc.DrawLine(gridPen, p1, p2);
+                DrawClippedLine(dc, gridPen, p1, p2);
 
                 DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3),
                     TransformPoint(new Point(halfWidth, y)), 15, true);
@@ -299,7 +358,7 @@ namespace Modeling_Canvas.UIElements
             {
                 var p1 = TransformPoint(new Point(minX, y));
                 var p2 = TransformPoint(new Point(maxX, y));
-                dc.DrawLine(gridPen, p1, p2);
+                DrawClippedLine(dc, gridPen, p1, p2);
 
                 DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3),
                     TransformPoint(new Point(halfWidth, y)), 15, true);
@@ -308,104 +367,85 @@ namespace Modeling_Canvas.UIElements
             // Draw axes with transformation
 
             // x axis
-            dc.DrawLine(axisPen, TransformPoint(new Point(minX, halfHeight)), TransformPoint(new Point(maxX, halfHeight)));
+            DrawClippedLine(dc, axisPen, TransformPoint(new Point(minX, halfHeight)), TransformPoint(new Point(maxX, halfHeight)));
 
             // y axis
-            dc.DrawLine(axisPen, TransformPoint(new Point(halfWidth, minY)), TransformPoint(new Point(halfWidth, maxY)));
-
+            DrawClippedLine(dc, axisPen, TransformPoint(new Point(halfWidth, minY)), TransformPoint(new Point(halfWidth, maxY)));
         }
 
-        protected void DrawGridCustomInfinityRender(DrawingContext dc)
+        /// <summary>
+        /// Draws a line that is clipped to the bounds of the canvas.
+        /// </summary>
+        private void DrawClippedLine(DrawingContext dc, Pen pen, Point p1, Point p2)
         {
             double width = ActualWidth;
             double height = ActualHeight;
 
-            // Центр екрана з урахуванням зміщення
-            double halfWidth = width / 2 + XOffset;
-            double halfHeight = height / 2 - YOffset;
+            (bool isVisible, Point clippedP1, Point clippedP2) = ClipLineToRect(p1, p2, new Rect(0, 0, width, height));
 
-            Pen gridPen = new Pen(Brushes.Black, 0.1);
-            Pen axisPen = new Pen(Brushes.Black, 2);
-
-            if (UnitSize <= 0 || GridFrequency <= 0)
+            if (isVisible)
             {
-                return;
+                dc.DrawLine(pen, clippedP1, clippedP2);
             }
-
-            var calculatedFrequency = GetOptimalGridFrequency();
-            double step = UnitSize * calculatedFrequency;
-
-            // Межі видимої області в координатах сітки
-
-            double startX = -halfWidth / UnitSize;
-            double endX = (width - halfWidth) / UnitSize;
-            double startY = (halfHeight - height) / UnitSize;
-            double endY = halfHeight / UnitSize;
-
-            double gridStartX = Math.Floor(startX / calculatedFrequency) * calculatedFrequency;
-            double gridEndX = Math.Ceiling(endX / calculatedFrequency) * calculatedFrequency;
-            double gridStartY = Math.Floor(startY / calculatedFrequency) * calculatedFrequency;
-            double gridEndY = Math.Ceiling(endY / calculatedFrequency) * calculatedFrequency;
-
-            if (AllowInfinityRender)
-            {
-                var corners = new[]
-                    {
-                        ReverseTransformPoint(new Point(0, 0)),
-                        ReverseTransformPoint(new Point(width, 0)),
-                        ReverseTransformPoint(new Point(0, height)),
-                        ReverseTransformPoint(new Point(width, height)),
-                    };
-
-                // Calculate bounds of the transformed canvas
-                var minX = 0;
-                var maxX = corners.Max(c => c.X) / UnitSize;
-                var minY = 0;
-                var maxY = corners.Max(c => c.Y) / UnitSize;
-
-                gridStartX = Math.Floor(minX / calculatedFrequency) * calculatedFrequency;
-                gridEndX = Math.Ceiling(maxX / calculatedFrequency) * calculatedFrequency;
-                gridStartY = Math.Floor(minY / calculatedFrequency) * calculatedFrequency;
-                gridEndY = Math.Ceiling(maxY / calculatedFrequency) * calculatedFrequency;
-            }
-
-            // Малювання вертикальних ліній
-            for (double x = gridStartX; x <= gridEndX; x += calculatedFrequency)
-            {
-                double screenX = halfWidth + x * UnitSize;
-                var p1 = new Point(screenX, 0);
-                var p2 = new Point(screenX, height);
-                dc.DrawLine(gridPen, TransformPoint(p1), TransformPoint(p2));
-
-                // Вивід міток для осі X
-                DrawCoordinateLabel(dc, Math.Round(x, 3), TransformPoint(new Point(screenX, halfHeight)), 15, false);
-            }
-
-            // Малювання горизонтальних ліній
-            for (double y = gridStartY; y <= gridEndY; y += calculatedFrequency)
-            {
-                double screenY = halfHeight - y * UnitSize; // Інверсія Y
-                var p1 = new Point(0, screenY);
-                var p2 = new Point(width, screenY);
-                dc.DrawLine(gridPen, TransformPoint(p1), TransformPoint(p2));
-
-                // Вивід міток для осі Y
-                DrawCoordinateLabel(dc, Math.Round(y, 3), TransformPoint(new Point(halfWidth, screenY)), 15, true);
-            }
-
-            // Малювання осей
-            // X-axis
-
-            var xAxisStart = TransformPoint(new Point(0, halfHeight));
-            var xAxisEnd = TransformPoint(new Point(width, halfHeight));
-            dc.DrawLine(axisPen, xAxisStart, xAxisEnd);
-
-            // Y-axis
-            var yAxisStart = TransformPoint(new Point(halfWidth, 0));
-            var yAxisEnd = TransformPoint(new Point(halfWidth, height));
-            dc.DrawLine(axisPen, yAxisStart, yAxisEnd);
-
         }
+
+        /// <summary>
+        /// Clips a line to the bounds of a rectangle using the Liang-Barsky algorithm.
+        /// </summary>
+        private (bool isVisible, Point clippedP1, Point clippedP2) ClipLineToRect(Point p1, Point p2, Rect bounds)
+        {
+            double xMin = bounds.Left;
+            double xMax = bounds.Right;
+            double yMin = bounds.Top;
+            double yMax = bounds.Bottom;
+
+            double dx = p2.X - p1.X;
+            double dy = p2.Y - p1.Y;
+
+            double t0 = 0, t1 = 1;
+
+            bool ClipTest(double p, double q, ref double t0, ref double t1)
+            {
+                if (p == 0)
+                {
+                    return q >= 0;
+                }
+
+                double r = q / p;
+                if (p < 0)
+                {
+                    if (r > t1) return false;
+                    if (r > t0) t0 = r;
+                }
+                else
+                {
+                    if (r < t0) return false;
+                    if (r < t1) t1 = r;
+                }
+
+                return true;
+            }
+
+            if (ClipTest(-dx, p1.X - xMin, ref t0, ref t1) &&
+                ClipTest(dx, xMax - p1.X, ref t0, ref t1) &&
+                ClipTest(-dy, p1.Y - yMin, ref t0, ref t1) &&
+                ClipTest(dy, yMax - p1.Y, ref t0, ref t1))
+            {
+                if (t1 < 1)
+                {
+                    p2 = new Point(p1.X + t1 * dx, p1.Y + t1 * dy);
+                }
+                if (t0 > 0)
+                {
+                    p1 = new Point(p1.X + t0 * dx, p1.Y + t0 * dy);
+                }
+
+                return (true, p1, p2);
+            }
+
+            return (false, p1, p2);
+        }
+
 
         private void DrawCoordinateLabel(DrawingContext dc, double value, Point position, double fontSize, bool isHorizontal)
         {
