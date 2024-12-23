@@ -33,6 +33,7 @@ namespace Modeling_Canvas.UIElements
 
         public HashSet<Element> SelectedElements { get; set; } = new();
 
+        public Pen GridPen { get; set; } = new Pen(Brushes.Black, 0.2);
         public ICommand InvalidateCanvasCommand { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -132,7 +133,10 @@ namespace Modeling_Canvas.UIElements
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-            DrawGrid(dc);
+            if (RenderMode is not RenderMode.ProjectiveV2)
+                DrawGrid(dc);
+            else
+                DrawProjectiveGrid(dc);
         }
 
         public Point GetTransformedUnitCoordinates(Point pixelCoordinates)
@@ -223,9 +227,125 @@ namespace Modeling_Canvas.UIElements
             return calculatedFrequency;
         }
 
+        protected void DrawGrid(DrawingContext dc)
+        {
+
+            double width = ActualWidth;
+            double height = ActualHeight;
+            double halfWidth = width / 2 + XOffset;
+            double halfHeight = height / 2 - YOffset;
+
+            Pen gridPen = GridPen;
+
+            Pen axisPen = new Pen(Brushes.Black, 2);
+
+            if (UnitSize < 0 || GridFrequency < 0)
+            {
+                return;
+            }
+
+            var calculatedFrequency = GetOptimalGridFrequency();
+
+            double minX = 0, minY = 0, maxX = width, maxY = height;
+
+            // Draw vertical grid lines
+            for (double x = halfWidth; x < maxX; x += UnitSize * calculatedFrequency)
+            {
+                var p1 = TransformPoint(new Point(x, minY));
+                var p2 = TransformPoint(new Point(x, maxY));
+                dc.DrawLine(gridPen, p1, p2);
+
+                DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3),
+                    TransformPoint(new Point(x, halfHeight)), 15, false);
+            }
+
+            for (double x = halfWidth; x > minX; x -= UnitSize * calculatedFrequency)
+            {
+                var p1 = TransformPoint(new Point(x, minY));
+                var p2 = TransformPoint(new Point(x, maxY));
+                dc.DrawLine(gridPen, p1, p2);
+
+                DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3),
+                    TransformPoint(new Point(x, halfHeight)), 15, false);
+            }
+
+            //Draw horizontal grid lines
+            for (double y = halfHeight; y < maxY; y += UnitSize * calculatedFrequency)
+            {
+                var p1 = TransformPoint(new Point(minX, y));
+                var p2 = TransformPoint(new Point(maxX, y));
+                dc.DrawLine(gridPen, p1, p2);
+
+                DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3),
+                    TransformPoint(new Point(halfWidth, y)), 15);
+            }
+
+            for (double y = halfHeight; y > minY; y -= UnitSize * calculatedFrequency)
+            {
+                var p1 = TransformPoint(new Point(minX, y));
+                var p2 = TransformPoint(new Point(maxX, y));
+                dc.DrawLine(gridPen, p1, p2);
+
+                DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3),
+                    TransformPoint(new Point(halfWidth, y)), 15);
+            }
+
+            // Draw axes with transformation
+
+            // x axis
+            dc.DrawLine(axisPen, TransformPoint(new Point(minX, halfHeight)), TransformPoint(new Point(maxX, halfHeight)));
+
+            // y axis
+            dc.DrawLine(axisPen, TransformPoint(new Point(halfWidth, minY)), TransformPoint(new Point(halfWidth, maxY)));
+
+        }
+
+        protected void DrawProjectiveGrid(DrawingContext drawingContext)
+        {
+            double width = ProjectiveParams.Xx / UnitSize;
+            double height = ProjectiveParams.Yy / UnitSize;
+
+            // Draw vertical grid lines and numbers
+            for (int x = 0; x <= (int)width; x++)
+            {
+                Point start = TransformPoint(new Point(x * UnitSize, 0));
+                Point end = TransformPoint(new Point(x * UnitSize, height * UnitSize));
+                drawingContext.DrawLine(GridPen, start, end);
+
+                // Draw numbers for vertical grid lines, flipping Y-coordinate
+                Point numberPosition = new Point(start.X + 5, start.Y + 15);
+                //DrawNumber(drawingContext, x.ToString(), numberPosition);
+            }
+
+            // Draw horizontal grid lines and numbers
+            for (int y = 0; y <= (int)height; y++)
+            {
+                Point start = TransformPoint(new Point(0, y * UnitSize));
+                Point end = TransformPoint(new Point(width * UnitSize, y * UnitSize));
+                drawingContext.DrawLine(GridPen, start, end);
+
+                if (y == 0) continue;
+                // Draw numbers for horizontal grid lines, flipping Y-coordinate
+                Point numberPosition = new Point(start.X + 5, start.Y + 15);
+                //DrawCoordinateLabel(drawingContext, y.ToString(), numberPosition);
+            }
+
+            // Draw the X and Y axes
+            Pen axisPen = new Pen(Brushes.Black, 2);
+
+            // X-axis
+            Point xAxisStart = TransformPoint(new Point(0, 0));
+            Point xAxisEnd = TransformPoint(new Point(width * UnitSize, 0));
+            drawingContext.DrawLine(axisPen, xAxisStart, xAxisEnd);
+
+            // Y-axis
+            Point yAxisStart = TransformPoint(new Point(0, 0));
+            Point yAxisEnd = TransformPoint(new Point(0, height * UnitSize));
+            drawingContext.DrawLine(axisPen, yAxisStart, yAxisEnd);
+        }
+
         //protected void DrawGrid(DrawingContext dc)
         //{
-
         //    double width = ActualWidth;
         //    double height = ActualHeight;
         //    double halfWidth = width / 2 + XOffset;
@@ -245,45 +365,45 @@ namespace Modeling_Canvas.UIElements
 
         //    var calculatedFrequency = GetOptimalGridFrequency();
 
-        //    double minX = 0, minY = 0, maxX = width, maxY = height;
+        //    double minX = halfWidth, minY = 0, maxX = width, maxY = height;
 
         //    // Draw vertical grid lines
-        //    for (double x = halfWidth; x < maxX; x += UnitSize * calculatedFrequency)
-        //    {
-        //        var p1 = TransformPoint(new Point(x, minY));
-        //        var p2 = TransformPoint(new Point(x, maxY));
-        //        dc.DrawLine(gridPen, p1, p2);
+        //    //for (double x = halfWidth; x < maxX; x += UnitSize * calculatedFrequency)
+        //    //{
+        //    //    var p1 = TransformPoint(new Point(x, minY));
+        //    //    var p2 = TransformPoint(new Point(x, maxY));
+        //    //    DrawClippedLine(dc, gridPen, p1, p2);
 
-        //        DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3),
-        //            TransformPoint(new Point(x, halfHeight)), 15, false);
-        //    }
+        //    //    DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3),
+        //    //        TransformPoint(new Point(x, halfHeight)), 15, false);
+        //    //}
 
         //    for (double x = halfWidth; x > minX; x -= UnitSize * calculatedFrequency)
         //    {
         //        var p1 = TransformPoint(new Point(x, minY));
         //        var p2 = TransformPoint(new Point(x, maxY));
-        //        dc.DrawLine(gridPen, p1, p2);
+        //        DrawClippedLine(dc, gridPen, p1, p2);
 
         //        DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3),
         //            TransformPoint(new Point(x, halfHeight)), 15, false);
         //    }
 
-        //    //Draw horizontal grid lines
-        //    for (double y = halfHeight; y < maxY; y += UnitSize * calculatedFrequency)
-        //    {
-        //        var p1 = TransformPoint(new Point(minX, y));
-        //        var p2 = TransformPoint(new Point(maxX, y));
-        //        dc.DrawLine(gridPen, p1, p2);
+        //    // Draw horizontal grid lines
+        //    //for (double y = halfHeight; y < maxY; y += UnitSize * calculatedFrequency)
+        //    //{
+        //    //    var p1 = TransformPoint(new Point(minX, y));
+        //    //    var p2 = TransformPoint(new Point(maxX, y));
+        //    //    DrawClippedLine(dc, gridPen, p1, p2);
 
-        //        DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3),
-        //            TransformPoint(new Point(halfWidth, y)), 15, true);
-        //    }
+        //    //    DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3),
+        //    //        TransformPoint(new Point(halfWidth, y)), 15, true);
+        //    //}
 
         //    for (double y = halfHeight; y > minY; y -= UnitSize * calculatedFrequency)
         //    {
         //        var p1 = TransformPoint(new Point(minX, y));
         //        var p2 = TransformPoint(new Point(maxX, y));
-        //        dc.DrawLine(gridPen, p1, p2);
+        //        DrawClippedLine(dc, gridPen, p1, p2);
 
         //        DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3),
         //            TransformPoint(new Point(halfWidth, y)), 15, true);
@@ -292,86 +412,11 @@ namespace Modeling_Canvas.UIElements
         //    // Draw axes with transformation
 
         //    // x axis
-        //    dc.DrawLine(axisPen, TransformPoint(new Point(minX, halfHeight)), TransformPoint(new Point(maxX, halfHeight)));
+        //    DrawClippedLine(dc, axisPen, TransformPoint(new Point(minX, halfHeight)), TransformPoint(new Point(maxX, halfHeight)));
 
         //    // y axis
-        //    dc.DrawLine(axisPen, TransformPoint(new Point(halfWidth, minY)), TransformPoint(new Point(halfWidth, maxY)));
-
+        //    DrawClippedLine(dc, axisPen, TransformPoint(new Point(halfWidth, minY)), TransformPoint(new Point(halfWidth, maxY)));
         //}
-
-        protected void DrawGrid(DrawingContext dc)
-        {
-            double width = ActualWidth;
-            double height = ActualHeight;
-            double halfWidth = width / 2 + XOffset;
-            double halfHeight = height / 2 - YOffset;
-
-            Pen gridPen = new Pen(Brushes.Black, 0.1);
-
-            if (RenderMode is RenderMode.Projective || RenderMode is RenderMode.ProjectiveV2)
-                gridPen = new Pen(Brushes.Black, 0.4);
-
-            Pen axisPen = new Pen(Brushes.Black, 2);
-
-            if (UnitSize < 0 || GridFrequency < 0)
-            {
-                return;
-            }
-
-            var calculatedFrequency = GetOptimalGridFrequency();
-
-            double minX = 0, minY = 0, maxX = width, maxY = height;
-
-            // Draw vertical grid lines
-            for (double x = halfWidth; x < maxX; x += UnitSize * calculatedFrequency)
-            {
-                var p1 = TransformPoint(new Point(x, minY));
-                var p2 = TransformPoint(new Point(x, maxY));
-                DrawClippedLine(dc, gridPen, p1, p2);
-
-                DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3),
-                    TransformPoint(new Point(x, halfHeight)), 15, false);
-            }
-
-            for (double x = halfWidth; x > minX; x -= UnitSize * calculatedFrequency)
-            {
-                var p1 = TransformPoint(new Point(x, minY));
-                var p2 = TransformPoint(new Point(x, maxY));
-                DrawClippedLine(dc, gridPen, p1, p2);
-
-                DrawCoordinateLabel(dc, Math.Round((x - halfWidth) / UnitSize, 3),
-                    TransformPoint(new Point(x, halfHeight)), 15, false);
-            }
-
-            // Draw horizontal grid lines
-            for (double y = halfHeight; y < maxY; y += UnitSize * calculatedFrequency)
-            {
-                var p1 = TransformPoint(new Point(minX, y));
-                var p2 = TransformPoint(new Point(maxX, y));
-                DrawClippedLine(dc, gridPen, p1, p2);
-
-                DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3),
-                    TransformPoint(new Point(halfWidth, y)), 15, true);
-            }
-
-            for (double y = halfHeight; y > minY; y -= UnitSize * calculatedFrequency)
-            {
-                var p1 = TransformPoint(new Point(minX, y));
-                var p2 = TransformPoint(new Point(maxX, y));
-                DrawClippedLine(dc, gridPen, p1, p2);
-
-                DrawCoordinateLabel(dc, Math.Round(-(y - halfHeight) / UnitSize, 3),
-                    TransformPoint(new Point(halfWidth, y)), 15, true);
-            }
-
-            // Draw axes with transformation
-
-            // x axis
-            DrawClippedLine(dc, axisPen, TransformPoint(new Point(minX, halfHeight)), TransformPoint(new Point(maxX, halfHeight)));
-
-            // y axis
-            DrawClippedLine(dc, axisPen, TransformPoint(new Point(halfWidth, minY)), TransformPoint(new Point(halfWidth, maxY)));
-        }
 
         /// <summary>
         /// Draws a line that is clipped to the bounds of the canvas.
@@ -447,7 +492,7 @@ namespace Modeling_Canvas.UIElements
         }
 
 
-        private void DrawCoordinateLabel(DrawingContext dc, double value, Point position, double fontSize, bool isHorizontal)
+        private void DrawCoordinateLabel(DrawingContext dc, double value, Point position, double fontSize = 15, bool isHorizontal = true)
         {
             if (value == 0)
                 return;

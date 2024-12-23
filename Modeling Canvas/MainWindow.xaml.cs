@@ -21,10 +21,10 @@ namespace Modeling_Canvas
             PointExtensions.Canvas = MainCanvas;
             CenterWindowOnScreen();
 
-            //InitFigure();
-            var a = new Hypocycloid(MainCanvas, 4, 1);
-            MainCanvas.Children.Add(a);
-            a.Center = new Point(0, 0);
+            InitFigure();
+            //var a = new Hypocycloid(MainCanvas, 4, 1);
+            //MainCanvas.Children.Add(a);
+            //a.Center = new Point(0, 0);
 
             //var b = new SegmentedCircle(MyCanvas);
             //MyCanvas.Children.Add(b);
@@ -144,8 +144,6 @@ namespace Modeling_Canvas
             if (DefaultTab.IsSelected) MainCanvas.RenderMode = Modeling_Canvas.Enums.RenderMode.Default;
             else if (AffineTab.IsSelected) MainCanvas.RenderMode = Enums.RenderMode.Affine;
             else if (ProjectiveTab.IsSelected) MainCanvas.RenderMode = Enums.RenderMode.ProjectiveV2;
-            else if (ProjectiveTabV2.IsSelected) MainCanvas.RenderMode = Enums.RenderMode.Projective;
-
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)

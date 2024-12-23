@@ -223,8 +223,8 @@ namespace Modeling_Canvas.Extensions
 
 
             // Поточні координати точки
-            var x = Canvas.ActualWidth / 2 - point.X;
-            var y = Canvas.ActualHeight - Canvas.ActualHeight / 2 - point.Y;
+            var x = point.X;
+            var y = point.Y;
 
             // Обчислення знаменника w
 
@@ -235,11 +235,11 @@ namespace Modeling_Canvas.Extensions
 
             // Обчислення трансформованих координат
             //           x* m00 +y * m10 + m20
-            double tx = ((x * xx + y * yx + ox)/ w) + Canvas.ActualWidth / 2;
+            double tx = ((x * xx + y * yx + ox) / w);
             //          x * m02 + y * m12 + m22
-            double ty = ((x * xy + y * yy + oy) / w) + Canvas.ActualHeight / 2;
+            double ty = ((x * xy + y * yy + oy) / w);
 
-            return new Point(tx, Canvas.ActualHeight - ty);
+            return new Point(tx, ty);
         }
 
         public static Point ReverseProjectiveV2Transformation(this Point canvasPoint, ProjectiveModel projective)
@@ -254,8 +254,8 @@ namespace Modeling_Canvas.Extensions
             double wy = projective.wY;
             double wo = projective.wO;
 
-            var u = Canvas.ActualWidth / 2 - canvasPoint.X;
-            var v = Canvas.ActualHeight - Canvas.ActualHeight / 2 - canvasPoint.Y;
+            var u = canvasPoint.X;
+            var v = canvasPoint.Y;
             // Set up the system of equations:
             // u * (wx * x + wy * y + wo) = xx * x + yx * y + ox
             // v * (wx * x + wy * y + wo) = xy * x + yy * y + oy
@@ -280,11 +280,10 @@ namespace Modeling_Canvas.Extensions
             //    throw new InvalidOperationException("The system of equations is singular and cannot be solved.");
 
             // Calculate the original point (x, y)
-            double x = (c1 * b2 - c2 * b1) / determinant + Canvas.ActualWidth / 2;
-            double y = (a1 * c2 - a2 * c1) / determinant + Canvas.ActualHeight / 2;
+            double x = (c1 * b2 - c2 * b1) / determinant;
+            double y = (a1 * c2 - a2 * c1) / determinant;
 
-            //return new Point(x, projective.CanvasHeight - y);
-            return new Point(x, Canvas.ActualHeight - y);
+            return new Point(x, y);
         }
     }
 }
