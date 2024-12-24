@@ -133,10 +133,12 @@ namespace Modeling_Canvas.UIElements
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-            if (RenderMode is not RenderMode.ProjectiveV2)
-                DrawGrid(dc);
-            else
+            if (RenderMode is RenderMode.ProjectiveV2)
+                DrawProjectiveV2Grid(dc);
+            else if (RenderMode is RenderMode.Projective)
                 DrawProjectiveGrid(dc);
+            else
+                DrawGrid(dc);
             foreach (UIElement child in this.Children)
             {
                 if (child is FrameworkElement fe)
@@ -172,6 +174,8 @@ namespace Modeling_Canvas.UIElements
             {
                 case RenderMode.Affine:
                     return point.ApplyAffineTransformation(AffineParams);
+                case RenderMode.Projective:
+                    return point.ApplyProjectiveTransformation(ProjectiveParams);
                 case RenderMode.ProjectiveV2:
                     return point.ApplyProjectiveV2Transformation(ProjectiveParams);
                 default:
@@ -185,6 +189,8 @@ namespace Modeling_Canvas.UIElements
             {
                 case RenderMode.Affine:
                     return point.ReverseAffineTransformation(AffineParams);
+                case RenderMode.Projective:
+                    return point.ReverseProjectiveTransformation(ProjectiveParams);
                 case RenderMode.ProjectiveV2:
                     return point.ReverseProjectiveV2Transformation(ProjectiveParams);
                 default:
@@ -290,10 +296,6 @@ namespace Modeling_Canvas.UIElements
                 Point start = TransformPoint(new Point(x * UnitSize, 0));
                 Point end = TransformPoint(new Point(x * UnitSize, height * UnitSize));
                 drawingContext.DrawLine(GridPen, start, end);
-
-                // Draw numbers for vertical grid lines, flipping Y-coordinate
-                Point numberPosition = new Point(start.X + 5, start.Y + 15);
-                //DrawNumber(drawingContext, x.ToString(), numberPosition);
             }
 
             // Draw horizontal grid lines and numbers
@@ -302,11 +304,6 @@ namespace Modeling_Canvas.UIElements
                 Point start = TransformPoint(new Point(0, y * UnitSize));
                 Point end = TransformPoint(new Point(width * UnitSize, y * UnitSize));
                 drawingContext.DrawLine(GridPen, start, end);
-
-                if (y == 0) continue;
-                // Draw numbers for horizontal grid lines, flipping Y-coordinate
-                Point numberPosition = new Point(start.X + 5, start.Y + 15);
-                //DrawCoordinateLabel(drawingContext, y.ToString(), numberPosition);
             }
 
             // Draw the X and Y axes
@@ -319,6 +316,50 @@ namespace Modeling_Canvas.UIElements
 
             // Y-axis
             Point yAxisStart = TransformPoint(new Point(0, 0));
+            Point yAxisEnd = TransformPoint(new Point(0, height * UnitSize));
+            drawingContext.DrawLine(axisPen, yAxisStart, yAxisEnd);
+        }
+
+        protected void DrawProjectiveV2Grid(DrawingContext drawingContext)
+        {
+            double width = ProjectiveParams.Xx / UnitSize;
+            double height = ProjectiveParams.Yy / UnitSize;
+
+            // Draw vertical grid lines and numbers
+            for (int x = -(int)width; x <= (int)width; x++)
+            {
+                Point start = TransformPoint(new Point(x * UnitSize, -height * UnitSize));
+                Point end = TransformPoint(new Point(x * UnitSize, height * UnitSize));
+                drawingContext.DrawLine(GridPen, start, end);
+
+                // Draw numbers for vertical grid lines, flipping Y-coordinate
+                Point numberPosition = new Point(start.X + 5, start.Y + 15);
+                //DrawNumber(drawingContext, x.ToString(), numberPosition);
+            }
+
+            // Draw horizontal grid lines and numbers
+            for (int y = -(int)height; y <= (int)height; y++)
+            {
+                Point start = TransformPoint(new Point(-width * UnitSize, y * UnitSize));
+                Point end = TransformPoint(new Point(width * UnitSize, y * UnitSize));
+                drawingContext.DrawLine(GridPen, start, end);
+
+                if (y == 0) continue;
+                // Draw numbers for horizontal grid lines, flipping Y-coordinate
+                Point numberPosition = new Point(start.X + 5, start.Y + 15);
+                //DrawCoordinateLabel(drawingContext, y.ToString(), numberPosition);
+            }
+
+            //// Draw the X and Y axes
+            Pen axisPen = new Pen(Brushes.Black, 2);
+
+            // X-axis
+            Point xAxisStart = TransformPoint(new Point(-width * UnitSize, 0));
+            Point xAxisEnd = TransformPoint(new Point(width * UnitSize, 0));
+            drawingContext.DrawLine(axisPen, xAxisStart, xAxisEnd);
+
+            // Y-axis
+            Point yAxisStart = TransformPoint(new Point(0, -height * UnitSize));
             Point yAxisEnd = TransformPoint(new Point(0, height * UnitSize));
             drawingContext.DrawLine(axisPen, yAxisStart, yAxisEnd);
         }

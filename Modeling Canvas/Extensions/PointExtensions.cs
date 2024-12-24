@@ -96,6 +96,64 @@ namespace Modeling_Canvas.Extensions
             );
         }
 
+
+        public static Point ApplyProjectiveTransformation(this Point point, ProjectiveModel projective)
+        {
+            double xx = projective.Xx * projective.wX;
+            double xy = projective.Xy * projective.wX;
+            double yy = projective.Yy * projective.wY;
+            double yx = projective.Yx * projective.wY;
+            double ox = projective.Ox * Canvas.UnitSize * projective.wO;
+            double oy = projective.Oy * Canvas.UnitSize * projective.wO;
+            double wx = projective.wX;
+            double wy = projective.wY;
+            double wo = projective.wO;
+            
+            var x = point.X;
+            var y = point.Y;
+
+            double w1 = x * wx + y * wy + wo;
+            double w = Math.Abs(x * wx + y * wy + wo);
+            if (w == 0)
+                return new Point(0, 0);
+            
+            double tx = ((x * xx + y * yx + ox) / w);
+            double ty = ((x * xy + y * yy + oy) / w);
+
+            return new Point(tx + 5, ty + 5);
+        }
+
+        public static Point ReverseProjectiveTransformation(this Point canvasPoint, ProjectiveModel projective)
+        {
+            double xx = projective.Xx * projective.wX;
+            double xy = projective.Xy * projective.wX;
+            double yy = projective.Yy * projective.wY;
+            double yx = projective.Yx * projective.wY;
+            double ox = projective.Ox * Canvas.UnitSize * projective.wO;
+            double oy = projective.Oy * Canvas.UnitSize * projective.wO;
+            double wx = projective.wX;
+            double wy = projective.wY;
+            double wo = projective.wO;
+
+            var u = canvasPoint.X;
+            var v = canvasPoint.Y;
+            
+            double a1 = xx - u * wx;
+            double b1 = yx - u * wy;
+            double c1 = u * wo - ox;
+
+            double a2 = xy - v * wx;
+            double b2 = yy - v * wy;
+            double c2 = v * wo - oy;
+
+            double determinant = a1 * b2 - a2 * b1;
+
+            double x = (c1 * b2 - c2 * b1) / determinant;
+            double y = (a1 * c2 - a2 * c1) / determinant;
+
+            return new Point(x, y);
+        }
+
         public static Point ApplyProjectiveV2Transformation(this Point point, ProjectiveModel projective)
         {
             double xx = projective.Xx * projective.wX;

@@ -228,7 +228,7 @@ namespace Modeling_Canvas.UIElements
             var geometry = new StreamGeometry();
             if (_transformGeometry)
             {
-                var offsetToCenter = Canvas.RenderMode is not RenderMode.ProjectiveV2;
+                var offsetToCenter = Canvas.RenderMode is not RenderMode.ProjectiveV2 && Canvas.RenderMode is not RenderMode.Projective;
 
                 using (var context = geometry.Open())
                 {
@@ -277,6 +277,8 @@ namespace Modeling_Canvas.UIElements
                 canvasP = new Point(canvasP.X + Canvas.XOffset + Canvas.ActualWidth / 2, canvasP.Y + Canvas.YOffset + Canvas.ActualHeight / 2);
             if (Canvas.RenderMode is RenderMode.Affine)
                 canvasP = canvasP.ApplyAffineTransformation(Canvas.AffineParams);
+            if (Canvas.RenderMode is RenderMode.Projective)
+                canvasP = canvasP.ApplyProjectiveTransformation(Canvas.ProjectiveParams);
             if (Canvas.RenderMode is RenderMode.ProjectiveV2)
                 canvasP = canvasP.ApplyProjectiveV2Transformation(Canvas.ProjectiveParams);
             return canvasP;

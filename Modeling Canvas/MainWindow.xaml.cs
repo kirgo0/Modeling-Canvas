@@ -21,6 +21,9 @@ namespace Modeling_Canvas
             PointExtensions.Canvas = MainCanvas;
             CenterWindowOnScreen();
 
+            //var grid = new CoordinateGrid(MainCanvas, false);
+            //MainCanvas.Children.Add(grid);
+
             InitFigure();
             //var a = new Hypocycloid(MainCanvas, 4, 1);
             //MainCanvas.Children.Add(a);
@@ -143,7 +146,8 @@ namespace Modeling_Canvas
         {
             if (DefaultTab.IsSelected) MainCanvas.RenderMode = Modeling_Canvas.Enums.RenderMode.Default;
             else if (AffineTab.IsSelected) MainCanvas.RenderMode = Enums.RenderMode.Affine;
-            else if (ProjectiveTab.IsSelected) MainCanvas.RenderMode = Enums.RenderMode.ProjectiveV2;
+            else if (ProjectiveTab.IsSelected) MainCanvas.RenderMode = Enums.RenderMode.Projective;
+            else if (ProjectiveV2Tab.IsSelected) MainCanvas.RenderMode = Enums.RenderMode.ProjectiveV2;
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)

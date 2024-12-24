@@ -86,7 +86,8 @@ namespace Modeling_Canvas.UIElements
         {
             if (_isGeometryDirty)
             {
-                var transformedPosition = TransformPoint(Position, Canvas.RenderMode is not RenderMode.ProjectiveV2);
+                var isProjective = Canvas.RenderMode is RenderMode.ProjectiveV2 || Canvas.RenderMode is RenderMode.Projective;
+                var transformedPosition = TransformPoint(Position, !isProjective);
                 switch (Shape)
                 {
                     case PointShape.Circle:
