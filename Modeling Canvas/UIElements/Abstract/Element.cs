@@ -1,4 +1,5 @@
 ﻿using Modeling_Canvas.Enums;
+using Modeling_Canvas.Models;
 using Modeling_Canvas.UIElements.Interfaces;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -11,8 +12,6 @@ namespace Modeling_Canvas.UIElements
 {
     public abstract partial class Element : FrameworkElement, INotifyPropertyChanged, IMovableElement
     {
-        
-
         private Brush _fill = null;
 
         private double _strokeThickness = 1;
@@ -24,6 +23,8 @@ namespace Modeling_Canvas.UIElements
         private bool _overrideAnchorPoint = false;
 
         private bool _anchorVisible = true;
+
+        private Visibility _controlsVisibility = Visibility.Hidden;
 
         protected Point _lastMousePosition;
 
@@ -55,6 +56,10 @@ namespace Modeling_Canvas.UIElements
 
         public bool ControlsVisible { get; set; } = true;
 
+        public double DragRadius { get; set; } = 10;
+
+        public Pen DragzonePen { get; set; }
+
         public Element? LogicalParent { get; set; } = null;
 
         public CustomCanvas Canvas { get; set; }
@@ -64,8 +69,6 @@ namespace Modeling_Canvas.UIElements
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual bool SnappingEnabled { get => AllowSnapping ? InputManager.ShiftPressed : false; }
-
-        private Visibility _controlsVisibility = Visibility.Hidden;
 
         public Brush Fill
         {
@@ -187,6 +190,7 @@ namespace Modeling_Canvas.UIElements
             Focusable = false;
             FocusVisualStyle = null;
             HasAnchorPoint = hasAnchorPoint;
+            DragzonePen = new Pen(Brushes.Transparent, DragRadius);
             Canvas.SelectedElementsChanged += (s, e) =>
             {
                 if (e.SelectedElement is not null
@@ -201,6 +205,7 @@ namespace Modeling_Canvas.UIElements
                     ControlsVisibility = Visibility.Hidden;
                 }
             };
+
         }
 
         protected override void OnRender(DrawingContext dc)
@@ -213,11 +218,69 @@ namespace Modeling_Canvas.UIElements
                 }
                 AnchorPoint.Visibility = AnchorVisibility;
             }
-            DefaultRender(dc);
 
+            var geometry = GetElementGeometry();
+
+            TransformGroup transformGroup = new TransformGroup();
+
+            transformGroup.Children.Add(new ScaleTransform(UnitSize, UnitSize));
+
+            transformGroup.Children.Add(new TranslateTransform(Canvas.XOffset, Canvas.YOffset));
+
+            transformGroup.Children.Add(new TranslateTransform(Canvas.ActualWidth / 2, Canvas.ActualHeight / 2));
+            if(Canvas.RenderMode is RenderMode.Affine)
+            {
+                var affine = Canvas.AffineParams;
+
+                var matrix = new Matrix(
+                    affine.Xx, affine.Xy,  // Scale and skew
+                    affine.Yx, affine.Yy,  // Skew and scale
+                    affine.Ox, affine.Oy   // Translation
+                );
+
+                transformGroup.Children.Add(new TranslateTransform(-Canvas.ActualWidth / 2, -Canvas.ActualHeight / 2));
+
+                transformGroup.Children.Add(new MatrixTransform(matrix));
+
+                transformGroup.Children.Add(new TranslateTransform(Canvas.ActualWidth / 2, Canvas.ActualHeight / 2));
+            }            
+            // Apply the transformations to the geometry
+            geometry.Transform = transformGroup;
+            
+            // Draw the transformed geometry
+            dc.DrawGeometry(Fill, StrokePen, geometry);
+            dc.DrawGeometry(null, DragzonePen, geometry);
         }
 
-        protected abstract void DefaultRender(DrawingContext dc);
+        private Point TransformPoint(Point point, ProjectiveModel projective)
+        {
+            double xx = projective.Xx * projective.wX;
+            double xy = projective.Xy * projective.wX;
+            double yy = projective.Yy * projective.wY;
+            double yx = projective.Yx * projective.wY;
+            double ox = projective.Ox * Canvas.UnitSize * projective.wO;
+            double oy = projective.Oy * Canvas.UnitSize * projective.wO;
+            double wx = projective.wX;
+            double wy = projective.wY;
+            double wo = projective.wO;
+
+            double x = point.X;
+            double y = point.Y;
+
+            // Calculate denominator
+            double w = x * wx + y * wy + wo;
+            if (w == 0)
+                return new Point(0, 0);
+
+            // Transform coordinates
+            double tx = (x * xx + y * yx + ox) / w;
+            double ty = (x * xy + y * yy + oy) / w;
+
+            return new Point(tx, ty);
+        }
+
+
+        protected abstract StreamGeometry GetElementGeometry();
 
         protected override void OnInitialized(EventArgs e)
         {
@@ -231,7 +294,7 @@ namespace Modeling_Canvas.UIElements
             {
                 AnchorPoint = new DraggablePoint(Canvas, false)
                 {
-                    Radius = 10,
+                    Radius = 0.2,
                     Focusable = false,
                     Fill = Brushes.Transparent,
                     Stroke = Brushes.Green,
@@ -252,7 +315,6 @@ namespace Modeling_Canvas.UIElements
 
         protected virtual void InitControlPanel()
         {
-            //RenderControlPanelLabel();
             AddOffsetControls();
             AddRotateControls();
             AddScaleControls();

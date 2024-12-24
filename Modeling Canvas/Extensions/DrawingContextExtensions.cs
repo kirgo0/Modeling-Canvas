@@ -14,8 +14,7 @@ namespace Modeling_Canvas.Extensions
             dc.DrawLine(new Pen(Brushes.Transparent, pen.Thickness + transparentThickness), p1, p2);
         }
 
-        public static StreamGeometry DrawCircle(this DrawingContext dc, CustomCanvas canvas, Brush fill, Pen strokePen, Point center, double radius, int precision,
-            double transparentThickness = 0, bool applyShapeTransform = true)
+        public static StreamGeometry GetCircleGeometry(this CustomCanvas canvas, Point center, double radius, int precision)
         {
             var geometry = new StreamGeometry();
 
@@ -24,8 +23,8 @@ namespace Modeling_Canvas.Extensions
                 // Calculate the step size for each segment in radians
                 double segmentStep = (2 * Math.PI) / precision;
 
-                if (!applyShapeTransform)
-                    center = canvas.TransformPoint(center);
+                //if (!applyShapeTransform)
+                //    center = canvas.TransformPoint(center);
 
                 // Calculate the start point
                 var startPoint = new Point(
@@ -33,8 +32,8 @@ namespace Modeling_Canvas.Extensions
                     center.Y + radius * Math.Sin(0)
                     );
 
-                if (applyShapeTransform)
-                    startPoint = canvas.TransformPoint(startPoint);
+                //if (applyShapeTransform)
+                //    startPoint = canvas.TransformPoint(startPoint);
 
                 context.BeginFigure(startPoint, true, true); // Is filled, Is closed
 
@@ -46,20 +45,17 @@ namespace Modeling_Canvas.Extensions
                         center.X + radius * Math.Cos(angle),
                         center.Y + radius * Math.Sin(angle));
 
-                    if (applyShapeTransform)
-                        point = canvas.TransformPoint(point);
+                    //if (applyShapeTransform)
+                    //    point = canvas.TransformPoint(point);
 
                     context.LineTo(point, true, false); // Line to the calculated point
                 }
             }
 
-            geometry.Freeze(); // Freeze for performance
-            dc.DrawGeometry(fill, strokePen, geometry);
-            dc.DrawGeometry(null, new Pen(Brushes.Transparent, transparentThickness), geometry);
             return geometry;
         }
 
-        public static StreamGeometry DrawAnchorPoint(this DrawingContext dc, CustomCanvas canvas, Brush fill, Pen strokePen, Point center, double radius, int precision, double lineLength, bool applyShapeTransform = true)
+        public static StreamGeometry GetAnchorGeometry(this CustomCanvas canvas, Point center, double radius, int precision, double lineLength)
         {
             var geometry = new StreamGeometry();
 
@@ -70,15 +66,9 @@ namespace Modeling_Canvas.Extensions
 
                 // Calculate the start point of the circle
 
-                if (!applyShapeTransform)
-                    center = canvas.TransformPoint(center);
-
                 var startPoint = new Point(
                     center.X + radius * Math.Cos(0),
                     center.Y + radius * Math.Sin(0));
-
-                if (applyShapeTransform)
-                    startPoint = canvas.TransformPoint(startPoint);
 
                 context.BeginFigure(startPoint, true, true); // Is filled, Is closed
 
@@ -89,9 +79,6 @@ namespace Modeling_Canvas.Extensions
                     var point = new Point(
                         center.X + radius * Math.Cos(angle),
                         center.Y + radius * Math.Sin(angle));
-
-                    if (applyShapeTransform)
-                        point = canvas.TransformPoint(point);
 
                     context.LineTo(point, true, false); // Line to the calculated point
                 }
@@ -105,51 +92,31 @@ namespace Modeling_Canvas.Extensions
                         center.X + radius * Math.Cos(angle),
                         center.Y + radius * Math.Sin(angle));
 
-                    if (applyShapeTransform)
-                        lineStart = canvas.TransformPoint(lineStart);
-
                     var lineEnd = new Point(
                         center.X + (radius + lineLength) * Math.Cos(angle),
                         center.Y + (radius + lineLength) * Math.Sin(angle));
 
-                    if (applyShapeTransform)
-                        lineEnd = canvas.TransformPoint(lineEnd);
                     // Move to the start of the line and draw it
                     context.BeginFigure(lineStart, false, false);
                     context.LineTo(lineEnd, true, false);
                 }
             }
 
-            geometry.Freeze(); // Freeze for performance
-            dc.DrawGeometry(fill, strokePen, geometry);
             return geometry;
         }
 
-        public static StreamGeometry DrawSquare(this DrawingContext dc, CustomCanvas canvas, Brush fill, Pen strokePen, Point center, double sideLength, bool applyTransform = true)
+        public static StreamGeometry GetSquareGeometry(this CustomCanvas canvas, Point center, double sideLength, bool applyTransform = true)
         {
             var geometry = new StreamGeometry();
 
             using (var context = geometry.Open())
             {
-                if (!applyTransform)
-                {
-                    center = canvas.TransformPoint(center);
-                }
-
                 double halfSide = sideLength / 2;
 
                 var topLeft = new Point(center.X - halfSide, center.Y - halfSide);
                 var topRight = new Point(center.X + halfSide, center.Y - halfSide);
                 var bottomRight = new Point(center.X + halfSide, center.Y + halfSide);
                 var bottomLeft = new Point(center.X - halfSide, center.Y + halfSide);
-
-                if (applyTransform)
-                {
-                    topLeft = canvas.TransformPoint(topLeft);
-                    topRight = canvas.TransformPoint(topRight);
-                    bottomRight = canvas.TransformPoint(bottomRight);
-                    bottomLeft = canvas.TransformPoint(bottomLeft);
-                }
 
                 context.BeginFigure(topLeft, true, true);
                 context.LineTo(topRight, true, false);
@@ -159,22 +126,16 @@ namespace Modeling_Canvas.Extensions
 
             }
 
-            geometry.Freeze(); // Freeze for performance
-            dc.DrawGeometry(fill, strokePen, geometry);
             return geometry;
         }
 
-        public static void DrawCircleWithArcs(
-            this DrawingContext dc,
-            CustomCanvas canvas,
-            Brush fill,
-            Pen strokePen,
+        public static StreamGeometry DrawCircleWithArcs(
+            this CustomCanvas canvas,
             Point center,
             double radius,
             double startDegrees,
             double endDegrees,
-            int precision,
-            double transparentThickness
+            int precision
             )
         {
             var geometry = new StreamGeometry();
@@ -186,21 +147,19 @@ namespace Modeling_Canvas.Extensions
 
                 if (normalizedEnd <= normalizedStart)
                 {
-                    DrawArcSegment(context, canvas, center, radius, normalizedStart, 360, precision);
-                    DrawArcSegment(context, canvas, center, radius, 0, normalizedEnd, precision);
+                    DrawArcSegment(context, center, radius, normalizedStart, 360, precision);
+                    DrawArcSegment(context, center, radius, 0, normalizedEnd, precision);
                 }
                 else
                 {
-                    DrawArcSegment(context, canvas, center, radius, normalizedStart, normalizedEnd, precision);
+                    DrawArcSegment(context, center, radius, normalizedStart, normalizedEnd, precision);
                 }
             }
 
-            geometry.Freeze();
-            dc.DrawGeometry(fill, strokePen, geometry);
-            dc.DrawGeometry(null, new Pen(Brushes.Transparent, transparentThickness), geometry);
+            return geometry;
         }
 
-        private static void DrawArcSegment(StreamGeometryContext context, CustomCanvas canvas, Point center, double radius, double startDegrees, double endDegrees, int precision)
+        private static void DrawArcSegment(StreamGeometryContext context, Point center, double radius, double startDegrees, double endDegrees, int precision)
         {
             double startRadians = Helpers.DegToRad(startDegrees);
             double endRadians = Helpers.DegToRad(endDegrees);
@@ -211,7 +170,7 @@ namespace Modeling_Canvas.Extensions
                 center.X + radius * Math.Cos(startRadians),
                 center.Y + radius * Math.Sin(startRadians));
 
-            startPoint = canvas.TransformPoint(startPoint);
+            //startPoint = canvas.TransformPoint(startPoint);
 
             context.BeginFigure(startPoint, true, false);
 
@@ -222,7 +181,7 @@ namespace Modeling_Canvas.Extensions
                     center.X + radius * Math.Cos(angle),
                     center.Y + radius * Math.Sin(angle));
 
-                point = canvas.TransformPoint(point);
+                //point = canvas.TransformPoint(point);
 
                 context.LineTo(point, true, false);
             }

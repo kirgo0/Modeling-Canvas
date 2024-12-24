@@ -14,10 +14,6 @@ namespace Modeling_Canvas.UIElements.Abstract
 
         public virtual Point GetBottomRightPosition() => new Point(0, 0);
 
-        protected override void DefaultRender(DrawingContext dc)
-        {
-        }
-
         public override void RotateElement(Point anchorPoint, double degrees)
         {
         }

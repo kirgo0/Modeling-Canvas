@@ -24,7 +24,7 @@ namespace Modeling_Canvas.UIElements
             Fill = Brushes.White;
             StrokeThickness = 2;
             Stroke = Brushes.Gray;
-            Radius = 5;
+            Radius = 0.1;
             IsSelectable = true;
             LabelText = "Point";
         }
@@ -33,7 +33,7 @@ namespace Modeling_Canvas.UIElements
         {
             ControlPrevPoint = new DraggablePoint(Canvas, false)
             {
-                Radius = 8,
+                Radius = 0.15,
                 Opacity = 0.5,
                 Stroke = Brushes.Black,
                 StrokeThickness = 2,
@@ -45,7 +45,7 @@ namespace Modeling_Canvas.UIElements
 
             ControlNextPoint = new DraggablePoint(Canvas, false)
             {
-                Radius = 8,
+                Radius = 0.15,
                 Opacity = 0.5,
                 Stroke = Brushes.Black,
                 StrokeThickness = 2,
@@ -60,19 +60,19 @@ namespace Modeling_Canvas.UIElements
 
         }
 
-        protected override void DefaultRender(DrawingContext dc)
-        {
-            ControlPrevPoint.Visibility = ShowPrevControl ? ControlsVisibility : Visibility.Hidden;
-            ControlNextPoint.Visibility = ShowNextControl ? ControlsVisibility : Visibility.Hidden;
-            if (ControlsVisibility is Visibility.Visible)
-            {
-                if (ShowPrevControl)
-                    dc.DrawLine(Canvas, ControlPrevLinePen, PixelPosition, ControlPrevPoint.PixelPosition);
-                if (ShowNextControl)
-                    dc.DrawLine(Canvas, ControlNextLinePen, PixelPosition, ControlNextPoint.PixelPosition);
-            }
-            base.DefaultRender(dc);
-        }
+        //protected override void DefaultRender(DrawingContext dc)
+        //{
+        //    ControlPrevPoint.Visibility = ShowPrevControl ? ControlsVisibility : Visibility.Hidden;
+        //    ControlNextPoint.Visibility = ShowNextControl ? ControlsVisibility : Visibility.Hidden;
+        //    if (ControlsVisibility is Visibility.Visible)
+        //    {
+        //        if (ShowPrevControl)
+        //            dc.DrawLine(Canvas, ControlPrevLinePen, PixelPosition, ControlPrevPoint.PixelPosition);
+        //        if (ShowNextControl)
+        //            dc.DrawLine(Canvas, ControlNextLinePen, PixelPosition, ControlNextPoint.PixelPosition);
+        //    }
+        //    base.DefaultRender(dc);
+        //}
 
         public void ConfigureSmoothnessForControlPoints()
         {

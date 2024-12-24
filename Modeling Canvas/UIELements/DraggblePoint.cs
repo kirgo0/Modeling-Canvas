@@ -6,8 +6,6 @@ namespace Modeling_Canvas.UIElements
 {
     public partial class DraggablePoint : CustomPoint
     {
-        public double DragRadius { get; set; } = 10;
-
         public Func<DraggablePoint, string>? OverrideToStringAction;
 
         public Action<DraggablePoint, Vector> OverrideMoveAction;
@@ -27,12 +25,6 @@ namespace Modeling_Canvas.UIElements
         {
             base.InitControlPanel();
             AddPointControls();
-        }
-
-        protected override void DefaultRender(DrawingContext dc)
-        {
-            base.DefaultRender(dc);
-            dc.DrawCircle(Canvas, Brushes.Transparent, new Pen(Stroke, 0), PixelPosition, DragRadius, 100);
         }
 
         public override void MoveElement(Vector offset)

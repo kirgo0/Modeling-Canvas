@@ -8,11 +8,6 @@ namespace Modeling_Canvas.Extensions
     {
         public static CustomCanvas Canvas { get; set; }
 
-        public static Point AddCanvasOffsets(this Point p)
-        {
-            return new Point(p.X + Canvas.XOffset, p.Y - Canvas.YOffset);
-        }
-
         public static Point RotatePoint(this Point point1, Point point2, double degrees)
         {
             // Calculate rotation
@@ -31,7 +26,7 @@ namespace Modeling_Canvas.Extensions
         {
             return new Point(
                 point.X + offset.X / Canvas.UnitSize,
-                point.Y - offset.Y / Canvas.UnitSize
+                point.Y + offset.Y / Canvas.UnitSize
                 );
         }
 
@@ -39,7 +34,7 @@ namespace Modeling_Canvas.Extensions
         {
             return new Point(
                 Helpers.SnapValue(point.X + offset.X / Canvas.UnitSize),
-                Helpers.SnapValue(point.Y - offset.Y / Canvas.UnitSize)
+                Helpers.SnapValue(point.Y + offset.Y / Canvas.UnitSize)
             );
         }
 
@@ -55,24 +50,25 @@ namespace Modeling_Canvas.Extensions
 
         public static Point ApplyAffineTransformation(this Point point, AffineModel affine)
         {
-            var x = Canvas.ActualWidth / 2 - point.X;
-            var y = Canvas.ActualHeight / 2 - point.Y;
+            var x = point.X - Canvas.ActualWidth / 2;
+            var y = point.Y - Canvas.ActualHeight / 2;
 
             double Xx = affine.Xx;
-            double Xy = -affine.Xy;
+            double Xy = affine.Xy;
             double Yx = affine.Yx;
             double Yy = affine.Yy;
             double Ox = affine.Ox * Canvas.UnitSize;
             double Oy = affine.Oy * Canvas.UnitSize;
 
             return new Point(
-                Canvas.ActualWidth / 2 - Xx * x + Yx * y + Ox,
-                Canvas.ActualHeight / 2 - (Xy * x + Yy * y + Oy)
+                (Xx * x + Yx * y + Ox) + Canvas.ActualWidth / 2,
+                (Xy * x + Yy * y + Oy) + Canvas.ActualHeight / 2
             );
         }
+
         public static Point ReverseAffineTransformation(this Point transformedPoint, AffineModel affine)
         {
-            transformedPoint = new Point(transformedPoint.X, Canvas.ActualHeight - transformedPoint.Y);
+            transformedPoint = new Point(transformedPoint.X - Canvas.ActualWidth / 2, transformedPoint.Y - Canvas.ActualHeight / 2);
             double Xx = affine.Xx;
             double Xy = affine.Yx;
             double Yx = affine.Xy;
@@ -95,106 +91,9 @@ namespace Modeling_Canvas.Extensions
             // Apply the inverse transformation to the point
 
             return new Point(
-                invXx * transformedPoint.X + invXy * transformedPoint.Y + invOx,
-                Canvas.ActualHeight - (invYx * transformedPoint.X + invYy * transformedPoint.Y + invOy)
+                (invXx * transformedPoint.X + invXy * transformedPoint.Y + invOx) + Canvas.ActualWidth / 2,
+                (invYx * transformedPoint.X + invYy * transformedPoint.Y + invOy) + Canvas.ActualHeight / 2
             );
-        }
-
-        public static Point ApplyProjectiveTransformation(this Point point, ProjectiveModel projective)
-        {
-            double xx = projective.Xx;
-            double yx = projective.Yx;
-            double ox = projective.Ox * Canvas.UnitSize;
-            double xy = projective.Xy;
-            double yy = projective.Yy;
-            double oy = projective.Oy * Canvas.UnitSize;
-            double wx = projective.wX / 10;
-            double wy = projective.wY / 10;
-            double wo = projective.wO;
-
-            // | Xx / m00 | Xy / m01 | wX / m02 | 
-            // | Yx / m10 | Yy / m11 | wY / m12 |
-            // | Ox / m20 | Oy / m21 | wO / m22 |
-
-            //      x * m00 + y * m10 + m20
-            // x* = -----------------------
-            //      x * m02 + y * m12 + m22
-
-            //      x * m01 + y * m11 + m21
-            // y* = -----------------------
-            //      x * m02 + y * m12 + m22
-
-
-            // Поточні координати точки
-            var x = Canvas.ActualWidth / 2 - point.X;
-            var y = Canvas.ActualHeight / 2 - point.Y;
-
-            // Обчислення знаменника w
-
-            //       x * m02 + y * m12 + m22
-            double w = x * wx + y * wy + wo;
-            if (w == 0)
-                return new Point(0, 0);
-
-            // Обчислення трансформованих координат
-            //           x* m00 +y * m10 + m20
-            double tx = (x * xx + y * yx + ox) / w;
-            //          x * m02 + y * m12 + m22
-            double ty = (x * xy + y * yy + oy) / w;
-
-            return new Point(Canvas.ActualWidth / 2 - x, Canvas.ActualHeight / 2 - y);
-        }
-
-        public static Point ReverseProjectiveTransformation(this Point canvasPoint, ProjectiveModel projective)
-        {
-            double xx = projective.Xx;
-            double yx = projective.Yx;
-            double ox = projective.Ox * Canvas.UnitSize;
-            double xy = projective.Xy;
-            double yy = projective.Yy;
-            double oy = projective.Oy * Canvas.UnitSize;
-            double wx = projective.wX / 10;
-            double wy = projective.wY / 10;
-            double wo = projective.wO;
-
-            // The equation is:
-            // canvasX = (xx * x + yx * y + ox) / (wx * x + wy * y + wo)
-            // canvasY = (xy * x + yy * y + oy) / (wx * x + wy * y + wo)
-            // To reverse it, we solve for x and y.
-
-            // Let canvasX = u, canvasY = v
-            double u = canvasPoint.X;
-            double v = Canvas.ActualHeight - canvasPoint.Y;
-
-            // Set up the system of equations:
-            // u * (wx * x + wy * y + wo) = xx * x + yx * y + ox
-            // v * (wx * x + wy * y + wo) = xy * x + yy * y + oy
-
-            // Rearrange into:
-            // (xx - u * wx) * x + (yx - u * wy) * y = u * wo - ox
-            // (xy - v * wx) * x + (yy - v * wy) * y = v * wo - oy
-
-            // Coefficients for the system of linear equations:
-            double a1 = xx - u * wx;
-            double b1 = yx - u * wy;
-            double c1 = u * wo - ox;
-
-            double a2 = xy - v * wx;
-            double b2 = yy - v * wy;
-            double c2 = v * wo - oy;
-
-            // Solve the 2x2 system of linear equations using the determinant method:
-            double determinant = a1 * b2 - a2 * b1;
-
-            //if (Math.Abs(determinant) < 1e-10)
-            //    throw new InvalidOperationException("The system of equations is singular and cannot be solved.");
-
-            // Calculate the original point (x, y)
-            double x = (c1 * b2 - c2 * b1) / determinant;
-            double y = (a1 * c2 - a2 * c1) / determinant;
-
-            //return new Point(x, projective.CanvasHeight - y);
-            return new Point(x, Canvas.ActualHeight - y);
         }
 
         public static Point ApplyProjectiveV2Transformation(this Point point, ProjectiveModel projective)

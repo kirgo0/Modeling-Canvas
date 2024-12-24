@@ -56,10 +56,10 @@ namespace Modeling_Canvas.UIElements
             base.OnRender(dc);
         }
 
-        protected override void DefaultRender(DrawingContext dc)
-        {
-            dc.DrawCircleWithArcs(Canvas, Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, StartDegrees, EndDegrees, Precision, 10);
-        }
+        //protected override void DefaultRender(DrawingContext dc)
+        //{
+        //    dc.DrawCircleWithArcs(Canvas, Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, StartDegrees, EndDegrees, Precision, 10);
+        //}
 
         protected override void InitControlPanel()
         {

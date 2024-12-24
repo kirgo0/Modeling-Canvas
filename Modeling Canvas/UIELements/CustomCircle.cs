@@ -88,7 +88,7 @@ namespace Modeling_Canvas.UIElements
         {
             RadiusPoint = new DraggablePoint(Canvas, false)
             {
-                Radius = 8,
+                Radius = 0.15,
                 Opacity = 0.7,
                 OverrideMoveAction = RadiusPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
@@ -98,7 +98,7 @@ namespace Modeling_Canvas.UIElements
 
             CenterPoint = new DraggablePoint(Canvas, false)
             {
-                Radius = 3,
+                Radius = 0.07,
                 OverrideMoveAction = CenterPointMoveAction,
                 Position = new Point(0, 0),
                 IsSelectable = false
@@ -116,9 +116,9 @@ namespace Modeling_Canvas.UIElements
             base.OnRender(dc);
         }
 
-        protected override void DefaultRender(DrawingContext dc)
+        protected override StreamGeometry GetElementGeometry()
         {
-            dc.DrawCircle(Canvas, Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, Precision, 10);
+            return Canvas.GetCircleGeometry(CenterPoint.PixelPosition, Radius, Precision);
         }
 
         protected override Point GetAnchorDefaultPosition() => Center;

@@ -1,6 +1,8 @@
-﻿using Modeling_Canvas.Extensions;
+﻿using MathNet.Numerics;
+using Modeling_Canvas.Extensions;
 using Modeling_Canvas.UIElements.Interfaces;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -16,7 +18,7 @@ namespace Modeling_Canvas.UIElements.Abstract
 
         private T? _selectedPoint;
 
-        public int PointsRadius { get; set; } = 5;
+        public double PointsRadius { get; set; } = 0.1;
 
         public List<T> Points { get; set; } = new();
 
@@ -105,19 +107,27 @@ namespace Modeling_Canvas.UIElements.Abstract
             base.OnRender(dc);
         }
 
-        protected override void DefaultRender(DrawingContext dc)
+        protected override StreamGeometry GetElementGeometry()
         {
-            for (int i = 0; i < Points.Count - 1; i++)
+            var geometry = new StreamGeometry();
+
+            using (var context = geometry.Open())
             {
-                var p1 = Points[i].PixelPosition;
-                var p2 = Points[i + 1].PixelPosition;
-                dc.DrawLine(Canvas, StrokePen, p1, p2, 10);
+
+                context.BeginFigure(Points.First().PixelPosition, true, true);
+
+                for (int i = 1; i < Points.Count; i++)
+                {
+                    context.LineTo(Points[i].PixelPosition, true, false);
+                }
+
+                if (IsClosed)
+                {
+                    context.LineTo(Points.First().PixelPosition, true, false);
+                }
             }
 
-            if (IsClosed)
-            {
-                dc.DrawLine(Canvas, StrokePen, Points.First().PixelPosition, Points.Last().PixelPosition, 10);
-            }
+            return geometry;
         }
 
         protected override void InitControlPanel()
@@ -171,6 +181,7 @@ namespace Modeling_Canvas.UIElements.Abstract
                 );
 
             _uiControls.Add("IsClosed", isClosedCheckBox);
+            AddFillColorControls();
             AddStrokeColorControls();
             AddStrokeThicknessControls();
             base.InitControlPanel();

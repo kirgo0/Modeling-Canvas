@@ -182,7 +182,7 @@ namespace Modeling_Canvas.UIElements
             {
                 StrokeThickness = 0,
                 Fill = Brushes.Red,
-                Radius = 5
+                Radius = 0.07
             };
 
             LargeCircle.Visibility = ControlsVisibility;
@@ -236,38 +236,43 @@ namespace Modeling_Canvas.UIElements
             base.OnRender(dc);
         }
 
-        protected override void DefaultRender(DrawingContext dc)
+        protected override StreamGeometry GetElementGeometry()
         {
-            HypocycloidPoints = CalculateHypocycloidPoints(dc, Model, HypocycloidPoints);
-            EndPoint.Position = Canvas.GetUnitCoordinates(HypocycloidPoints.LastOrDefault());
-
-            if (HypocycloidPoints.Count == 0)
-            {
-                dc.DrawCircle(Canvas, Brushes.DeepPink, null, LargeCircle.CenterPoint.PixelPosition, 5, 15, 0, false);
-                return;
-            }
-
-            for (int i = 0; i < HypocycloidPoints.Count - 1; i++)
-            {
-                dc.DrawLine(Canvas, StrokePen, HypocycloidPoints[i], HypocycloidPoints[i + 1], 10);
-            }
-            if (CalculatedValues.ShowInflectionPoints && Model.Distance > 1e-2)
-            {
-                CalculatedValues.InflectionPoints = CalculateInflectionPoints(Model);
-                foreach (var point in CalculatedValues.InflectionPoints)
-                {
-                    dc.DrawCircle(Canvas, Brushes.DeepPink, null, point, 5, 15, 0, false);
-                }
-            }
-            if (CalculatedValues.ShowArcLength)
-            {
-                CalculatedValues.ArcLength = CalculateHypocycloidLength(Model);
-            }
-            if (CalculatedValues.ShowHypocycloidArea)
-            {
-                CalculatedValues.HypocycloidArea = CalculateHypocycloidArea(Model);
-            }
+            throw new NotImplementedException();
         }
+
+        //protected override void DefaultRender(DrawingContext dc)
+        //{
+        //    HypocycloidPoints = CalculateHypocycloidPoints(dc, Model, HypocycloidPoints);
+        //    EndPoint.Position = Canvas.GetUnitCoordinates(HypocycloidPoints.LastOrDefault());
+
+        //    if (HypocycloidPoints.Count == 0)
+        //    {
+        //        dc.DrawCircle(Canvas, Brushes.DeepPink, null, LargeCircle.CenterPoint.PixelPosition, 5, 15, 0, false);
+        //        return;
+        //    }
+
+        //    for (int i = 0; i < HypocycloidPoints.Count - 1; i++)
+        //    {
+        //        dc.DrawLine(Canvas, StrokePen, HypocycloidPoints[i], HypocycloidPoints[i + 1], 10);
+        //    }
+        //    if (CalculatedValues.ShowInflectionPoints && Model.Distance > 1e-2)
+        //    {
+        //        CalculatedValues.InflectionPoints = CalculateInflectionPoints(Model);
+        //        foreach (var point in CalculatedValues.InflectionPoints)
+        //        {
+        //            dc.DrawCircle(Canvas, Brushes.DeepPink, null, point, 5, 15, 0, false);
+        //        }
+        //    }
+        //    if (CalculatedValues.ShowArcLength)
+        //    {
+        //        CalculatedValues.ArcLength = CalculateHypocycloidLength(Model);
+        //    }
+        //    if (CalculatedValues.ShowHypocycloidArea)
+        //    {
+        //        CalculatedValues.HypocycloidArea = CalculateHypocycloidArea(Model);
+        //    }
+        //}
 
         protected virtual List<Point> CalculateHypocycloidPoints(DrawingContext dc, HypocycloidModel model, List<Point> points = null)
         {
@@ -423,7 +428,7 @@ namespace Modeling_Canvas.UIElements
             Point normalEnd = pointOnCurve + normal * Canvas.ActualWidth;
             dc.DrawLine(Canvas, new Pen(Brushes.Green, 2), pointOnCurve, normalEnd);
 
-            dc.DrawCircle(Canvas, Brushes.Red, null, pointOnCurve, 7, 15, 0, false);
+            //dc.DrawCircle(Canvas, Brushes.Red, null, pointOnCurve, 7, 15, 0, false);
         }
 
         public double? FindNearestPoint(Point targetPoint, double tolerance = 10)

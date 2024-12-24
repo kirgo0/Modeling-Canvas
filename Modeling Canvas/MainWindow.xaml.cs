@@ -29,8 +29,8 @@ namespace Modeling_Canvas
             //var b = new SegmentedCircle(MyCanvas);
             //MyCanvas.Children.Add(b);
 
-            //var c = new CustomCircle(MyCanvas);
-            //MyCanvas.Children.Add(c);
+            var c = new CustomCircle(MainCanvas);
+            MainCanvas.Children.Add(c);
 
             //var d = new BezierCurve(MainCanvas);
 

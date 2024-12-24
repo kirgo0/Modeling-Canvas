@@ -10,11 +10,11 @@ namespace Modeling_Canvas.UIElements
 {
     public class CustomPoint : GroupableElement, IPoint
     {
-        private Geometry _cachedGeometry;
+        private StreamGeometry _cachedGeometry;
 
         private bool _isGeometryDirty = true;
 
-        private double _radius = 10;
+        private double _radius = 0.1;
 
         private PointShape _shape = PointShape.Circle;
 
@@ -66,7 +66,7 @@ namespace Modeling_Canvas.UIElements
 
         public Point PixelPosition
         {
-            get => new Point(Canvas.ActualWidth / 2 + Position.X * UnitSize, Canvas.ActualHeight / 2 - Position.Y * UnitSize).AddCanvasOffsets();
+            get => new Point(Position.X, Position.Y);
         }
 
         public double X { get => Position.X; }
@@ -86,29 +86,25 @@ namespace Modeling_Canvas.UIElements
             };
         }
 
-        protected override void DefaultRender(DrawingContext dc)
+        protected override StreamGeometry GetElementGeometry()
         {
-            var semiTransparentFill = Fill.Clone();
-            semiTransparentFill.Opacity = Opacity;
-
             if (_isGeometryDirty)
             {
                 switch (Shape)
                 {
                     case PointShape.Circle:
-                        _cachedGeometry = dc.DrawCircle(Canvas, semiTransparentFill, StrokePen, PixelPosition, Radius, 100, 0, false);
+                        _cachedGeometry = Canvas.GetCircleGeometry(PixelPosition, Radius, 100);
                         break;
                     case PointShape.Square:
-                        _cachedGeometry = dc.DrawSquare(Canvas, semiTransparentFill, StrokePen, PixelPosition, Radius * 2, false);
+                        _cachedGeometry = Canvas.GetSquareGeometry(PixelPosition, Radius * 2, false);
                         break;
                     case PointShape.Anchor:
-                        _cachedGeometry = dc.DrawAnchorPoint(Canvas, semiTransparentFill, StrokePen, PixelPosition, Radius, 100, 5, false);
+                        _cachedGeometry = Canvas.GetAnchorGeometry(PixelPosition, Radius, 100, 0.1);
                         break;
                 }
                 _isGeometryDirty = false;
             }
-
-            dc.DrawGeometry(semiTransparentFill, StrokePen, _cachedGeometry);
+            return _cachedGeometry;
         }
 
         public override Point GetTopLeftPosition() => new Point(Position.X + Radius / UnitSize, Position.Y + Radius / UnitSize);
