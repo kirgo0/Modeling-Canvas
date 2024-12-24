@@ -24,7 +24,11 @@ namespace Modeling_Canvas
             //var grid = new CoordinateGrid(MainCanvas, false);
             //MainCanvas.Children.Add(grid);
 
-            InitFigure();
+            var koch = new KochCurve(MainCanvas);
+            MainCanvas.Children.Add(koch);
+
+
+            //InitFigure();
             //var a = new Hypocycloid(MainCanvas, 4, 1);
             //MainCanvas.Children.Add(a);
             //a.Center = new Point(0, 0);
@@ -32,8 +36,8 @@ namespace Modeling_Canvas
             //var b = new SegmentedCircle(MyCanvas);
             //MyCanvas.Children.Add(b);
 
-            var c = new CustomCircle(MainCanvas);
-            MainCanvas.Children.Add(c);
+            //var c = new CustomCircle(MainCanvas);
+            //MainCanvas.Children.Add(c);
 
             //var d = new BezierCurve(MainCanvas);
 
