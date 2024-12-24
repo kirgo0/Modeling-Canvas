@@ -149,14 +149,14 @@ namespace Modeling_Canvas.UIElements
         public Point GetTransformedUnitCoordinates(Point pixelCoordinates)
         {
             pixelCoordinates = ReverseTransformPoint(pixelCoordinates);
-            pixelCoordinates = new Point((pixelCoordinates.X - ActualWidth / 2 - XOffset) / UnitSize, (ActualHeight / 2 - pixelCoordinates.Y - YOffset) / UnitSize);
+            pixelCoordinates = new Point((pixelCoordinates.X - ActualWidth / 2 - XOffset) / UnitSize, (pixelCoordinates.Y - ActualHeight / 2 - YOffset) / UnitSize);
             return pixelCoordinates;
         }
 
         public double GetDegreesBetweenMouseAndPoint(Point point)
         {
             var mousePosition = GetCanvasMousePosition();
-            var angleInDegrees = Math.Atan2((mousePosition.Y - point.Y), mousePosition.X - point.X) * (180 / Math.PI);
+            var angleInDegrees = Math.Atan2(-(mousePosition.Y - point.Y), mousePosition.X - point.X) * (180 / Math.PI);
             return (angleInDegrees + 360) % 360;
         }
 
@@ -278,6 +278,7 @@ namespace Modeling_Canvas.UIElements
 
         }
 
+
         protected void DrawProjectiveGrid(DrawingContext drawingContext)
         {
             double width = ProjectiveParams.Xx / UnitSize;
@@ -339,8 +340,11 @@ namespace Modeling_Canvas.UIElements
                     Brushes.Black,
                     VisualTreeHelper.GetDpi(this).PixelsPerDip);
 
-                // Adjust position slightly to center the text on the grid line
+                // Adjust position slightly to center the text on the grid line\
+
+                dc.PushTransform(new ScaleTransform(1, -1, position.X, position.Y));
                 dc.DrawText(formattedText, new Point(position.X + xOffset, position.Y + yOffset));
+                dc.Pop();
             }
         }
 
@@ -460,6 +464,7 @@ namespace Modeling_Canvas.UIElements
                     if (calculatedSize > 5) calculatedSize = Math.Round(calculatedSize);
                     UnitSize = calculatedSize;
                 }
+                if (RenderMode is RenderMode.ProjectiveV2 && UnitSize < 5) UnitSize = 5;
                 UpdateMouseLabel();
             }
         }

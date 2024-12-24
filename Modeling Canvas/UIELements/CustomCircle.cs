@@ -57,6 +57,7 @@ namespace Modeling_Canvas.UIElements
                     if (value <= 0.5) _radius = 0.5;
                     else _radius = Math.Round(value, 3);
                     OnPropertyChanged();
+                    InvalidateCanvas();
                 }
             }
         }
@@ -88,7 +89,7 @@ namespace Modeling_Canvas.UIElements
         {
             RadiusPoint = new DraggablePoint(Canvas, false)
             {
-                Radius = 0.15,
+                PixelRadius = 7,
                 Opacity = 0.7,
                 OverrideMoveAction = RadiusPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
@@ -98,7 +99,7 @@ namespace Modeling_Canvas.UIElements
 
             CenterPoint = new DraggablePoint(Canvas, false)
             {
-                Radius = 0.07,
+                PixelRadius = 3,
                 OverrideMoveAction = CenterPointMoveAction,
                 Position = new Point(0, 0),
                 IsSelectable = false
@@ -116,9 +117,9 @@ namespace Modeling_Canvas.UIElements
             base.OnRender(dc);
         }
 
-        protected override StreamGeometry GetElementGeometry()
+        protected override Point[][] GetElementGeometry()
         {
-            return Canvas.GetCircleGeometry(CenterPoint.PixelPosition, Radius, Precision);
+            return Canvas.GetCircleGeometry(Center, Radius, Precision);
         }
 
         protected override Point GetAnchorDefaultPosition() => Center;

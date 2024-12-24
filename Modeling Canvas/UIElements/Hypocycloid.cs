@@ -182,7 +182,7 @@ namespace Modeling_Canvas.UIElements
             {
                 StrokeThickness = 0,
                 Fill = Brushes.Red,
-                Radius = 0.07
+                PixelRadius = 4
             };
 
             LargeCircle.Visibility = ControlsVisibility;
@@ -236,7 +236,7 @@ namespace Modeling_Canvas.UIElements
             base.OnRender(dc);
         }
 
-        protected override StreamGeometry GetElementGeometry()
+        protected override Point[][] GetElementGeometry()
         {
             throw new NotImplementedException();
         }
@@ -283,7 +283,7 @@ namespace Modeling_Canvas.UIElements
             double r = model.SmallRadius * UnitSize;
             double d = model.Distance * UnitSize;
 
-            var center = LargeCircle.CenterPoint.PixelPosition;
+            var center = LargeCircle.Center;
 
             double constant1 = R - r;
             double constant2 = constant1 / r;
@@ -314,7 +314,7 @@ namespace Modeling_Canvas.UIElements
             double r = model.SmallRadius * UnitSize;
             double d = model.Distance * UnitSize;
 
-            var center = LargeCircle.CenterPoint.PixelPosition;
+            var center = LargeCircle.Center;
 
             double prevRadius = 0;
             double prevDerivative = 0;
@@ -399,7 +399,7 @@ namespace Modeling_Canvas.UIElements
             double r = Model.SmallRadius * UnitSize;
             double d = Model.Distance * UnitSize;
 
-            var center = LargeCircle.CenterPoint.PixelPosition;
+            var center = LargeCircle.Center;
 
             double t = Helpers.DegToRad(Model.Angle) * tParameter / Precision;
             double x = (R - r) * Math.Cos(t) + d * Math.Cos((R - r) / r * t);

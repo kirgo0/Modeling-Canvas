@@ -33,7 +33,7 @@ namespace Modeling_Canvas.UIElements
             var customPoint = base.OnPointInit(point);
 
             customPoint.Shape = PointsShape;
-            customPoint.Radius = PointsRadius;
+            customPoint.PixelRadius = PointsRadius;
             customPoint.IsSelectable = false;
             return customPoint;
         }

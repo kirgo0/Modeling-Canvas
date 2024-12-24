@@ -128,7 +128,8 @@ namespace Modeling_Canvas.Extensions
             // Обчислення знаменника w
 
             //       x * m02 + y * m12 + m22
-            double w = x * wx + y * wy + wo;
+            double w1 = x * wx + y * wy + wo;
+            double w = Math.Abs(x * wx + y * wy + wo);
             if (w == 0)
                 return new Point(0, 0);
 
@@ -138,7 +139,7 @@ namespace Modeling_Canvas.Extensions
             //          x * m02 + y * m12 + m22
             double ty = ((x * xy + y * yy + oy) / w);
 
-            return new Point(tx, ty);
+            return new Point(tx + Canvas.ActualWidth / 2, ty + Canvas.ActualHeight / 2);
         }
 
         public static Point ReverseProjectiveV2Transformation(this Point canvasPoint, ProjectiveModel projective)
@@ -153,8 +154,8 @@ namespace Modeling_Canvas.Extensions
             double wy = projective.wY;
             double wo = projective.wO;
 
-            var u = canvasPoint.X;
-            var v = canvasPoint.Y;
+            var u = canvasPoint.X - Canvas.ActualWidth / 2;
+            var v = canvasPoint.Y - Canvas.ActualHeight/ 2;
             // Set up the system of equations:
             // u * (wx * x + wy * y + wo) = xx * x + yx * y + ox
             // v * (wx * x + wy * y + wo) = xy * x + yy * y + oy
@@ -182,7 +183,7 @@ namespace Modeling_Canvas.Extensions
             double x = (c1 * b2 - c2 * b1) / determinant;
             double y = (a1 * c2 - a2 * c1) / determinant;
 
-            return new Point(x, y);
+            return new Point(x + Canvas.ActualWidth / 2, y + Canvas.ActualHeight / 2);
         }
     }
 }

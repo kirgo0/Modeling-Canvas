@@ -18,7 +18,7 @@ namespace Modeling_Canvas.UIElements.Abstract
 
         private T? _selectedPoint;
 
-        public double PointsRadius { get; set; } = 0.1;
+        public double PointsRadius { get; set; } = 5;
 
         public List<T> Points { get; set; } = new();
 
@@ -107,26 +107,18 @@ namespace Modeling_Canvas.UIElements.Abstract
             base.OnRender(dc);
         }
 
-        protected override StreamGeometry GetElementGeometry()
+        protected override Point[][] GetElementGeometry()
         {
-            var geometry = new StreamGeometry();
+            var geometry = new Point[1][];
 
-            using (var context = geometry.Open())
+            var linePoint = Points.Select(p => p.Position).ToList();
+
+            if (IsClosed)
             {
-
-                context.BeginFigure(Points.First().PixelPosition, true, true);
-
-                for (int i = 1; i < Points.Count; i++)
-                {
-                    context.LineTo(Points[i].PixelPosition, true, false);
-                }
-
-                if (IsClosed)
-                {
-                    context.LineTo(Points.First().PixelPosition, true, false);
-                }
+                linePoint.Add(Points.First().Position);
             }
 
+            geometry[0] = linePoint.ToArray();
             return geometry;
         }
 

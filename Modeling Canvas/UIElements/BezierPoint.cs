@@ -24,7 +24,7 @@ namespace Modeling_Canvas.UIElements
             Fill = Brushes.White;
             StrokeThickness = 2;
             Stroke = Brushes.Gray;
-            Radius = 0.1;
+            PixelRadius = 5;
             IsSelectable = true;
             LabelText = "Point";
         }
@@ -33,7 +33,7 @@ namespace Modeling_Canvas.UIElements
         {
             ControlPrevPoint = new DraggablePoint(Canvas, false)
             {
-                Radius = 0.15,
+                PixelRadius = 7,
                 Opacity = 0.5,
                 Stroke = Brushes.Black,
                 StrokeThickness = 2,
@@ -45,7 +45,7 @@ namespace Modeling_Canvas.UIElements
 
             ControlNextPoint = new DraggablePoint(Canvas, false)
             {
-                Radius = 0.15,
+                PixelRadius = 7,
                 Opacity = 0.5,
                 Stroke = Brushes.Black,
                 StrokeThickness = 2,

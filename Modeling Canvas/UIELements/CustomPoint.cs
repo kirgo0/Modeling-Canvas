@@ -10,11 +10,11 @@ namespace Modeling_Canvas.UIElements
 {
     public class CustomPoint : GroupableElement, IPoint
     {
-        private StreamGeometry _cachedGeometry;
+        private Point[][] _cachedGeometry;
 
         private bool _isGeometryDirty = true;
 
-        private double _radius = 0.1;
+        private double _pixelRadius = 5;
 
         private PointShape _shape = PointShape.Circle;
 
@@ -24,14 +24,14 @@ namespace Modeling_Canvas.UIElements
 
         public Action<MouseButtonEventArgs> MouseLeftButtonDownAction { get; set; }
 
-        public double Radius
+        public double PixelRadius
         {
-            get => _radius;
+            get => _pixelRadius;
             set
             {
-                if (_radius != value)
+                if (_pixelRadius != value)
                 {
-                    _radius = value;
+                    _pixelRadius = value;
                     _isGeometryDirty = true;
                 }
             }
@@ -64,11 +64,6 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        public Point PixelPosition
-        {
-            get => new Point(Position.X, Position.Y);
-        }
-
         public double X { get => Position.X; }
 
         public double Y { get => Position.Y; }
@@ -84,22 +79,24 @@ namespace Modeling_Canvas.UIElements
             {
                 _isGeometryDirty = true;
             };
+            _transformGeometry = false;
         }
 
-        protected override StreamGeometry GetElementGeometry()
+        protected override Point[][] GetElementGeometry()
         {
             if (_isGeometryDirty)
             {
+                var transformedPosition = TransformPoint(Position, Canvas.RenderMode is not RenderMode.ProjectiveV2);
                 switch (Shape)
                 {
                     case PointShape.Circle:
-                        _cachedGeometry = Canvas.GetCircleGeometry(PixelPosition, Radius, 100);
+                        _cachedGeometry = Canvas.GetCircleGeometry(transformedPosition, PixelRadius, 100);
                         break;
                     case PointShape.Square:
-                        _cachedGeometry = Canvas.GetSquareGeometry(PixelPosition, Radius * 2, false);
+                        _cachedGeometry = Canvas.GetSquarePointGeometry(transformedPosition, PixelRadius * 2, false);
                         break;
                     case PointShape.Anchor:
-                        _cachedGeometry = Canvas.GetAnchorGeometry(PixelPosition, Radius, 100, 0.1);
+                        _cachedGeometry = Canvas.GetAnchorGeometry(transformedPosition, PixelRadius, 100, 5);
                         break;
                 }
                 _isGeometryDirty = false;
@@ -107,9 +104,9 @@ namespace Modeling_Canvas.UIElements
             return _cachedGeometry;
         }
 
-        public override Point GetTopLeftPosition() => new Point(Position.X + Radius / UnitSize, Position.Y + Radius / UnitSize);
+        public override Point GetTopLeftPosition() => new Point(Position.X + PixelRadius / UnitSize, Position.Y + PixelRadius / UnitSize);
 
-        public override Point GetBottomRightPosition() => new Point(Position.X - Radius / UnitSize, Position.Y - Radius / UnitSize);
+        public override Point GetBottomRightPosition() => new Point(Position.X - PixelRadius / UnitSize, Position.Y - PixelRadius / UnitSize);
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
@@ -120,12 +117,13 @@ namespace Modeling_Canvas.UIElements
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            return new Size(Radius, Radius);
+            return new Size(PixelRadius, PixelRadius);
         }
 
         public override string ToString()
         {
-            return $"Point\nX: {Position.X}\nY: {Position.Y}";
+            var p = TransformPoint(Position, false);
+            return $"Point\nX: {Position.X}\nY: {Position.Y}\n{p.X} | {p.Y}";
         }
 
     }

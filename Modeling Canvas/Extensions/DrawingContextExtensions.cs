@@ -14,119 +14,65 @@ namespace Modeling_Canvas.Extensions
             dc.DrawLine(new Pen(Brushes.Transparent, pen.Thickness + transparentThickness), p1, p2);
         }
 
-        public static StreamGeometry GetCircleGeometry(this CustomCanvas canvas, Point center, double radius, int precision)
+        public static Point[][] GetCircleGeometry(this CustomCanvas canvas, Point center, double radius, int precision)
         {
-            var geometry = new StreamGeometry();
+            var geometryData = new Point[1][]; 
 
-            using (var context = geometry.Open())
+            var circlePoints = new Point[precision + 1]; 
+
+            double segmentStep = (2 * Math.PI) / precision;
+
+            for (int i = 0; i <= precision; i++)
             {
-                // Calculate the step size for each segment in radians
-                double segmentStep = (2 * Math.PI) / precision;
-
-                //if (!applyShapeTransform)
-                //    center = canvas.TransformPoint(center);
-
-                // Calculate the start point
-                var startPoint = new Point(
-                    center.X + radius * Math.Cos(0),
-                    center.Y + radius * Math.Sin(0)
-                    );
-
-                //if (applyShapeTransform)
-                //    startPoint = canvas.TransformPoint(startPoint);
-
-                context.BeginFigure(startPoint, true, true); // Is filled, Is closed
-
-                // Add points for the segments
-                for (int i = 1; i <= precision; i++)
-                {
-                    double angle = i * segmentStep; // Angle in radians
-                    var point = new Point(
-                        center.X + radius * Math.Cos(angle),
-                        center.Y + radius * Math.Sin(angle));
-
-                    //if (applyShapeTransform)
-                    //    point = canvas.TransformPoint(point);
-
-                    context.LineTo(point, true, false); // Line to the calculated point
-                }
+                double angle = i * segmentStep; 
+                circlePoints[i] = new Point(
+                    center.X + radius * Math.Cos(angle),
+                    center.Y + radius * Math.Sin(angle));
             }
 
-            return geometry;
+            geometryData[0] = circlePoints;
+
+            return geometryData;
         }
 
-        public static StreamGeometry GetAnchorGeometry(this CustomCanvas canvas, Point center, double radius, int precision, double lineLength)
+        public static Point[][] GetAnchorGeometry(this CustomCanvas canvas, Point center, double radius, int precision, double lineLength)
         {
-            var geometry = new StreamGeometry();
+            var geometryData = new Point[5][];
+            geometryData[0] = canvas.GetCircleGeometry(center, radius, precision)[0];
 
-            using (var context = geometry.Open())
+            double[] angles = { 0, Math.PI / 2, Math.PI, 3 * Math.PI / 2 };
+
+            for (int i = 0; i < angles.Length; i++)
             {
-                // Calculate the step size for each segment in radians
-                double segmentStep = (2 * Math.PI) / precision;
+                var angle = angles[i];
+                var lineStart = new Point(
+                    center.X + radius * Math.Cos(angle),
+                    center.Y + radius * Math.Sin(angle));
 
-                // Calculate the start point of the circle
+                var lineEnd = new Point(
+                    center.X + (radius + lineLength) * Math.Cos(angle),
+                    center.Y + (radius + lineLength) * Math.Sin(angle));
+                geometryData[i + 1] = new[] { lineStart, lineEnd };
+            } 
 
-                var startPoint = new Point(
-                    center.X + radius * Math.Cos(0),
-                    center.Y + radius * Math.Sin(0));
-
-                context.BeginFigure(startPoint, true, true); // Is filled, Is closed
-
-                // Add points for the circle
-                for (int i = 1; i <= precision; i++)
-                {
-                    double angle = i * segmentStep; // Angle in radians
-                    var point = new Point(
-                        center.X + radius * Math.Cos(angle),
-                        center.Y + radius * Math.Sin(angle));
-
-                    context.LineTo(point, true, false); // Line to the calculated point
-                }
-
-                // Draw the short lines at 0, 90, 180, and 270 degrees
-                double[] angles = { 0, Math.PI / 2, Math.PI, 3 * Math.PI / 2 }; // Angles in radians
-                foreach (var angle in angles)
-                {
-                    // Calculate the start and end points of the line
-                    var lineStart = new Point(
-                        center.X + radius * Math.Cos(angle),
-                        center.Y + radius * Math.Sin(angle));
-
-                    var lineEnd = new Point(
-                        center.X + (radius + lineLength) * Math.Cos(angle),
-                        center.Y + (radius + lineLength) * Math.Sin(angle));
-
-                    // Move to the start of the line and draw it
-                    context.BeginFigure(lineStart, false, false);
-                    context.LineTo(lineEnd, true, false);
-                }
-            }
-
-            return geometry;
+            return geometryData;
         }
 
-        public static StreamGeometry GetSquareGeometry(this CustomCanvas canvas, Point center, double sideLength, bool applyTransform = true)
+        public static Point[][] GetSquarePointGeometry(this CustomCanvas canvas, Point center, double sideLength, bool applyTransform = true)
         {
-            var geometry = new StreamGeometry();
+            var geometryData = new Point[1][];
 
-            using (var context = geometry.Open())
-            {
-                double halfSide = sideLength / 2;
+            // Обчислення координат вершин квадрату
+            double halfSide = sideLength / 2;
 
-                var topLeft = new Point(center.X - halfSide, center.Y - halfSide);
-                var topRight = new Point(center.X + halfSide, center.Y - halfSide);
-                var bottomRight = new Point(center.X + halfSide, center.Y + halfSide);
-                var bottomLeft = new Point(center.X - halfSide, center.Y + halfSide);
+            var topLeft = new Point(center.X - halfSide, center.Y - halfSide);
+            var topRight = new Point(center.X + halfSide, center.Y - halfSide);
+            var bottomRight = new Point(center.X + halfSide, center.Y + halfSide);
+            var bottomLeft = new Point(center.X - halfSide, center.Y + halfSide);
 
-                context.BeginFigure(topLeft, true, true);
-                context.LineTo(topRight, true, false);
-                context.LineTo(bottomRight, true, false);
-                context.LineTo(bottomLeft, true, false);
-                context.LineTo(topLeft, true, false);
+            geometryData[0] = new[] { topLeft, topRight, bottomRight, bottomLeft, topLeft}; 
 
-            }
-
-            return geometry;
+            return geometryData;
         }
 
         public static StreamGeometry DrawCircleWithArcs(

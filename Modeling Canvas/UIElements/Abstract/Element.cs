@@ -1,7 +1,9 @@
 ﻿using Modeling_Canvas.Enums;
+using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
 using Modeling_Canvas.UIElements.Interfaces;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -35,6 +37,8 @@ namespace Modeling_Canvas.UIElements
         protected bool _isRotating = false;
 
         protected Dictionary<string, FrameworkElement> _uiControls = new();
+
+        protected bool _transformGeometry = true;
 
         private DraggablePoint _anchorPoint;
 
@@ -219,68 +223,67 @@ namespace Modeling_Canvas.UIElements
                 AnchorPoint.Visibility = AnchorVisibility;
             }
 
-            var geometry = GetElementGeometry();
+            var geometryData = GetElementGeometry();
 
-            TransformGroup transformGroup = new TransformGroup();
-
-            transformGroup.Children.Add(new ScaleTransform(UnitSize, UnitSize));
-
-            transformGroup.Children.Add(new TranslateTransform(Canvas.XOffset, Canvas.YOffset));
-
-            transformGroup.Children.Add(new TranslateTransform(Canvas.ActualWidth / 2, Canvas.ActualHeight / 2));
-            if(Canvas.RenderMode is RenderMode.Affine)
+            var geometry = new StreamGeometry();
+            if (_transformGeometry)
             {
-                var affine = Canvas.AffineParams;
+                var offsetToCenter = Canvas.RenderMode is not RenderMode.ProjectiveV2;
 
-                var matrix = new Matrix(
-                    affine.Xx, affine.Xy,  // Scale and skew
-                    affine.Yx, affine.Yy,  // Skew and scale
-                    affine.Ox, affine.Oy   // Translation
-                );
+                using (var context = geometry.Open())
+                {
+                    foreach (var figure in geometryData)
+                    {
+                        if (figure == null || figure.Length < 1)
+                            continue;
+                        // Begin a new figure at the first point
+                        context.BeginFigure(TransformPoint(figure[0], offsetToCenter), isFilled: true, isClosed: true);
+                        for (var i = 1; i < figure.Length; i++)
+                        {
+                            context.LineTo(TransformPoint(figure[i], offsetToCenter), isStroked: true, isSmoothJoin: false);
+                        }
+                    }
+                }
+            } else
+            {
+                using (var context = geometry.Open())
+                {
+                    foreach (var figure in geometryData)
+                    {
+                        if (figure == null || figure.Length < 1)
+                            continue;
+                        // Begin a new figure at the first point
+                        var a = figure[0];
+                        context.BeginFigure(figure[0], Fill != null, false);
+                        for (var i = 1; i < figure.Length; i++)
+                        {
+                            context.LineTo(figure[i], isStroked: true, isSmoothJoin: false);
+                            var b = figure[i];
+                        }
+                    }
+                }
+            }
 
-                transformGroup.Children.Add(new TranslateTransform(-Canvas.ActualWidth / 2, -Canvas.ActualHeight / 2));
-
-                transformGroup.Children.Add(new MatrixTransform(matrix));
-
-                transformGroup.Children.Add(new TranslateTransform(Canvas.ActualWidth / 2, Canvas.ActualHeight / 2));
-            }            
-            // Apply the transformations to the geometry
-            geometry.Transform = transformGroup;
-            
             // Draw the transformed geometry
             dc.DrawGeometry(Fill, StrokePen, geometry);
             dc.DrawGeometry(null, DragzonePen, geometry);
         }
 
-        private Point TransformPoint(Point point, ProjectiveModel projective)
+        protected Point TransformPoint(Point p, bool offsetToCenter)
         {
-            double xx = projective.Xx * projective.wX;
-            double xy = projective.Xy * projective.wX;
-            double yy = projective.Yy * projective.wY;
-            double yx = projective.Yx * projective.wY;
-            double ox = projective.Ox * Canvas.UnitSize * projective.wO;
-            double oy = projective.Oy * Canvas.UnitSize * projective.wO;
-            double wx = projective.wX;
-            double wy = projective.wY;
-            double wo = projective.wO;
-
-            double x = point.X;
-            double y = point.Y;
-
-            // Calculate denominator
-            double w = x * wx + y * wy + wo;
-            if (w == 0)
-                return new Point(0, 0);
-
-            // Transform coordinates
-            double tx = (x * xx + y * yx + ox) / w;
-            double ty = (x * xy + y * yy + oy) / w;
-
-            return new Point(tx, ty);
+            var debug = false;
+            var canvasP = new Point(p.X * UnitSize, p.Y * UnitSize);
+            if (offsetToCenter) 
+                canvasP = new Point(canvasP.X + Canvas.XOffset + Canvas.ActualWidth / 2, canvasP.Y + Canvas.YOffset + Canvas.ActualHeight / 2);
+            if (Canvas.RenderMode is RenderMode.Affine)
+                canvasP = canvasP.ApplyAffineTransformation(Canvas.AffineParams);
+            if (Canvas.RenderMode is RenderMode.ProjectiveV2)
+                canvasP = canvasP.ApplyProjectiveV2Transformation(Canvas.ProjectiveParams);
+            return canvasP;
         }
 
 
-        protected abstract StreamGeometry GetElementGeometry();
+        protected abstract Point[][] GetElementGeometry();
 
         protected override void OnInitialized(EventArgs e)
         {
@@ -294,7 +297,7 @@ namespace Modeling_Canvas.UIElements
             {
                 AnchorPoint = new DraggablePoint(Canvas, false)
                 {
-                    Radius = 0.2,
+                    PixelRadius = 10,
                     Focusable = false,
                     Fill = Brushes.Transparent,
                     Stroke = Brushes.Green,
