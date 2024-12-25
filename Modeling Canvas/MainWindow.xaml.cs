@@ -26,6 +26,7 @@ namespace Modeling_Canvas
 
             var koch = new KochCurve(MainCanvas);
             MainCanvas.Children.Add(koch);
+            koch.Position = new Point(0.5, 2.625);
 
 
             //InitFigure();

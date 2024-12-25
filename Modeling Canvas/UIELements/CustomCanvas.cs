@@ -505,7 +505,7 @@ namespace Modeling_Canvas.UIElements
                     if (calculatedSize > 5) calculatedSize = Math.Round(calculatedSize);
                     UnitSize = calculatedSize;
                 }
-                if (RenderMode is RenderMode.ProjectiveV2 && UnitSize < 5) UnitSize = 5;
+                if (RenderMode is RenderMode.ProjectiveV2 || RenderMode is RenderMode.Projective && UnitSize < 5) UnitSize = 5;
                 UpdateMouseLabel();
             }
         }

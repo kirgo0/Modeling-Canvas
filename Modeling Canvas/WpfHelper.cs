@@ -323,7 +323,8 @@ namespace Modeling_Canvas
             string? labelText = null,
             double width = 100,
             double marginBottom = 30,
-            Orientation panelOrientation = Orientation.Vertical
+            Orientation panelOrientation = Orientation.Vertical,
+            int delay = 0
         )
         {
             var panel = CreateDefaultPanel(marginBottom, panelOrientation);
@@ -349,7 +350,8 @@ namespace Modeling_Canvas
             {
                 Source = bindingSource,
                 Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                Delay = delay
             };
             textBox.SetBinding(TextBox.TextProperty, binding);
 

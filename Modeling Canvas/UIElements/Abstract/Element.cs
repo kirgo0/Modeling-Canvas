@@ -237,7 +237,7 @@ namespace Modeling_Canvas.UIElements
                         if (figure == null || figure.Length < 1)
                             continue;
                         // Begin a new figure at the first point
-                        context.BeginFigure(TransformPoint(figure[0], offsetToCenter), isFilled: true, isClosed: true);
+                        context.BeginFigure(TransformPoint(figure[0], offsetToCenter), Fill != null, false);
                         for (var i = 1; i < figure.Length; i++)
                         {
                             context.LineTo(TransformPoint(figure[i], offsetToCenter), isStroked: true, isSmoothJoin: false);

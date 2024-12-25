@@ -1,21 +1,26 @@
 ﻿using Modeling_Canvas.Extensions;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace Modeling_Canvas.UIElements
 {
     public class KochCurve : Element
     {
-        private int _iterations = 3;
+        private int _iterations = 1;
 
-        private double _stepSize = 10;
+        private double _stepSize = 1;
 
         private double _angle = 60;
 
-        private const string Axiom = "F++F++F"; // Аксіома
+        private string _axiom = "F++F++F"; 
 
-        private const string RuleF = "F-F++F-F"; // Правило для "F"
+        private string _ruleF = "F-F++F-F"; 
 
         protected Point _position;
+
+        private Point[][] _cachedGeometry;
+
+        private bool _isGeometryDirty = true;
 
         public int Iterations
         {
@@ -25,6 +30,7 @@ namespace Modeling_Canvas.UIElements
                 if (_iterations != value)
                 {
                     _iterations = value;
+                    _isGeometryDirty = true;
                     OnPropertyChanged();
                     InvalidateCanvas();
                 }
@@ -39,6 +45,7 @@ namespace Modeling_Canvas.UIElements
                 if (_stepSize != value)
                 {
                     _stepSize = value;
+                    _isGeometryDirty = true;
                     OnPropertyChanged();
                     InvalidateCanvas();
                 }
@@ -53,6 +60,7 @@ namespace Modeling_Canvas.UIElements
                 if (_angle != value)
                 {
                     _angle = value;
+                    _isGeometryDirty = true;
                     OnPropertyChanged();
                     InvalidateCanvas();
                 }
@@ -67,6 +75,7 @@ namespace Modeling_Canvas.UIElements
                 if (_position != value)
                 {
                     _position = value;
+                    _isGeometryDirty = true;
                     OnPropertyChanged();
                     InvalidateCanvas();
                 }
@@ -85,7 +94,7 @@ namespace Modeling_Canvas.UIElements
                     this,
                     nameof(Iterations),
                     0,
-                    20
+                    7
                     );
 
             _uiControls.Add("Iterations", iterationsBox);
@@ -94,7 +103,8 @@ namespace Modeling_Canvas.UIElements
                 WpfHelper.CreateLabeledTextBox(
                     this,
                     nameof(StepSize),
-                    "Step size"
+                    "Step size",
+                    delay: 400
                     );
 
             _uiControls.Add("StepSize", sizeBox);
@@ -108,38 +118,75 @@ namespace Modeling_Canvas.UIElements
 
             _uiControls.Add("Angle", angleBox);
 
+            // Створення ComboBox
+            ComboBox comboBox = new ComboBox
+            {
+                Width = 200,
+                Margin = new Thickness(10)
+            };
+
+            // Додавання елементів у ComboBox
+            comboBox.Items.Add(new ComboBoxItem { Content = "Сніжинка Коха", Tag = new ValueTuple<double, string, string>(60, "F++F++F", "F-F++F-F") });
+            comboBox.Items.Add(new ComboBoxItem { Content = "Квадратична сніжинка Коха", Tag = new ValueTuple<double, string, string>(90, "F+F+F+F", "F+F-F-FF+F+F-F") });
+            comboBox.Items.Add(new ComboBoxItem { Content = "Квадратична крива Коха", Tag = new ValueTuple<double, string, string>(90, "F", "F-F+F+F-F") });
+            comboBox.Items.Add(new ComboBoxItem { Content = "Крива Коха", Tag = new ValueTuple<double, string, string>(60, "F", "F-F++F-F") });
+
+            // Обробник подій для вибору елементів
+            comboBox.SelectionChanged += ComboBox_SelectionChanged;
+            _uiControls.Add("PatternsCombobox", comboBox);
+
+            comboBox.SelectedIndex = 0;
+
             AddFillColorControls();
             AddStrokeColorControls();
             AddStrokeThicknessControls();
             base.InitControlPanel();
         }
 
-
-        protected override Point[][] GetElementGeometry()
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            string lSystemString = GenerateLSystemString();
-            var points = InterpretLSystem(lSystemString);
-
-            return new[] { points.ToArray() };
+            if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
+            {
+                // Явне приведення до типу кортежу
+                if (selectedItem.Tag is ValueTuple<double, string, string> tag)
+                {
+                    (Angle, _axiom, _ruleF) = tag;
+                    _isGeometryDirty = true;
+                    if (selectedItem.Content.Equals("Квадратична сніжинка Коха") && Iterations > 5) Iterations = 5;
+                    InvalidateCanvas();
+                }
+            }
         }
 
 
-        private string GenerateLSystemString()
+        protected override Point[][] GetElementGeometry()
         {
-            string current = Axiom;
+            if (_isGeometryDirty)
+            {
+                var lSystemSequence = GenerateLSystemSequence();
+                _cachedGeometry = new[] { InterpretLSystem(lSystemSequence).ToArray() };
+                _isGeometryDirty = false;
+            }
+
+            return _cachedGeometry;
+        }
+
+        private List<char> GenerateLSystemSequence()
+        {
+            var current = new List<char>(_axiom);
 
             for (int i = 0; i < Iterations; i++)
             {
-                string next = "";
-                foreach (char c in current)
+                var next = new List<char>();
+                foreach (var c in current)
                 {
                     if (c == 'F')
                     {
-                        next += RuleF;
+                        next.AddRange(_ruleF);
                     }
                     else
                     {
-                        next += c;
+                        next.Add(c);
                     }
                 }
                 current = next;
@@ -148,7 +195,7 @@ namespace Modeling_Canvas.UIElements
             return current;
         }
 
-        private List<Point> InterpretLSystem(string lSystemString)
+        private List<Point> InterpretLSystem(List<char> lSystemSequence)
         {
             var points = new List<Point>();
             var currentPosition = Position;
@@ -156,7 +203,7 @@ namespace Modeling_Canvas.UIElements
 
             points.Add(currentPosition);
 
-            foreach (char c in lSystemString)
+            foreach (var c in lSystemSequence)
             {
                 switch (c)
                 {
@@ -180,6 +227,8 @@ namespace Modeling_Canvas.UIElements
             return points;
         }
 
+        protected override Point GetAnchorDefaultPosition() => Position;
+
         public override void MoveElement(Vector offset)
         {
             base.MoveElement(offset);
@@ -194,12 +243,10 @@ namespace Modeling_Canvas.UIElements
 
         public override void RotateElement(Point anchorPoint, double degrees)
         {
-            //Position = Position.RotatePoint(anchorPoint, degrees);
         }
 
         public override void ScaleElement(Point anchorPoint, Vector scaleVector, double ScaleFactor)
         {
-            //Position = Position.ScalePoint(anchorPoint, scaleVector);
         }
     }
 }
