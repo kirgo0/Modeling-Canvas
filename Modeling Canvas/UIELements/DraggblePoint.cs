@@ -1,6 +1,5 @@
 using Modeling_Canvas.Extensions;
 using System.Windows;
-using System.Windows.Media;
 
 namespace Modeling_Canvas.UIElements
 {

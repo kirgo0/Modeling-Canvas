@@ -1,9 +1,7 @@
 ﻿using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
-using Modeling_Canvas.Models;
 using Modeling_Canvas.UIElements.Interfaces;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -244,7 +242,8 @@ namespace Modeling_Canvas.UIElements
                         }
                     }
                 }
-            } else
+            }
+            else
             {
                 using (var context = geometry.Open())
                 {
@@ -273,7 +272,7 @@ namespace Modeling_Canvas.UIElements
         {
             var debug = false;
             var canvasP = new Point(p.X * UnitSize, p.Y * UnitSize);
-            if (offsetToCenter) 
+            if (offsetToCenter)
                 canvasP = new Point(canvasP.X + Canvas.XOffset + Canvas.ActualWidth / 2, canvasP.Y + Canvas.YOffset + Canvas.ActualHeight / 2);
             if (Canvas.RenderMode is RenderMode.Affine)
                 canvasP = canvasP.ApplyAffineTransformation(Canvas.AffineParams);

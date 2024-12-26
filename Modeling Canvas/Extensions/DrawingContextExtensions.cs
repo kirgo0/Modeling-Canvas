@@ -16,15 +16,15 @@ namespace Modeling_Canvas.Extensions
 
         public static Point[][] GetCircleGeometry(this CustomCanvas canvas, Point center, double radius, int precision)
         {
-            var geometryData = new Point[1][]; 
+            var geometryData = new Point[1][];
 
-            var circlePoints = new Point[precision + 1]; 
+            var circlePoints = new Point[precision + 1];
 
             double segmentStep = (2 * Math.PI) / precision;
 
             for (int i = 0; i <= precision; i++)
             {
-                double angle = i * segmentStep; 
+                double angle = i * segmentStep;
                 circlePoints[i] = new Point(
                     center.X + radius * Math.Cos(angle),
                     center.Y + radius * Math.Sin(angle));
@@ -53,7 +53,7 @@ namespace Modeling_Canvas.Extensions
                     center.X + (radius + lineLength) * Math.Cos(angle),
                     center.Y + (radius + lineLength) * Math.Sin(angle));
                 geometryData[i + 1] = new[] { lineStart, lineEnd };
-            } 
+            }
 
             return geometryData;
         }
@@ -70,7 +70,7 @@ namespace Modeling_Canvas.Extensions
             var bottomRight = new Point(center.X + halfSide, center.Y + halfSide);
             var bottomLeft = new Point(center.X - halfSide, center.Y + halfSide);
 
-            geometryData[0] = new[] { topLeft, topRight, bottomRight, bottomLeft, topLeft}; 
+            geometryData[0] = new[] { topLeft, topRight, bottomRight, bottomLeft, topLeft };
 
             return geometryData;
         }

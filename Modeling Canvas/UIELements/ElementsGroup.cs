@@ -10,7 +10,7 @@ namespace Modeling_Canvas.UIElements
         private Point _topLeftPosition = new Point(0, 0);
 
         private Point _bottomRightPosition = new Point(0, 0);
-        
+
         public static int Counter { get; set; } = 1;
 
         public string Name { get; set; } = string.Empty;

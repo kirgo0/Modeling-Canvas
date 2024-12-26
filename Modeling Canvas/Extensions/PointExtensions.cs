@@ -108,7 +108,7 @@ namespace Modeling_Canvas.Extensions
             double wx = projective.wX;
             double wy = projective.wY;
             double wo = projective.wO;
-            
+
             var x = point.X;
             var y = point.Y;
 
@@ -116,7 +116,7 @@ namespace Modeling_Canvas.Extensions
             double w = Math.Abs(x * wx + y * wy + wo);
             if (w == 0)
                 return new Point(0, 0);
-            
+
             double tx = ((x * xx + y * yx + ox) / w);
             double ty = ((x * xy + y * yy + oy) / w);
 
@@ -137,7 +137,7 @@ namespace Modeling_Canvas.Extensions
 
             var u = canvasPoint.X;
             var v = canvasPoint.Y;
-            
+
             double a1 = xx - u * wx;
             double b1 = yx - u * wy;
             double c1 = u * wo - ox;
@@ -213,7 +213,7 @@ namespace Modeling_Canvas.Extensions
             double wo = projective.wO;
 
             var u = canvasPoint.X - Canvas.ActualWidth / 2;
-            var v = canvasPoint.Y - Canvas.ActualHeight/ 2;
+            var v = canvasPoint.Y - Canvas.ActualHeight / 2;
             // Set up the system of equations:
             // u * (wx * x + wy * y + wo) = xx * x + yx * y + ox
             // v * (wx * x + wy * y + wo) = xy * x + yy * y + oy

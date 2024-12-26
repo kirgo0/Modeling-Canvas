@@ -24,9 +24,9 @@ namespace Modeling_Canvas.UIElements
         public double MinAnimationDuration { get; } = 0.3;
 
         public double MaxAnimationDuration { get; } = 10;
-        
+
         public List<Point> HypocycloidPoints { get; set; } = new();
-        
+
         public CustomCircle LargeCircle { get; set; }
 
         public CustomCircle SmallCircle { get; set; }

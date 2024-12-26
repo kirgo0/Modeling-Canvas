@@ -12,9 +12,9 @@ namespace Modeling_Canvas.UIElements
 
         private double _angle = 60;
 
-        private string _axiom = "F++F++F"; 
+        private string _axiom = "F++F++F";
 
-        private string _ruleF = "F-F++F-F"; 
+        private string _ruleF = "F-F++F-F";
 
         protected Point _position;
 

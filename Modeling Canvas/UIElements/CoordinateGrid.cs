@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Media;
+﻿using System.Windows;
 
 namespace Modeling_Canvas.UIElements
 {
@@ -26,8 +20,8 @@ namespace Modeling_Canvas.UIElements
 
         protected override Point[][] GetElementGeometry()
         {
-            int width = (int) (Canvas.ProjectiveParams.Xx / UnitSize);
-            int height = (int) (Canvas.ProjectiveParams.Yy / UnitSize);
+            int width = (int)(Canvas.ProjectiveParams.Xx / UnitSize);
+            int height = (int)(Canvas.ProjectiveParams.Yy / UnitSize);
             var geometryData = new Point[width * 2 + height * 2 + 1][];
 
             var rowCounter = 0;

@@ -1,5 +1,4 @@
 ﻿using Modeling_Canvas.Enums;
-using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
 using Modeling_Canvas.UIElements.Abstract;
 using System.Globalization;

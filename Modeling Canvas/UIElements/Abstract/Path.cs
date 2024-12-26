@@ -1,8 +1,5 @@
-﻿using MathNet.Numerics;
-using Modeling_Canvas.Extensions;
-using Modeling_Canvas.UIElements.Interfaces;
+﻿using Modeling_Canvas.UIElements.Interfaces;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 

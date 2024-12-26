@@ -1,5 +1,4 @@
-﻿using Modeling_Canvas.Extensions;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 
 namespace Modeling_Canvas.UIElements
@@ -7,19 +6,19 @@ namespace Modeling_Canvas.UIElements
     public partial class SegmentedCircle : CustomCircle
     {
         private double _endDegrees = 360;
-        
+
         private double _startDegrees = 0;
-        
+
         public double MaxDegrees { get; set; } = 360;
-        
+
         public double MinDegrees { get; set; } = 0;
 
         public double StartRadians { get => Helpers.DegToRad(StartDegrees); }
 
         public double EndRadians { get => Helpers.DegToRad(EndDegrees); }
-        
+
         public DraggablePoint StartDegreesPoint { get; set; }
-        
+
         public DraggablePoint EndDegreesPoint { get; set; }
 
         public double EndDegrees

@@ -1,5 +1,4 @@
-﻿using Modeling_Canvas.Extensions;
-using Modeling_Canvas.Models;
+﻿using Modeling_Canvas.Models;
 using System.Windows;
 using System.Windows.Media;
 
