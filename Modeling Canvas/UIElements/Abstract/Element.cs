@@ -238,7 +238,7 @@ namespace Modeling_Canvas.UIElements
                         context.BeginFigure(TransformPoint(figure[0], offsetToCenter), Fill != null, false);
                         for (var i = 1; i < figure.Length; i++)
                         {
-                            context.LineTo(TransformPoint(figure[i], offsetToCenter), isStroked: true, isSmoothJoin: false);
+                            context.LineTo(TransformPoint(figure[i], offsetToCenter), isStroked: true, isSmoothJoin: true);
                         }
                     }
                 }
@@ -458,7 +458,7 @@ namespace Modeling_Canvas.UIElements
             {
                 OverrideAnchorPoint = true;
                 var angle = Canvas.GetDegreesBetweenMouseAndPoint(AnchorPoint.Position);
-                RotateElement(AnchorPoint.Position, _lastRotationDegrees - angle);
+                RotateElement(AnchorPoint.Position, angle - _lastRotationDegrees);
                 _lastRotationDegrees = angle;
             }
             else

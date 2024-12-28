@@ -30,9 +30,9 @@ namespace Modeling_Canvas
 
 
             //InitFigure();
-            //var a = new Hypocycloid(MainCanvas, 4, 1);
-            //MainCanvas.Children.Add(a);
-            //a.Center = new Point(0, 0);
+            var a = new Hypocycloid(MainCanvas, 4, 1);
+            MainCanvas.Children.Add(a);
+            a.Center = new Point(0, 0);
 
             //var b = new SegmentedCircle(MyCanvas);
             //MyCanvas.Children.Add(b);

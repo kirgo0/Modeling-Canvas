@@ -225,7 +225,6 @@ namespace Modeling_Canvas.UIElements
             LargeCircle.Center = Center;
             SmallCircle.Center = GetSmallCircleCenter(Model.Angle + Model.RotationAngle);
 
-
             LargeCircle.ControlsVisible = ControlsVisibility is Visibility.Visible;
             SmallCircle.ControlsVisible = ControlsVisibility is Visibility.Visible;
             if (InputManager.AltPressed)
@@ -233,24 +232,27 @@ namespace Modeling_Canvas.UIElements
                 var t = FindNearestPoint(Mouse.GetPosition(Canvas));
                 if (t is not null) DrawTangentsAndNormals(dc, t.Value);
             }
+
+            EndPoint.Position = HypocycloidPoints.LastOrDefault();
             base.OnRender(dc);
         }
 
         protected override Point[][] GetElementGeometry()
         {
-            throw new NotImplementedException();
+            var geometryData = new Point[1][];
+
+            geometryData[0] = CalculateHypocycloidPoints(Model, HypocycloidPoints).ToArray();
+
+            if (HypocycloidPoints.Count == 0)
+            {
+                geometryData = Canvas.GetCircleGeometry(Center, 5, 15);
+            }
+            return geometryData;
         }
 
         //protected override void DefaultRender(DrawingContext dc)
         //{
-        //    HypocycloidPoints = CalculateHypocycloidPoints(dc, Model, HypocycloidPoints);
-        //    EndPoint.Position = Canvas.GetUnitCoordinates(HypocycloidPoints.LastOrDefault());
-
-        //    if (HypocycloidPoints.Count == 0)
-        //    {
-        //        dc.DrawCircle(Canvas, Brushes.DeepPink, null, LargeCircle.CenterPoint.PixelPosition, 5, 15, 0, false);
-        //        return;
-        //    }
+        //    //Brushes.DeepPink, null
 
         //    for (int i = 0; i < HypocycloidPoints.Count - 1; i++)
         //    {
@@ -274,14 +276,14 @@ namespace Modeling_Canvas.UIElements
         //    }
         //}
 
-        protected virtual List<Point> CalculateHypocycloidPoints(DrawingContext dc, HypocycloidModel model, List<Point> points = null)
+        protected virtual List<Point> CalculateHypocycloidPoints(HypocycloidModel model, List<Point> points = null)
         {
             if (points is null) points = new List<Point>();
             else points.Clear();
 
-            double R = model.LargeRadius * UnitSize;
-            double r = model.SmallRadius * UnitSize;
-            double d = model.Distance * UnitSize;
+            double R = model.LargeRadius;
+            double r = model.SmallRadius;
+            double d = model.Distance;
 
             var center = LargeCircle.Center;
 
@@ -310,9 +312,9 @@ namespace Modeling_Canvas.UIElements
         {
             var inflectionPoints = new List<Point>();
 
-            double R = model.LargeRadius * UnitSize;
-            double r = model.SmallRadius * UnitSize;
-            double d = model.Distance * UnitSize;
+            double R = model.LargeRadius;
+            double r = model.SmallRadius;
+            double d = model.Distance;
 
             var center = LargeCircle.Center;
 
@@ -388,16 +390,16 @@ namespace Modeling_Canvas.UIElements
             double x, y;
 
             x = Center.X + (Model.LargeRadius - Model.SmallRadius) * Math.Cos(angle);
-            y = Center.Y - (Model.LargeRadius - Model.SmallRadius) * Math.Sin(angle);
+            y = Center.Y + (Model.LargeRadius - Model.SmallRadius) * Math.Sin(angle);
 
             return new Point(x, y);
         }
 
         public void DrawTangentsAndNormals(DrawingContext dc, double tParameter)
         {
-            double R = Model.LargeRadius * UnitSize;
-            double r = Model.SmallRadius * UnitSize;
-            double d = Model.Distance * UnitSize;
+            double R = Model.LargeRadius;
+            double r = Model.SmallRadius;
+            double d = Model.Distance;
 
             var center = LargeCircle.Center;
 
@@ -427,8 +429,6 @@ namespace Modeling_Canvas.UIElements
 
             Point normalEnd = pointOnCurve + normal * Canvas.ActualWidth;
             dc.DrawLine(Canvas, new Pen(Brushes.Green, 2), pointOnCurve, normalEnd);
-
-            //dc.DrawCircle(Canvas, Brushes.Red, null, pointOnCurve, 7, 15, 0, false);
         }
 
         public double? FindNearestPoint(Point targetPoint, double tolerance = 10)
@@ -481,7 +481,6 @@ namespace Modeling_Canvas.UIElements
                 Model.SmallRadius = Lerp(initialSmallRadius, targetSmallRadius, progress);
                 Model.Distance = Lerp(initialDistance, targetDistance, progress);
                 Model.Angle = Lerp(initialAngle, targetAngle, progress);
-                //Model.RotationAngle = Lerp(initialRotationAngle, targetRotationAngle, progress);
 
                 // Stop the timer when the animation is complete
                 if (progress >= 1.0)
