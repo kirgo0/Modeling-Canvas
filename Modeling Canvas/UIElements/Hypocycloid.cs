@@ -1,9 +1,11 @@
-﻿using Modeling_Canvas.Extensions;
+﻿using Modeling_Canvas.Enums;
+using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using System.Windows.Threading;
 
 
@@ -32,6 +34,8 @@ namespace Modeling_Canvas.UIElements
         public CustomCircle SmallCircle { get; set; }
 
         public CustomPoint EndPoint { get; set; }
+
+        public DraggablePoint CenterPoint { get; set; }
 
         public HypocycloidModel Model { get; set; }
 
@@ -234,6 +238,15 @@ namespace Modeling_Canvas.UIElements
             }
 
             EndPoint.Position = HypocycloidPoints.LastOrDefault();
+
+            if (CalculatedValues.ShowArcLength)
+            {
+                CalculatedValues.ArcLength = CalculateHypocycloidLength(Model);
+            }
+            if (CalculatedValues.ShowHypocycloidArea)
+            {
+                CalculatedValues.HypocycloidArea = CalculateHypocycloidArea(Model);
+            }
             base.OnRender(dc);
         }
 
@@ -242,11 +255,16 @@ namespace Modeling_Canvas.UIElements
             var geometryData = new Point[1][];
 
             geometryData[0] = CalculateHypocycloidPoints(Model, HypocycloidPoints).ToArray();
-
+            
             if (HypocycloidPoints.Count == 0)
             {
-                geometryData = Canvas.GetCircleGeometry(Center, 5, 15);
+                _transformGeometry = false;
+
+                var transformedPosition = TransformPoint(Center);
+                return Canvas.GetCircleGeometry(transformedPosition, 2, 15);
             }
+
+            _transformGeometry = true;
             return geometryData;
         }
 
@@ -265,14 +283,6 @@ namespace Modeling_Canvas.UIElements
         //        {
         //            dc.DrawCircle(Canvas, Brushes.DeepPink, null, point, 5, 15, 0, false);
         //        }
-        //    }
-        //    if (CalculatedValues.ShowArcLength)
-        //    {
-        //        CalculatedValues.ArcLength = CalculateHypocycloidLength(Model);
-        //    }
-        //    if (CalculatedValues.ShowHypocycloidArea)
-        //    {
-        //        CalculatedValues.HypocycloidArea = CalculateHypocycloidArea(Model);
         //    }
         //}
 
@@ -397,38 +407,38 @@ namespace Modeling_Canvas.UIElements
 
         public void DrawTangentsAndNormals(DrawingContext dc, double tParameter)
         {
-            double R = Model.LargeRadius;
-            double r = Model.SmallRadius;
-            double d = Model.Distance;
+            //double R = Model.LargeRadius;
+            //double r = Model.SmallRadius;
+            //double d = Model.Distance;
 
-            var center = LargeCircle.Center;
+            //var center = LargeCircle.Center;
 
-            double t = Helpers.DegToRad(Model.Angle) * tParameter / Precision;
-            double x = (R - r) * Math.Cos(t) + d * Math.Cos((R - r) / r * t);
-            double y = (R - r) * Math.Sin(t) - d * Math.Sin((R - r) / r * t);
+            //double t = Helpers.DegToRad(Model.Angle) * tParameter / Precision;
+            //double x = (R - r) * Math.Cos(t) + d * Math.Cos((R - r) / r * t);
+            //double y = (R - r) * Math.Sin(t) - d * Math.Sin((R - r) / r * t);
 
-            var rotationAngle = Helpers.DegToRad(Model.RotationAngle);
-            double rotatedX = Math.Cos(rotationAngle) * x - Math.Sin(rotationAngle) * y;
-            double rotatedY = Math.Sin(rotationAngle) * x + Math.Cos(rotationAngle) * y;
+            //var rotationAngle = Helpers.DegToRad(Model.RotationAngle);
+            //double rotatedX = Math.Cos(rotationAngle) * x - Math.Sin(rotationAngle) * y;
+            //double rotatedY = Math.Sin(rotationAngle) * x + Math.Cos(rotationAngle) * y;
 
-            Point pointOnCurve = new Point(center.X + rotatedX, center.Y + rotatedY);
+            //Point pointOnCurve = new Point(center.X + rotatedX, center.Y + rotatedY);
 
-            double dx = -(R - r) * Math.Sin(t) - d * ((R - r) / r) * Math.Sin((R - r) / r * t);
-            double dy = (R - r) * Math.Cos(t) - d * ((R - r) / r) * Math.Cos((R - r) / r * t);
+            //double dx = -(R - r) * Math.Sin(t) - d * ((R - r) / r) * Math.Sin((R - r) / r * t);
+            //double dy = (R - r) * Math.Cos(t) - d * ((R - r) / r) * Math.Cos((R - r) / r * t);
 
-            double rotatedDx = Math.Cos(rotationAngle) * dx - Math.Sin(rotationAngle) * dy;
-            double rotatedDy = Math.Sin(rotationAngle) * dx + Math.Cos(rotationAngle) * dy;
+            //double rotatedDx = Math.Cos(rotationAngle) * dx - Math.Sin(rotationAngle) * dy;
+            //double rotatedDy = Math.Sin(rotationAngle) * dx + Math.Cos(rotationAngle) * dy;
 
-            Vector tangent = new Vector(rotatedDx, rotatedDy);
-            tangent.Normalize();
+            //Vector tangent = new Vector(rotatedDx, rotatedDy);
+            //tangent.Normalize();
 
-            Vector normal = new Vector(-tangent.Y, tangent.X);
+            //Vector normal = new Vector(-tangent.Y, tangent.X);
 
-            Point tangentEnd = pointOnCurve + tangent * Canvas.ActualWidth;
-            dc.DrawLine(Canvas, new Pen(Brushes.Blue, 2), pointOnCurve, tangentEnd);
+            //Point tangentEnd = pointOnCurve + tangent * Canvas.ActualWidth;
+            //dc.DrawLine(Canvas, new Pen(Brushes.Blue, 2), pointOnCurve, tangentEnd);
 
-            Point normalEnd = pointOnCurve + normal * Canvas.ActualWidth;
-            dc.DrawLine(Canvas, new Pen(Brushes.Green, 2), pointOnCurve, normalEnd);
+            //Point normalEnd = pointOnCurve + normal * Canvas.ActualWidth;
+            //dc.DrawLine(Canvas, new Pen(Brushes.Green, 2), pointOnCurve, normalEnd);
         }
 
         public double? FindNearestPoint(Point targetPoint, double tolerance = 10)

@@ -1,4 +1,5 @@
 ﻿using Modeling_Canvas.Enums;
+using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
 using Modeling_Canvas.UIElements.Abstract;
 using System.Globalization;
@@ -109,36 +110,10 @@ namespace Modeling_Canvas.UIElements
             Points.Last().Shape = PointShape.Square;
         }
 
-        //protected override void DefaultRender(DrawingContext dc)
-        //{
-        //    if (Points.Count < 2) return;
-
-        //    for (int i = 0; i < Points.Count - 1; i++)
-        //    {
-        //        BezierPoint start = Points[i];
-        //        BezierPoint end = Points[i + 1];
-
-        //        Point p0 = start.PixelPosition;
-        //        Point c1 = start.ControlNextPoint.PixelPosition;
-        //        Point c2 = end.ControlPrevPoint.PixelPosition;
-        //        Point p3 = end.PixelPosition;
-
-        //        dc.DrawBezierCurve(Canvas, StrokePen, p0, c1, c2, p3, CurvePrecision, 10);
-        //    }
-
-        //    if (IsClosed)
-        //    {
-        //        BezierPoint start = Points.Last();
-        //        BezierPoint end = Points.First();
-
-        //        Point p0 = start.PixelPosition;
-        //        Point c1 = start.ControlNextPoint.PixelPosition;
-        //        Point c2 = end.ControlPrevPoint.PixelPosition;
-        //        Point p3 = end.PixelPosition;
-
-        //        dc.DrawBezierCurve(Canvas, StrokePen, p0, c1, c2, p3, CurvePrecision, 10);
-        //    }
-        //}
+        protected override Point[][] GetElementGeometry()
+        {
+            return Canvas.GetBezierCurveGeometry(Points, IsClosed, CurvePrecision);
+        }
 
         public virtual void AddBezierPoint(Point position, Point prevControl, Point nextControl)
         {

@@ -1,4 +1,6 @@
-﻿using Modeling_Canvas.Models;
+﻿using Modeling_Canvas.Enums;
+using Modeling_Canvas.Extensions;
+using Modeling_Canvas.Models;
 using System.Windows;
 using System.Windows.Media;
 
@@ -59,24 +61,25 @@ namespace Modeling_Canvas.UIElements
 
         }
 
-        //protected override void DefaultRender(DrawingContext dc)
-        //{
-        //    ControlPrevPoint.Visibility = ShowPrevControl ? ControlsVisibility : Visibility.Hidden;
-        //    ControlNextPoint.Visibility = ShowNextControl ? ControlsVisibility : Visibility.Hidden;
-        //    if (ControlsVisibility is Visibility.Visible)
-        //    {
-        //        if (ShowPrevControl)
-        //            dc.DrawLine(Canvas, ControlPrevLinePen, PixelPosition, ControlPrevPoint.PixelPosition);
-        //        if (ShowNextControl)
-        //            dc.DrawLine(Canvas, ControlNextLinePen, PixelPosition, ControlNextPoint.PixelPosition);
-        //    }
-        //    base.DefaultRender(dc);
-        //}
-
         public void ConfigureSmoothnessForControlPoints()
         {
             ControlPrevPoint.AfterMoveAction = AlignOppositeControlPoint;
             ControlNextPoint.AfterMoveAction = AlignOppositeControlPoint;
+        }
+
+        protected override void OnRender(DrawingContext dc)
+        {
+            ControlPrevPoint.Visibility = ShowPrevControl ? ControlsVisibility : Visibility.Hidden;
+            ControlNextPoint.Visibility = ShowNextControl ? ControlsVisibility : Visibility.Hidden;
+            
+            if (ControlsVisibility is Visibility.Visible)
+            {
+                if (ShowPrevControl)
+                    dc.DrawLine(ControlPrevLinePen, TransformPoint(Position), TransformPoint(ControlPrevPoint.Position));
+                if (ShowNextControl)
+                    dc.DrawLine(ControlNextLinePen, TransformPoint(Position), TransformPoint(ControlNextPoint.Position));
+            }
+            base.OnRender(dc);
         }
 
         void AlignOppositeControlPoint(Element element)

@@ -1,4 +1,6 @@
-﻿using Modeling_Canvas.UIElements;
+﻿using Modeling_Canvas.Enums;
+using Modeling_Canvas.UIElements;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
 
@@ -6,14 +8,6 @@ namespace Modeling_Canvas.Extensions
 {
     public static class DrawingContextExtensions
     {
-        public static void DrawLine(this DrawingContext dc, CustomCanvas canvas, Pen pen, Point p1, Point p2, double transparentThickness = 0)
-        {
-            p1 = canvas.TransformPoint(p1);
-            p2 = canvas.TransformPoint(p2);
-            dc.DrawLine(pen, p1, p2);
-            dc.DrawLine(new Pen(Brushes.Transparent, pen.Thickness + transparentThickness), p1, p2);
-        }
-
         public static Point[][] GetCircleGeometry(this CustomCanvas canvas, Point center, double radius, int precision)
         {
             var geometryData = new Point[1][];
@@ -133,17 +127,31 @@ namespace Modeling_Canvas.Extensions
             }
         }
 
-        public static void DrawBezierCurve(this DrawingContext dc, CustomCanvas canvas, Pen pen, Point p0, Point c1, Point c2, Point p3, int steps = 100, double transparentThickness = 0)
+        public static Point[][] GetBezierCurveGeometry(this CustomCanvas canvas, List<BezierPoint> points, bool isClosed = false, int steps = 100)
         {
-            Point prevPoint = p0;
-
-            for (int i = 1; i <= steps; i++)
+            var lineList = new List<Point>();
+            for(var i = 0; i < points.Count - 1; i++)
             {
-                double t = i / (double)steps;
-                Point currentPoint = CalculateBezierPoint(t, p0, c1, c2, p3);
-                dc.DrawLine(canvas, pen, prevPoint, currentPoint, transparentThickness);
-                prevPoint = currentPoint;
+                lineList.AddRange(CalculateBezierCurve(points[i], points[i+1], steps));
             }
+            if(isClosed)
+            {
+                lineList.AddRange(CalculateBezierCurve(points.LastOrDefault(),points.FirstOrDefault(),steps));
+            }
+            return new Point[][] { lineList.ToArray() };
+        }
+
+        private static Point[] CalculateBezierCurve(BezierPoint start, BezierPoint end, int steps)
+        {
+            if (start is null || end is null) return new Point[0];
+            var curvePoints = new Point[steps];
+            for (int j = 1; j <= steps; j++)
+            {
+                double t = j / (double)steps;
+                Point currentPoint = CalculateBezierPoint(t, start.Position, start.ControlNextPoint.Position, end.ControlPrevPoint.Position, end.Position);
+                curvePoints[j - 1] = currentPoint;
+            }
+            return curvePoints;
         }
 
         private static Point CalculateBezierPoint(double t, Point p0, Point c1, Point c2, Point p3)

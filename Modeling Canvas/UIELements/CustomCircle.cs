@@ -21,9 +21,11 @@ namespace Modeling_Canvas.UIElements
         public bool OverrideMoveAction { get; set; } = false;
 
         public Action<Vector>? MoveAction;
+
         public bool OverrideRotateAction { get; set; } = false;
 
         public Action<Point, double>? RotateAction;
+
         public bool OverrideScaleAction { get; set; } = false;
 
         public Action<Point, Vector, double>? ScaleAction;

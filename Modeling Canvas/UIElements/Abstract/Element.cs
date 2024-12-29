@@ -251,7 +251,6 @@ namespace Modeling_Canvas.UIElements
                     {
                         if (figure == null || figure.Length < 1)
                             continue;
-                        // Begin a new figure at the first point
                         var a = figure[0];
                         context.BeginFigure(figure[0], Fill != null, false);
                         for (var i = 1; i < figure.Length; i++)
@@ -263,16 +262,17 @@ namespace Modeling_Canvas.UIElements
                 }
             }
 
-            // Draw the transformed geometry
             dc.DrawGeometry(Fill, StrokePen, geometry);
             dc.DrawGeometry(null, DragzonePen, geometry);
         }
 
-        protected Point TransformPoint(Point p, bool offsetToCenter)
+        protected Point TransformPoint(Point p, bool? offsetToCenter = null)
         {
+            if(offsetToCenter == null)
+                offsetToCenter = Canvas.RenderMode is not RenderMode.ProjectiveV2 && Canvas.RenderMode is not RenderMode.Projective;
             var debug = false;
             var canvasP = new Point(p.X * UnitSize, p.Y * UnitSize);
-            if (offsetToCenter)
+            if (offsetToCenter.Value)
                 canvasP = new Point(canvasP.X + Canvas.XOffset + Canvas.ActualWidth / 2, canvasP.Y + Canvas.YOffset + Canvas.ActualHeight / 2);
             if (Canvas.RenderMode is RenderMode.Affine)
                 canvasP = canvasP.ApplyAffineTransformation(Canvas.AffineParams);
