@@ -121,7 +121,7 @@ namespace Modeling_Canvas.UIElements
 
         protected override Point[][] GetElementGeometry()
         {
-            return Canvas.GetCircleGeometry(Center, Radius, Precision);
+            return Canvas.GetCircleGeometry(Center, Radius, precision: Precision);
         }
 
         protected override Point GetAnchorDefaultPosition() => Center;

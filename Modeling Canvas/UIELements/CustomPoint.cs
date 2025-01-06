@@ -90,7 +90,7 @@ namespace Modeling_Canvas.UIElements
                 switch (Shape)
                 {
                     case PointShape.Circle:
-                        _cachedGeometry = Canvas.GetCircleGeometry(transformedPosition, PixelRadius, 100);
+                        _cachedGeometry = Canvas.GetCircleGeometry(transformedPosition, PixelRadius, precision: 100);
                         break;
                     case PointShape.Square:
                         _cachedGeometry = Canvas.GetSquarePointGeometry(transformedPosition, PixelRadius * 2, false);

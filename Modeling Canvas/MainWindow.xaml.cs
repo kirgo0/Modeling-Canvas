@@ -34,8 +34,8 @@ namespace Modeling_Canvas
             MainCanvas.Children.Add(a);
             a.Center = new Point(0, 0);
 
-            //var b = new SegmentedCircle(MyCanvas);
-            //MyCanvas.Children.Add(b);
+            var b = new SegmentedCircle(MainCanvas);
+            MainCanvas.Children.Add(b);
 
             //var c = new CustomCircle(MainCanvas);
             //MainCanvas.Children.Add(c);
@@ -67,6 +67,9 @@ namespace Modeling_Canvas
             };
             KeyDown += MainWindow_KeyDown;
         }
+
+        
+
         private void CenterWindowOnScreen()
         {
             double screenWidth = SystemParameters.PrimaryScreenWidth;

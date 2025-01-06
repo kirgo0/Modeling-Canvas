@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using Modeling_Canvas.Extensions;
+using System.Windows;
 using System.Windows.Media;
 
 namespace Modeling_Canvas.UIElements
@@ -55,10 +56,10 @@ namespace Modeling_Canvas.UIElements
             base.OnRender(dc);
         }
 
-        //protected override void DefaultRender(DrawingContext dc)
-        //{
-        //    dc.DrawCircleWithArcs(Canvas, Fill, StrokePen, CenterPoint.PixelPosition, Radius * UnitSize, StartDegrees, EndDegrees, Precision, 10);
-        //}
+        protected override Point[][] GetElementGeometry()
+        {
+            return Canvas.GetCircleSegmentGeometry(Center, Radius, StartDegrees, EndDegrees, Precision);
+        }
 
         protected override void InitControlPanel()
         {
@@ -118,8 +119,8 @@ namespace Modeling_Canvas.UIElements
         public override void RotateElement(Point anchorPoint, double degrees)
         {
             base.RotateElement(anchorPoint, degrees);
-            EndDegrees -= degrees;
-            StartDegrees -= degrees;
+            EndDegrees += degrees;
+            StartDegrees += degrees;
             StartDegrees = Helpers.NormalizeAngle(StartDegrees);
             EndDegrees = Helpers.NormalizeAngle(EndDegrees);
         }

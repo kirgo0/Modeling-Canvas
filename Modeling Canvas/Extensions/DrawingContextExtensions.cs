@@ -8,17 +8,20 @@ namespace Modeling_Canvas.Extensions
 {
     public static class DrawingContextExtensions
     {
-        public static Point[][] GetCircleGeometry(this CustomCanvas canvas, Point center, double radius, int precision)
+        public static Point[][] GetCircleGeometry(this CustomCanvas canvas, Point center, double radius, double startDegrees = 0, double endDegrees = 360, int precision = 100)
         {
+            double startRadians = Helpers.DegToRad(startDegrees);
+            double endRadians = Helpers.DegToRad(endDegrees);
+
             var geometryData = new Point[1][];
 
             var circlePoints = new Point[precision + 1];
 
-            double segmentStep = (2 * Math.PI) / precision;
+            double segmentStep = (endRadians - startDegrees) / precision;
 
             for (int i = 0; i <= precision; i++)
             {
-                double angle = i * segmentStep;
+                double angle = startRadians + i * segmentStep;
                 circlePoints[i] = new Point(
                     center.X + radius * Math.Cos(angle),
                     center.Y + radius * Math.Sin(angle));
@@ -32,7 +35,7 @@ namespace Modeling_Canvas.Extensions
         public static Point[][] GetAnchorGeometry(this CustomCanvas canvas, Point center, double radius, int precision, double lineLength)
         {
             var geometryData = new Point[5][];
-            geometryData[0] = canvas.GetCircleGeometry(center, radius, precision)[0];
+            geometryData[0] = canvas.GetCircleGeometry(center, radius, precision: precision)[0];
 
             double[] angles = { 0, Math.PI / 2, Math.PI, 3 * Math.PI / 2 };
 
@@ -56,7 +59,6 @@ namespace Modeling_Canvas.Extensions
         {
             var geometryData = new Point[1][];
 
-            // Обчислення координат вершин квадрату
             double halfSide = sideLength / 2;
 
             var topLeft = new Point(center.X - halfSide, center.Y - halfSide);
@@ -69,7 +71,7 @@ namespace Modeling_Canvas.Extensions
             return geometryData;
         }
 
-        public static StreamGeometry DrawCircleWithArcs(
+        public static Point[][] GetCircleSegmentGeometry(
             this CustomCanvas canvas,
             Point center,
             double radius,
@@ -78,55 +80,22 @@ namespace Modeling_Canvas.Extensions
             int precision
             )
         {
-            var geometry = new StreamGeometry();
+            var circleList = new List<Point>();
+            double normalizedStart = Helpers.NormalizeAngle(startDegrees);
+            double normalizedEnd = Helpers.NormalizeAngle(endDegrees);
 
-            using (var context = geometry.Open())
+            if (normalizedEnd <= normalizedStart)
             {
-                double normalizedStart = Helpers.NormalizeAngle(startDegrees);
-                double normalizedEnd = Helpers.NormalizeAngle(endDegrees);
-
-                if (normalizedEnd <= normalizedStart)
-                {
-                    DrawArcSegment(context, center, radius, normalizedStart, 360, precision);
-                    DrawArcSegment(context, center, radius, 0, normalizedEnd, precision);
-                }
-                else
-                {
-                    DrawArcSegment(context, center, radius, normalizedStart, normalizedEnd, precision);
-                }
+                circleList.AddRange(canvas.GetCircleGeometry(center, radius, normalizedStart, 360, precision)[0]);
+                circleList.AddRange(canvas.GetCircleGeometry(center, radius, 0, normalizedEnd, precision)[0]);
+                return [circleList.ToArray()];
             }
-
-            return geometry;
-        }
-
-        private static void DrawArcSegment(StreamGeometryContext context, Point center, double radius, double startDegrees, double endDegrees, int precision)
-        {
-            double startRadians = Helpers.DegToRad(startDegrees);
-            double endRadians = Helpers.DegToRad(endDegrees);
-
-            double segmentStep = (endRadians - startRadians) / precision;
-
-            var startPoint = new Point(
-                center.X + radius * Math.Cos(startRadians),
-                center.Y + radius * Math.Sin(startRadians));
-
-            //startPoint = canvas.TransformPoint(startPoint);
-
-            context.BeginFigure(startPoint, true, false);
-
-            for (int i = 1; i <= precision; i++)
+            else
             {
-                double angle = startRadians + i * segmentStep;
-                var point = new Point(
-                    center.X + radius * Math.Cos(angle),
-                    center.Y + radius * Math.Sin(angle));
-
-                //point = canvas.TransformPoint(point);
-
-                context.LineTo(point, true, false);
+                return canvas.GetCircleGeometry(center, radius, normalizedStart, normalizedEnd, precision);
             }
         }
-
+        
         public static Point[][] GetBezierCurveGeometry(this CustomCanvas canvas, List<BezierPoint> points, bool isClosed = false, int steps = 100)
         {
             var lineList = new List<Point>();

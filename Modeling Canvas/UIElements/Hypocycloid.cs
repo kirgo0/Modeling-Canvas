@@ -261,7 +261,7 @@ namespace Modeling_Canvas.UIElements
                 _transformGeometry = false;
 
                 var transformedPosition = TransformPoint(Center);
-                return Canvas.GetCircleGeometry(transformedPosition, 2, 15);
+                return Canvas.GetCircleGeometry(transformedPosition, 2, precision: 15);
             }
 
             _transformGeometry = true;
