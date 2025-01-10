@@ -21,6 +21,11 @@ namespace Modeling_Canvas
             PointExtensions.Canvas = MainCanvas;
             CenterWindowOnScreen();
 
+            var line = new CustomLine(MainCanvas);
+            line.AddPoint(0, 0);
+            line.AddPoint(1, 0);
+            MainCanvas.Children.Add(line);
+
             //var grid = new CoordinateGrid(MainCanvas, false);
             //MainCanvas.Children.Add(grid);
 
@@ -35,6 +40,8 @@ namespace Modeling_Canvas
             a.Center = new Point(0, 0);
 
             var b = new SegmentedCircle(MainCanvas);
+            b.StartDegrees = 90;
+            b.EndDegrees = 180;
             MainCanvas.Children.Add(b);
 
             //var c = new CustomCircle(MainCanvas);

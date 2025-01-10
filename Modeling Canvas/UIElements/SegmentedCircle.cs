@@ -51,8 +51,8 @@ namespace Modeling_Canvas.UIElements
         {
             StartDegreesPoint.Visibility = ControlsVisibility;
             EndDegreesPoint.Visibility = ControlsVisibility;
-            StartDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(StartRadians), Center.Y - Radius * Math.Sin(StartRadians));
-            EndDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(EndRadians), Center.Y - Radius * Math.Sin(EndRadians));
+            StartDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(StartRadians), Center.Y + Radius * Math.Sin(StartRadians));
+            EndDegreesPoint.Position = new Point(Center.X + Radius * Math.Cos(EndRadians), Center.Y + Radius * Math.Sin(EndRadians));
             base.OnRender(dc);
         }
 

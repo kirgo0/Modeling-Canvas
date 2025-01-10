@@ -17,7 +17,7 @@ namespace Modeling_Canvas.Extensions
 
             var circlePoints = new Point[precision + 1];
 
-            double segmentStep = (endRadians - startDegrees) / precision;
+            double segmentStep = (endRadians - startRadians) / precision;
 
             for (int i = 0; i <= precision; i++)
             {

@@ -8,15 +8,15 @@ namespace Modeling_Canvas.Extensions
     {
         public static CustomCanvas Canvas { get; set; }
 
-        public static Point RotatePoint(this Point point1, Point point2, double degrees)
+        public static Point RotatePoint(this Point point, Point origin, double degrees)
         {
             // Calculate rotation
-            double dx = point1.X - point2.X;
-            double dy = point1.Y - point2.Y;
+            double dx = point.X - origin.X;
+            double dy = point.Y - origin.Y;
             double radians = Helpers.DegToRad(degrees);
 
-            double rotatedX = Math.Cos(radians) * dx - Math.Sin(radians) * dy + point2.X;
-            double rotatedY = Math.Sin(radians) * dx + Math.Cos(radians) * dy + point2.Y;
+            double rotatedX = Math.Cos(radians) * dx - Math.Sin(radians) * dy + origin.X;
+            double rotatedY = Math.Sin(radians) * dx + Math.Cos(radians) * dy + origin.Y;
 
             // Update point position
             return new Point(Math.Round(rotatedX, Canvas.RotationPrecision), Math.Round(rotatedY, Canvas.RotationPrecision));

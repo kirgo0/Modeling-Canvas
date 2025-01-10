@@ -1,6 +1,5 @@
 ﻿using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
-using Modeling_Canvas.UIElements.Interfaces;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -10,7 +9,7 @@ using System.Windows.Media;
 
 namespace Modeling_Canvas.UIElements
 {
-    public abstract partial class Element : FrameworkElement, INotifyPropertyChanged, IMovableElement
+    public abstract partial class Element : FrameworkElement, INotifyPropertyChanged
     {
         private Brush _fill = null;
 
@@ -328,12 +327,6 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-        protected virtual void RenderControlPanelLabel()
-        {
-            var label = new TextBlock { Text = $"| {LabelText} |", TextAlignment = TextAlignment.Center, FontWeight = FontWeight.FromOpenTypeWeight(600) };
-            AddElementToControlPanel(label);
-        }
-
         protected virtual void RenderControlPanel()
         {
             ClearControlPanel();
@@ -349,8 +342,6 @@ namespace Modeling_Canvas.UIElements
             Canvas.Children.Add(element);
             Panel.SetZIndex(element, index);
         }
-
-        public virtual Point GetOriginPoint(Size arrangedSize) => new Point(0, 0);
 
         protected virtual Point GetAnchorDefaultPosition() => new Point(0, 0);
 
@@ -532,7 +523,6 @@ namespace Modeling_Canvas.UIElements
             }
             else if (HasAnchorPoint)
             {
-                var a = this;
                 AnchorPoint.Position = GetAnchorDefaultPosition();
             }
         }

@@ -158,7 +158,7 @@ namespace Modeling_Canvas.UIElements
         public double GetDegreesBetweenMouseAndPoint(Point point)
         {
             var mousePosition = GetCanvasMousePosition();
-            var angleInDegrees = Math.Atan2(-(mousePosition.Y - point.Y), mousePosition.X - point.X) * (180 / Math.PI);
+            var angleInDegrees = Math.Atan2((mousePosition.Y - point.Y), mousePosition.X - point.X) * (180 / Math.PI);
             return (angleInDegrees + 360) % 360;
         }
 

@@ -526,7 +526,7 @@ namespace Modeling_Canvas.UIElements
 
         public override void RotateElement(Point anchorPoint, double degrees)
         {
-            Model.RotationAngle -= degrees;
+            Model.RotationAngle += degrees;
             Model.RotationAngle = Helpers.NormalizeAngle(Model.RotationAngle);
             Center = Center.RotatePoint(anchorPoint, degrees);
         }
