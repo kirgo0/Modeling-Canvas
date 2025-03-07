@@ -1,4 +1,5 @@
-﻿using Modeling_Canvas.UIElements.Interfaces;
+﻿using Modeling_Canvas.Models;
+using Modeling_Canvas.UIElements.Interfaces;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -85,15 +86,21 @@ namespace Modeling_Canvas.UIElements.Abstract
         public Path(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
             LabelText = "Path";
-            StrokeThickness = 2;
-            Stroke = Brushes.Cyan;
+            Style = new()
+            {
+                StrokeThickness = 2,
+                StrokeColor = Brushes.Cyan,
+            };
         }
 
         public Path(CustomCanvas canvas, Point firstPoint, Point secondPoint, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
             LabelText = "Path";
-            StrokeThickness = 2;
-            Stroke = Brushes.Cyan;
+            Style = new()
+            {
+                StrokeThickness = 2,
+                StrokeColor = Brushes.Cyan,
+            };
             AddPoint(firstPoint);
             AddPoint(secondPoint);
         }
@@ -104,10 +111,8 @@ namespace Modeling_Canvas.UIElements.Abstract
             base.OnRender(dc);
         }
 
-        protected override Point[][] GetElementGeometry()
+        protected override List<(FigureStyle, Point[])> GetElementGeometry()
         {
-            var geometry = new Point[1][];
-
             var linePoint = Points.Select(p => p.Position).ToList();
 
             if (IsClosed)
@@ -115,8 +120,7 @@ namespace Modeling_Canvas.UIElements.Abstract
                 linePoint.Add(Points.First().Position);
             }
 
-            geometry[0] = linePoint.ToArray();
-            return geometry;
+            return new() { ( Style, linePoint.ToArray() ) };
         }
 
         protected override void InitControlPanel()

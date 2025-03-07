@@ -8,12 +8,10 @@ namespace Modeling_Canvas.Extensions
 {
     public static class DrawingContextExtensions
     {
-        public static Point[][] GetCircleGeometry(this CustomCanvas canvas, Point center, double radius, double startDegrees = 0, double endDegrees = 360, int precision = 100)
+        public static Point[] GetCircleGeometry(this CustomCanvas canvas, Point center, double radius, double startDegrees = 0, double endDegrees = 360, int precision = 100)
         {
             double startRadians = Helpers.DegToRad(startDegrees);
             double endRadians = Helpers.DegToRad(endDegrees);
-
-            var geometryData = new Point[1][];
 
             var circlePoints = new Point[precision + 1];
 
@@ -27,15 +25,13 @@ namespace Modeling_Canvas.Extensions
                     center.Y + radius * Math.Sin(angle));
             }
 
-            geometryData[0] = circlePoints;
-
-            return geometryData;
+            return circlePoints;
         }
 
         public static Point[][] GetAnchorGeometry(this CustomCanvas canvas, Point center, double radius, int precision, double lineLength)
         {
             var geometryData = new Point[5][];
-            geometryData[0] = canvas.GetCircleGeometry(center, radius, precision: precision)[0];
+            geometryData[0] = canvas.GetCircleGeometry(center, radius, precision: precision);
 
             double[] angles = { 0, Math.PI / 2, Math.PI, 3 * Math.PI / 2 };
 
@@ -55,9 +51,8 @@ namespace Modeling_Canvas.Extensions
             return geometryData;
         }
 
-        public static Point[][] GetSquarePointGeometry(this CustomCanvas canvas, Point center, double sideLength, bool applyTransform = true)
+        public static Point[] GetSquarePointGeometry(this CustomCanvas canvas, Point center, double sideLength, bool applyTransform = true)
         {
-            var geometryData = new Point[1][];
 
             double halfSide = sideLength / 2;
 
@@ -66,12 +61,10 @@ namespace Modeling_Canvas.Extensions
             var bottomRight = new Point(center.X + halfSide, center.Y + halfSide);
             var bottomLeft = new Point(center.X - halfSide, center.Y + halfSide);
 
-            geometryData[0] = new[] { topLeft, topRight, bottomRight, bottomLeft, topLeft };
-
-            return geometryData;
+            return [topLeft, topRight, bottomRight, bottomLeft, topLeft];
         }
 
-        public static Point[][] GetCircleSegmentGeometry(
+        public static Point[] GetCircleSegmentGeometry(
             this CustomCanvas canvas,
             Point center,
             double radius,
@@ -86,9 +79,9 @@ namespace Modeling_Canvas.Extensions
 
             if (normalizedEnd <= normalizedStart)
             {
-                circleList.AddRange(canvas.GetCircleGeometry(center, radius, normalizedStart, 360, precision)[0]);
-                circleList.AddRange(canvas.GetCircleGeometry(center, radius, 0, normalizedEnd, precision)[0]);
-                return [circleList.ToArray()];
+                circleList.AddRange(canvas.GetCircleGeometry(center, radius, normalizedStart, 360, precision));
+                circleList.AddRange(canvas.GetCircleGeometry(center, radius, 0, normalizedEnd, precision));
+                return circleList.ToArray();
             }
             else
             {
@@ -96,7 +89,7 @@ namespace Modeling_Canvas.Extensions
             }
         }
         
-        public static Point[][] GetBezierCurveGeometry(this CustomCanvas canvas, List<BezierPoint> points, bool isClosed = false, int steps = 100)
+        public static Point[] GetBezierCurveGeometry(this CustomCanvas canvas, List<BezierPoint> points, bool isClosed = false, int steps = 100)
         {
             var lineList = new List<Point>();
             for(var i = 0; i < points.Count - 1; i++)
@@ -107,7 +100,7 @@ namespace Modeling_Canvas.Extensions
             {
                 lineList.AddRange(CalculateBezierCurve(points.LastOrDefault(),points.FirstOrDefault(),steps));
             }
-            return new Point[][] { lineList.ToArray() };
+            return lineList.ToArray();
         }
 
         private static Point[] CalculateBezierCurve(BezierPoint start, BezierPoint end, int steps)

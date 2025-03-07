@@ -22,9 +22,12 @@ namespace Modeling_Canvas.UIElements
 
         public BezierPoint(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
-            Fill = Brushes.White;
-            StrokeThickness = 2;
-            Stroke = Brushes.Gray;
+            Style = new()
+            {
+                FillColor = Brushes.White,
+                StrokeThickness = 2,
+                StrokeColor = Brushes.Gray
+            };
             PixelRadius = 5;
             IsSelectable = true;
             LabelText = "Point";
@@ -36,9 +39,12 @@ namespace Modeling_Canvas.UIElements
             {
                 PixelRadius = 7,
                 Opacity = 0.5,
-                Stroke = Brushes.Black,
-                StrokeThickness = 2,
-                Fill = Brushes.DarkMagenta,
+                Style = new()
+                {
+                    StrokeColor = Brushes.Black,
+                    StrokeThickness = 2,
+                    FillColor = Brushes.DarkMagenta,
+                },
                 IsSelectable = false
             };
             AddChildren(ControlPrevPoint, 9999);
@@ -48,9 +54,12 @@ namespace Modeling_Canvas.UIElements
             {
                 PixelRadius = 7,
                 Opacity = 0.5,
-                Stroke = Brushes.Black,
-                StrokeThickness = 2,
-                Fill = Brushes.DarkGreen,
+                Style = new()
+                {
+                    StrokeColor = Brushes.Black,
+                    StrokeThickness = 2,
+                    FillColor = Brushes.DarkGreen
+                },
                 IsSelectable = false
             };
             AddChildren(ControlNextPoint, 9999);

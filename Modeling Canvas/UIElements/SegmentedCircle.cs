@@ -1,4 +1,5 @@
 ﻿using Modeling_Canvas.Extensions;
+using Modeling_Canvas.Models;
 using System.Windows;
 using System.Windows.Media;
 
@@ -56,9 +57,9 @@ namespace Modeling_Canvas.UIElements
             base.OnRender(dc);
         }
 
-        protected override Point[][] GetElementGeometry()
+        protected override List<(FigureStyle, Point[])> GetElementGeometry()
         {
-            return Canvas.GetCircleSegmentGeometry(Center, Radius, StartDegrees, EndDegrees, Precision);
+            return new() { ( Style, Canvas.GetCircleSegmentGeometry(Center, Radius, StartDegrees, EndDegrees, Precision)) };
         }
 
         protected override void InitControlPanel()
@@ -74,7 +75,10 @@ namespace Modeling_Canvas.UIElements
                 Opacity = 0.7,
                 OverrideMoveAction = StartDegreesPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
-                Fill = Brushes.Red,
+                Style = new()
+                {
+                    FillColor = Brushes.Red,
+                },
                 IsSelectable = false
             };
             AddChildren(StartDegreesPoint);
@@ -84,7 +88,10 @@ namespace Modeling_Canvas.UIElements
                 Opacity = 0.7,
                 OverrideMoveAction = EndDegreesPointMoveAction,
                 MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
-                Fill = Brushes.Blue,
+                Style = new()
+                {
+                    FillColor = Brushes.Blue,
+                },
                 IsSelectable = false
             };
             AddChildren(EndDegreesPoint);

@@ -200,7 +200,10 @@ namespace Modeling_Canvas.UIElements
 
         protected double GetOptimalGridFrequency()
         {
-            var calculatedFrequency = GridFrequency;
+            var calculatedFrequency = GridFrequency; 
+            if (UnitSize < 10000) calculatedFrequency = 0.1;
+            if (UnitSize < 500) calculatedFrequency = 0.25;
+            if (UnitSize < 100) calculatedFrequency = 0.5;
             if (UnitSize < 25) calculatedFrequency = 5;
             if (UnitSize < 15) calculatedFrequency = 10;
             if (UnitSize < 10) calculatedFrequency = 25;
@@ -208,6 +211,7 @@ namespace Modeling_Canvas.UIElements
             if (UnitSize < 1) calculatedFrequency = 250;
             if (UnitSize < 0.5) calculatedFrequency = 500;
             if (UnitSize <= 0.1) calculatedFrequency = 2500;
+
             return calculatedFrequency;
         }
 
@@ -490,24 +494,31 @@ namespace Modeling_Canvas.UIElements
 
             if (InputManager.CtrlPressed)
             {
-                // Determine delta multiplier based on whether Alt is pressed
+                // Determine delta multiplier based on UnitSize
                 double deltaMultiplier = InputManager.AltPressed ? 0.01 : 0.1;
+
+                if (UnitSize > 250) deltaMultiplier = InputManager.AltPressed ? 0.1 : 1;
                 if (UnitSize < 10) deltaMultiplier = InputManager.AltPressed ? 0.004 : 0.01;
-                if (UnitSize < 5)
-                {
-                    deltaMultiplier = InputManager.AltPressed ? 0.0008 : 0.004;
-                }
+                if (UnitSize < 5) deltaMultiplier = InputManager.AltPressed ? 0.0008 : 0.004;
+
                 if (e.Delta != 0)
                 {
-                    // Adjust UnitSize based on delta multiplier
-                    var calculatedSize = UnitSize + Math.Round(e.Delta * deltaMultiplier, 4);
-                    if (calculatedSize < 0.1) calculatedSize = 0.1;
-                    if (calculatedSize > 5) calculatedSize = Math.Round(calculatedSize);
-                    UnitSize = calculatedSize;
+                    // Adjust UnitSize smoothly
+                    double newSize = UnitSize + Math.Round(e.Delta * deltaMultiplier, 4);
+
+                    // Ensure UnitSize stays within allowed range
+                    newSize = Math.Max(0.1, newSize); // Prevent too small values
+                    if (newSize > 5) newSize = Math.Round(newSize); // Snap to integer above 5
+
+                    // Enforce minimum UnitSize for specific render modes
+                    if ((RenderMode is RenderMode.ProjectiveV2 || RenderMode is RenderMode.Projective) && newSize < 5)
+                        newSize = 5;
+
+                    UnitSize = newSize;
+                    UpdateMouseLabel();
                 }
-                if (RenderMode is RenderMode.ProjectiveV2 || RenderMode is RenderMode.Projective && UnitSize < 5) UnitSize = 5;
-                UpdateMouseLabel();
             }
+
         }
 
         public void UpdateMouseLabel()
@@ -538,7 +549,7 @@ namespace Modeling_Canvas.UIElements
 
         public void ResetScaling()
         {
-            UnitSize = 40;
+            UnitSize = 500;
             InvalidateVisual();
         }
     }

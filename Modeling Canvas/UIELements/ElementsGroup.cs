@@ -26,7 +26,7 @@ namespace Modeling_Canvas.UIElements
         public Pen DashedPen
         {
             get =>
-                new Pen(Stroke, StrokeThickness)
+                new Pen(Style.StrokeColor, Style.StrokeThickness)
                 {
                     DashCap = PenLineCap.Round,
                     DashStyle = new DashStyle(new double[] { 10 }, 10)
@@ -35,10 +35,10 @@ namespace Modeling_Canvas.UIElements
 
         public ElementsGroup(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
-            StrokeThickness = 2;
-            Stroke = Brushes.Gray;
+            Style.StrokeThickness = 2;
+            Style.StrokeColor = Brushes.Gray;
             Name = $"Group {Counter}";
-            StrokePen = DashedPen;
+            Style.StrokePen = DashedPen;
             AddPoint(new Point(0, 0));
             AddPoint(new Point(0, 0));
             AddPoint(new Point(0, 0));
@@ -48,7 +48,7 @@ namespace Modeling_Canvas.UIElements
         protected override void OnRender(DrawingContext dc)
         {
             CalculateRectPoints();
-            StrokePen = DashedPen;
+            //StrokePen = DashedPen;
             base.OnRender(dc);
             Visibility = ControlsVisibility;
         }
@@ -66,7 +66,7 @@ namespace Modeling_Canvas.UIElements
         protected override void InitChildren()
         {
             base.InitChildren();
-            AnchorPoint.Stroke = Brushes.BlueViolet;
+            AnchorPoint.Style.StrokeColor = Brushes.BlueViolet;
         }
 
         protected virtual void CalculateRectPoints()

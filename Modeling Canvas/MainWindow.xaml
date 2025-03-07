@@ -18,7 +18,7 @@
             <ColumnDefinition Width="169*"/>
         </Grid.ColumnDefinitions>
 
-        <local:CustomCanvas x:Name="MainCanvas" Focusable="True" ClipToBounds="True" Background="White" Panel.ZIndex="0" Grid.Column="0">
+        <local:CustomCanvas x:Name="MainCanvas" UnitSize="500" Focusable="True" ClipToBounds="True" Background="White" Panel.ZIndex="0" Grid.Column="0">
             <Canvas.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform ScaleY="-1"/>

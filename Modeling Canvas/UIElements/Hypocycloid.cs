@@ -121,7 +121,10 @@ namespace Modeling_Canvas.UIElements
             AnimationModel = new();
             Model.LargeRadius = largeRadius;
             Model.SmallRadius = smallRadius;
-            StrokeThickness = 3;
+            Style = new()
+            {
+                StrokeThickness = 3
+            };
 
             canvas.MouseWheel += (o, e) =>
             {
@@ -184,8 +187,11 @@ namespace Modeling_Canvas.UIElements
 
             EndPoint = new CustomPoint(Canvas)
             {
-                StrokeThickness = 0,
-                Fill = Brushes.Red,
+                Style = new()
+                {
+                    StrokeThickness = 0,
+                    FillColor = Brushes.Red,
+                },
                 PixelRadius = 4
             };
 
@@ -250,22 +256,18 @@ namespace Modeling_Canvas.UIElements
             base.OnRender(dc);
         }
 
-        protected override Point[][] GetElementGeometry()
+        protected override List<(FigureStyle, Point[])> GetElementGeometry()
         {
-            var geometryData = new Point[1][];
-
-            geometryData[0] = CalculateHypocycloidPoints(Model, HypocycloidPoints).ToArray();
-            
             if (HypocycloidPoints.Count == 0)
             {
                 _transformGeometry = false;
 
                 var transformedPosition = TransformPoint(Center);
-                return Canvas.GetCircleGeometry(transformedPosition, 2, precision: 15);
+                return new() { (Style, Canvas.GetCircleGeometry(transformedPosition, 2, precision: 15)) };
             }
 
             _transformGeometry = true;
-            return geometryData;
+            return new() { (Style, CalculateHypocycloidPoints(Model, HypocycloidPoints).ToArray()) };
         }
 
         //protected override void DefaultRender(DrawingContext dc)

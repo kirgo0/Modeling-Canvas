@@ -21,45 +21,9 @@ namespace Modeling_Canvas
             PointExtensions.Canvas = MainCanvas;
             CenterWindowOnScreen();
 
-            var line = new CustomLine(MainCanvas);
-            line.AddPoint(0, 0);
-            line.AddPoint(1, 0);
-            MainCanvas.Children.Add(line);
-
-            //var grid = new CoordinateGrid(MainCanvas, false);
-            //MainCanvas.Children.Add(grid);
-
-            var koch = new KochCurve(MainCanvas);
-            MainCanvas.Children.Add(koch);
-            koch.Position = new Point(0.5, 2.625);
-
-
-            //InitFigure();
-            var a = new Hypocycloid(MainCanvas, 4, 1);
+            // Init figures
+            var a = new MathFunction(MainCanvas, false);
             MainCanvas.Children.Add(a);
-            a.Center = new Point(0, 0);
-
-            var b = new SegmentedCircle(MainCanvas);
-            b.StartDegrees = 90;
-            b.EndDegrees = 180;
-            MainCanvas.Children.Add(b);
-
-            //var c = new CustomCircle(MainCanvas);
-            //MainCanvas.Children.Add(c);
-
-            //var d = new BezierCurve(MainCanvas);
-
-            //d.AddPoint(2, 3);
-            //d.AddPoint(3, 3);
-            //MainCanvas.Children.Add(d);
-
-            //var ball = new BezierCurve(MainCanvas);
-
-            //ball.AddPoint(2, 3);
-            //ball.AddPoint(1, 1);
-            //ball.AddPoint(-2, 3);
-            //ball.AddPoint(3, -4);
-            //MainCanvas.Children.Add(ball);
 
             PreviewKeyDown += MainCanvas.OnKeyDown;
             PreviewKeyUp += MainCanvas.OnKeyUp;
@@ -95,51 +59,6 @@ namespace Modeling_Canvas
         public void ClearControlStack()
         {
             ControlStack.Children.Clear();
-        }
-
-        public void InitFigure()
-        {
-            var group = new ElementsGroup(MainCanvas);
-            var line1 = new CustomLine(MainCanvas);
-            line1.AddPoint(6, 0);
-            line1.AddPoint(3, 5.2);
-            line1.AddPoint(-3, 5.2);
-            line1.AddPoint(-6, 0);
-            line1.AddPoint(-3, -5.2);
-            line1.AddPoint(3, -5.2);
-            group.AddChild(line1);
-
-            var line2 = new CustomLine(MainCanvas);
-            line2.AddPoint(-9, 3);
-            line2.AddPoint(-11, 4.5);
-            line2.AddPoint(-9, 7);
-            line2.AddPoint(-7, 5.5);
-            line2.AddPoint(-1.5, 9);
-            line2.AddPoint(-1.5, 11.5);
-
-            line2.AddPoint(1.5, 11.5);
-            line2.AddPoint(1.5, 9);
-            line2.AddPoint(7, 5.5);
-            line2.AddPoint(9, 7);
-            line2.AddPoint(11, 4.5);
-            line2.AddPoint(9, 3);
-
-            line2.AddPoint(9, -3);
-            line2.AddPoint(11, -4.5);
-            line2.AddPoint(9, -7);
-            line2.AddPoint(7, -5.5);
-            line2.AddPoint(1.5, -9);
-            line2.AddPoint(1.5, -11.5);
-
-            line2.AddPoint(-1.5, -11.5);
-            line2.AddPoint(-1.5, -9);
-            line2.AddPoint(-7, -5.5);
-            line2.AddPoint(-9, -7);
-            line2.AddPoint(-11, -4.5);
-            line2.AddPoint(-9, -3);
-            group.AddChild(line2);
-
-            MainCanvas.Children.Add(group);
         }
 
         public void NumberValidationTextBox(object sender, TextCompositionEventArgs e)

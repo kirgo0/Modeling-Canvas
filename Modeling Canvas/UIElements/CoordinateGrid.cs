@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using Modeling_Canvas.Models;
+using System.Windows;
 
 namespace Modeling_Canvas.UIElements
 {
@@ -18,8 +19,9 @@ namespace Modeling_Canvas.UIElements
             throw new NotImplementedException();
         }
 
-        protected override Point[][] GetElementGeometry()
+        protected override List<(FigureStyle, Point[])> GetElementGeometry()
         {
+            return new();
             int width = (int)(Canvas.ProjectiveParams.Xx / UnitSize);
             int height = (int)(Canvas.ProjectiveParams.Yy / UnitSize);
             var geometryData = new Point[width * 2 + height * 2 + 1][];
@@ -48,7 +50,7 @@ namespace Modeling_Canvas.UIElements
                 rowCounter++;
             }
 
-            return geometryData;
+            //return geometryData;
             // Draw vertical grid lines and numbers
 
             // Draw the X and Y axes

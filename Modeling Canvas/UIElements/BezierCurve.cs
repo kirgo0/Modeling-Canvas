@@ -110,9 +110,9 @@ namespace Modeling_Canvas.UIElements
             Points.Last().Shape = PointShape.Square;
         }
 
-        protected override Point[][] GetElementGeometry()
+        protected override List<(FigureStyle, Point[])> GetElementGeometry()
         {
-            return Canvas.GetBezierCurveGeometry(Points, IsClosed, CurvePrecision);
+            return new() { (Style, Canvas.GetBezierCurveGeometry(Points, IsClosed, CurvePrecision)) };
         }
 
         public virtual void AddBezierPoint(Point position, Point prevControl, Point nextControl)

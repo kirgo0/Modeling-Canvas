@@ -1,4 +1,5 @@
 ﻿using Modeling_Canvas.Extensions;
+using Modeling_Canvas.Models;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -18,7 +19,7 @@ namespace Modeling_Canvas.UIElements
 
         protected Point _position;
 
-        private Point[][] _cachedGeometry;
+        private Point[] _cachedGeometry;
 
         private bool _isGeometryDirty = true;
 
@@ -104,7 +105,8 @@ namespace Modeling_Canvas.UIElements
                     this,
                     nameof(StepSize),
                     "Step size",
-                    delay: 400
+                    delay: 
+                    0
                     );
 
             _uiControls.Add("StepSize", sizeBox);
@@ -158,17 +160,16 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
-
-        protected override Point[][] GetElementGeometry()
+        protected override List<(FigureStyle, Point[])> GetElementGeometry()
         {
             if (_isGeometryDirty)
             {
                 var lSystemSequence = GenerateLSystemSequence();
-                _cachedGeometry = new[] { InterpretLSystem(lSystemSequence).ToArray() };
+                _cachedGeometry = InterpretLSystem(lSystemSequence).ToArray();
                 _isGeometryDirty = false;
             }
 
-            return _cachedGeometry;
+            return new() { (Style, _cachedGeometry) };
         }
 
         private List<char> GenerateLSystemSequence()

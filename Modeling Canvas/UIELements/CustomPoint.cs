@@ -1,5 +1,6 @@
 ﻿using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
+using Modeling_Canvas.Models;
 using Modeling_Canvas.UIElements.Abstract;
 using Modeling_Canvas.UIElements.Interfaces;
 using System.Windows;
@@ -71,8 +72,11 @@ namespace Modeling_Canvas.UIElements
 
         public CustomPoint(CustomCanvas canvas, bool hasAnchorPoint = false) : base(canvas, hasAnchorPoint)
         {
-            Fill = Brushes.Black;
-            StrokeThickness = 0;
+            Style = new()
+            {
+                FillColor = Brushes.Black,
+                StrokeThickness = 0,
+            };
             IsSelectable = false;
             LabelText = "Point";
             Canvas.CanvasGridChanged += (s, e) =>
@@ -81,8 +85,8 @@ namespace Modeling_Canvas.UIElements
             };
             _transformGeometry = false;
         }
-
-        protected override Point[][] GetElementGeometry()
+        
+        protected override List<(FigureStyle, Point[])> GetElementGeometry()
         {
             if (_isGeometryDirty)
             {
@@ -90,10 +94,10 @@ namespace Modeling_Canvas.UIElements
                 switch (Shape)
                 {
                     case PointShape.Circle:
-                        _cachedGeometry = Canvas.GetCircleGeometry(transformedPosition, PixelRadius, precision: 100);
+                        _cachedGeometry = [Canvas.GetCircleGeometry(transformedPosition, PixelRadius, precision: 100)];
                         break;
                     case PointShape.Square:
-                        _cachedGeometry = Canvas.GetSquarePointGeometry(transformedPosition, PixelRadius * 2, false);
+                        _cachedGeometry = [Canvas.GetSquarePointGeometry(transformedPosition, PixelRadius * 2, false)];
                         break;
                     case PointShape.Anchor:
                         _cachedGeometry = Canvas.GetAnchorGeometry(transformedPosition, PixelRadius, 100, 5);
@@ -101,7 +105,7 @@ namespace Modeling_Canvas.UIElements
                 }
                 _isGeometryDirty = false;
             }
-            return _cachedGeometry;
+            return _cachedGeometry.Select(g => (Style, g)).ToList();
         }
 
         public override Point GetTopLeftPosition() => new Point(Position.X + PixelRadius / UnitSize, Position.Y + PixelRadius / UnitSize);

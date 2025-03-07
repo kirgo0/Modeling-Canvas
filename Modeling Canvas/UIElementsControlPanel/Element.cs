@@ -45,8 +45,8 @@ namespace Modeling_Canvas.UIElements
             var fillColor =
                 WpfHelper.CreateColorPicker(
                     "Fill Color:",
-                    this,
-                    nameof(Fill)
+                    Style,
+                    nameof(Style.FillColor)
                 );
 
             _uiControls.Add("Fill Color", fillColor);
@@ -57,8 +57,8 @@ namespace Modeling_Canvas.UIElements
             var strokeColor =
                 WpfHelper.CreateColorPicker(
                     "Stroke Color:",
-                    this,
-                    nameof(Stroke)
+                    Style,
+                    nameof(Style.StrokeColor)
                 );
 
             _uiControls.Add("Stroke Color", strokeColor);
@@ -69,8 +69,8 @@ namespace Modeling_Canvas.UIElements
             var strokeThickness =
                 WpfHelper.CreateSliderControl(
                     "Stroke Thickness:",
-                    this,
-                    nameof(StrokeThickness),
+                    Style,
+                    nameof(Style.StrokeThickness),
                     nameof(MinStrokeThickness),
                     nameof(MaxStrokeThickness)
 

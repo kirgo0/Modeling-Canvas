@@ -119,16 +119,16 @@ namespace Modeling_Canvas.UIElements
             base.OnRender(dc);
         }
 
-        protected override Point[][] GetElementGeometry()
+        protected override List<(FigureStyle, Point[])> GetElementGeometry()
         {
-            return Canvas.GetCircleGeometry(Center, Radius, precision: Precision);
+            return new (){ ( Style, Canvas.GetCircleGeometry(Center, Radius, precision: Precision) ) };
         }
 
         protected override Point GetAnchorDefaultPosition() => Center;
 
-        public override Point GetTopLeftPosition() => new Point(Center.X - Radius - StrokeThickness / UnitSize, Center.Y + Radius + StrokeThickness / UnitSize);
+        public override Point GetTopLeftPosition() => new Point(Center.X - Radius - Style.StrokeThickness / UnitSize, Center.Y + Radius + Style.StrokeThickness / UnitSize);
 
-        public override Point GetBottomRightPosition() => new Point(Center.X + Radius + StrokeThickness / UnitSize, Center.Y - Radius - StrokeThickness / UnitSize);
+        public override Point GetBottomRightPosition() => new Point(Center.X + Radius + Style.StrokeThickness / UnitSize, Center.Y - Radius - Style.StrokeThickness / UnitSize);
 
         public virtual void RadiusPointMoveAction(DraggablePoint point, Vector offset)
         {

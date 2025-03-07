@@ -1,5 +1,6 @@
 ﻿using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
+using Modeling_Canvas.Models;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -11,13 +12,7 @@ namespace Modeling_Canvas.UIElements
 {
     public abstract partial class Element : FrameworkElement, INotifyPropertyChanged
     {
-        private Brush _fill = null;
-
-        private double _strokeThickness = 1;
-
-        private Brush _stroke = Brushes.Black;
-
-        private Pen _strokePen = null;
+        private FigureStyle _figureStyle;
 
         private bool _overrideAnchorPoint = false;
 
@@ -71,53 +66,53 @@ namespace Modeling_Canvas.UIElements
 
         protected virtual bool SnappingEnabled { get => AllowSnapping ? InputManager.ShiftPressed : false; }
 
-        public Brush Fill
-        {
-            get => _fill;
-            set
-            {
-                if (_fill != value)
-                {
-                    _fill = value;
-                    OnPropertyChanged();
-                    InvalidateCanvas();
-                }
-            }
-        }
+        //public Brush Fill
+        //{
+        //    get => _fill;
+        //    set
+        //    {
+        //        if (_fill != value)
+        //        {
+        //            _fill = value;
+        //            OnPropertyChanged();
+        //            InvalidateCanvas();
+        //        }
+        //    }
+        //}
 
-        public Brush Stroke
-        {
-            get => _stroke;
-            set
-            {
-                if (_stroke != value)
-                {
-                    _stroke = value;
-                    OnPropertyChanged();
-                    InvalidateCanvas();
-                }
-            }
-        }
+        //public Brush Stroke
+        //{
+        //    get => _stroke;
+        //    set
+        //    {
+        //        if (_stroke != value)
+        //        {
+        //            _stroke = value;
+        //            OnPropertyChanged();
+        //            InvalidateCanvas();
+        //        }
+        //    }
+        //}
 
-        public double StrokeThickness
-        {
-            get => _strokeThickness;
-            set
-            {
-                if (_strokeThickness != value)
-                {
-                    _strokeThickness = value;
-                    OnPropertyChanged();
-                    InvalidateCanvas();
-                }
-            }
-        }
+        //public double StrokeThickness
+        //{
+        //    get => _strokeThickness;
+        //    set
+        //    {
+        //        if (_strokeThickness != value)
+        //        {
+        //            _strokeThickness = value;
+        //            OnPropertyChanged();
+        //            InvalidateCanvas();
+        //        }
+        //    }
+        //}
 
-        public Pen StrokePen
-        {
-            get => _strokePen is null ? new Pen(Stroke, StrokeThickness) : _strokePen;
-            set => _strokePen = value;
-        }
+        //public Pen StrokePen
+        //{
+        //    get => _strokePen is null ? new Pen(Stroke, StrokeThickness) : _strokePen;
+        //    set => _strokePen = value;
+        //}
 
         public virtual Visibility ControlsVisibility
         {
@@ -180,6 +175,31 @@ namespace Modeling_Canvas.UIElements
             }
         }
 
+        public FigureStyle Style
+        {
+            get => _figureStyle;
+            set
+            {
+                if (_figureStyle != value)
+                {
+                    if(_figureStyle is not null)
+                        _figureStyle.PropertyChanged -= FigureStyleChanged;
+                    
+                    _figureStyle = value;
+                    
+                    if(_figureStyle is not null)
+                        _figureStyle.PropertyChanged += FigureStyleChanged;
+
+                    OnPropertyChanged(nameof(Style));
+                }
+            }
+        }
+
+        private void FigureStyleChanged(object sender, PropertyChangedEventArgs e)
+        {
+            InvalidateCanvas(); // Refresh canvas when style changes
+        }
+
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -206,7 +226,7 @@ namespace Modeling_Canvas.UIElements
                     ControlsVisibility = Visibility.Hidden;
                 }
             };
-
+            Style = new();
         }
 
         protected override void OnRender(DrawingContext dc)
@@ -222,52 +242,49 @@ namespace Modeling_Canvas.UIElements
 
             var geometryData = GetElementGeometry();
 
-            var geometry = new StreamGeometry();
-            if (_transformGeometry)
+            foreach (var figure in geometryData)
             {
-                var offsetToCenter = Canvas.RenderMode is not RenderMode.ProjectiveV2 && Canvas.RenderMode is not RenderMode.Projective;
-
-                using (var context = geometry.Open())
+                var figurePoints = figure.Item2;
+                var figureStyle = figure.Item1 ?? Style;
+                var geometry = new StreamGeometry();
+                if (_transformGeometry)
                 {
-                    foreach (var figure in geometryData)
+                    var offsetToCenter = Canvas.RenderMode is not RenderMode.ProjectiveV2 && Canvas.RenderMode is not RenderMode.Projective;
+
+                    using (var context = geometry.Open())
                     {
-                        if (figure == null || figure.Length < 1)
+                        if (figurePoints is null || figurePoints.Length < 1)
                             continue;
                         // Begin a new figure at the first point
-                        context.BeginFigure(TransformPoint(figure[0], offsetToCenter), Fill != null, false);
-                        for (var i = 1; i < figure.Length; i++)
+                        context.BeginFigure(TransformPoint(figurePoints[0], offsetToCenter), figureStyle.FillColor != null, false);
+                        for (var i = 1; i < figurePoints.Length; i++)
                         {
-                            context.LineTo(TransformPoint(figure[i], offsetToCenter), isStroked: true, isSmoothJoin: true);
+                            context.LineTo(TransformPoint(figurePoints[i], offsetToCenter), isStroked: true, isSmoothJoin: true);
                         }
                     }
                 }
-            }
-            else
-            {
-                using (var context = geometry.Open())
+                else
                 {
-                    foreach (var figure in geometryData)
+                    using (var context = geometry.Open())
                     {
-                        if (figure == null || figure.Length < 1)
+                        if (figurePoints is null || figurePoints.Length < 1)
                             continue;
-                        var a = figure[0];
-                        context.BeginFigure(figure[0], Fill != null, false);
-                        for (var i = 1; i < figure.Length; i++)
+                        context.BeginFigure(figurePoints[0], figureStyle.FillColor != null, false);
+                        for (var i = 1; i < figurePoints.Length; i++)
                         {
-                            context.LineTo(figure[i], isStroked: true, isSmoothJoin: false);
-                            var b = figure[i];
+                            context.LineTo(figurePoints[i], isStroked: true, isSmoothJoin: false);
                         }
                     }
                 }
+                dc.DrawGeometry(figureStyle.FillColor, figureStyle.StrokePen, geometry);
+                dc.DrawGeometry(null, DragzonePen, geometry);
             }
 
-            dc.DrawGeometry(Fill, StrokePen, geometry);
-            dc.DrawGeometry(null, DragzonePen, geometry);
         }
 
         protected Point TransformPoint(Point p, bool? offsetToCenter = null)
         {
-            if(offsetToCenter == null)
+            if (offsetToCenter == null)
                 offsetToCenter = Canvas.RenderMode is not RenderMode.ProjectiveV2 && Canvas.RenderMode is not RenderMode.Projective;
             var debug = false;
             var canvasP = new Point(p.X * UnitSize, p.Y * UnitSize);
@@ -282,8 +299,7 @@ namespace Modeling_Canvas.UIElements
             return canvasP;
         }
 
-
-        protected abstract Point[][] GetElementGeometry();
+        protected abstract List<(FigureStyle, Point[])> GetElementGeometry();
 
         protected override void OnInitialized(EventArgs e)
         {
@@ -299,9 +315,12 @@ namespace Modeling_Canvas.UIElements
                 {
                     PixelRadius = 10,
                     Focusable = false,
-                    Fill = Brushes.Transparent,
-                    Stroke = Brushes.Green,
-                    StrokeThickness = 2,
+                    Style = new()
+                    {
+                        FillColor = Brushes.Transparent,
+                        StrokeColor = Brushes.Green,
+                        StrokeThickness = 2,
+                    },
                     Shape = PointShape.Anchor,
                     MouseLeftButtonDownAction = OnPointMouseLeftButtonDown,
                     AfterMoveAction = OnAnchorPointMove,
@@ -319,11 +338,11 @@ namespace Modeling_Canvas.UIElements
         protected virtual void InitControlPanel()
         {
             AddOffsetControls();
-            AddRotateControls();
-            AddScaleControls();
             if (HasAnchorPoint)
             {
                 AddAnchorControls();
+                AddRotateControls();
+                AddScaleControls();
             }
         }
 
