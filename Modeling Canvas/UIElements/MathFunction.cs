@@ -1,9 +1,11 @@
-﻿using MathNet.Numerics.LinearAlgebra;
+﻿using AngouriMath.Extensions;
+using MathNet.Numerics.LinearAlgebra;
 using Modeling_Canvas.Enums;
 using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
 using System.Windows;
 using System.Windows.Media;
+using Xceed.Wpf.Toolkit.Primitives;
 
 namespace Modeling_Canvas.UIElements
 {
@@ -11,9 +13,7 @@ namespace Modeling_Canvas.UIElements
     {
         public PointShape PointsShape { get; set; } = PointShape.Circle;
 
-        private double[] x;
-
-        private double[] y;
+        private double[] xValues;
 
         private double _rangeStart = -0.6;
 
@@ -26,6 +26,10 @@ namespace Modeling_Canvas.UIElements
         private bool _showLine = true;
 
         private bool _showPoints = true;
+
+        private bool _useFuncExpression = false;
+
+        private string _funcExpression;
 
         public FigureStyle ParabolaStyle { get; set; } = new()
         {
@@ -49,6 +53,8 @@ namespace Modeling_Canvas.UIElements
             StrokePen = new Pen(Brushes.Black, 2) { DashStyle = DashStyles.Dash }
         };
 
+        public List<Point> Points { get; set; }
+
         public double RangeStart
         {
             get => _rangeStart;
@@ -57,6 +63,7 @@ namespace Modeling_Canvas.UIElements
                 if (_rangeStart != value)
                 {
                     _rangeStart = value;
+                    _isGeometryDirty = true;
                     OnPropertyChanged(nameof(RangeStart));
                 }
             }
@@ -70,6 +77,7 @@ namespace Modeling_Canvas.UIElements
                 if (_rangeEnd != value)
                 {
                     _rangeEnd = value;
+                    _isGeometryDirty = true;
                     OnPropertyChanged(nameof(RangeEnd));
                     InvalidateCanvas();
                 }
@@ -84,6 +92,7 @@ namespace Modeling_Canvas.UIElements
                 if (_step != value)
                 {
                     _step = value;
+                    _isGeometryDirty = true;
                     OnPropertyChanged(nameof(Step));
                     InvalidateCanvas();
                 }
@@ -98,6 +107,7 @@ namespace Modeling_Canvas.UIElements
                 if (_showParabola != value)
                 {
                     _showParabola = value;
+                    _isGeometryDirty = true;
                     OnPropertyChanged(nameof(ShowParabola));
                     InvalidateCanvas();
                 }
@@ -112,6 +122,7 @@ namespace Modeling_Canvas.UIElements
                 if (_showLine != value)
                 {
                     _showLine = value;
+                    _isGeometryDirty = true;
                     OnPropertyChanged(nameof(ShowLine));
                     InvalidateCanvas();
                 }
@@ -126,7 +137,38 @@ namespace Modeling_Canvas.UIElements
                 if (_showPoints != value)
                 {
                     _showPoints = value;
+                    _isGeometryDirty = true;
                     OnPropertyChanged(nameof(ShowPoints));
+                    InvalidateCanvas();
+                }
+            }
+        }
+
+        public bool UseFuncExpression
+        {
+            get => _useFuncExpression;
+            set
+            {
+                if (_useFuncExpression != value)
+                {
+                    _useFuncExpression = value;
+                    _isGeometryDirty = true;
+                    OnPropertyChanged(nameof(UseFuncExpression));
+                    InvalidateCanvas();
+                }
+            }
+        }
+
+        public string FuncExpression
+        {
+            get => _funcExpression;
+            set
+            {
+                if (_funcExpression != value)
+                {
+                    _funcExpression = value;
+                    _isGeometryDirty = true;
+                    OnPropertyChanged(nameof(FuncExpression));
                     InvalidateCanvas();
                 }
             }
@@ -135,8 +177,8 @@ namespace Modeling_Canvas.UIElements
         public MathFunction(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
             LabelText = "Fucntion";
-            x = GenerateRange(RangeStart, RangeEnd, Step);
-            y = x.Select(val => Math.Asin(val * val) * Math.Acos(val * val)).ToArray();
+            xValues = GenerateRange(RangeStart, RangeEnd, Step);
+            Points = xValues.Select(x => new Point(x, Math.Asin(x * x) * Math.Acos(x * x))).ToList();
         }
 
         protected override void InitControlPanel()
@@ -167,6 +209,27 @@ namespace Modeling_Canvas.UIElements
                 );
 
             _uiControls.Add("ShowPoints", showPointsCheckbox);
+
+            var useFuncCheckbox =
+                WpfHelper.CreateLabeledCheckBox(
+                    "Use function expression:",
+                    this,
+                    nameof(UseFuncExpression)
+                );
+
+            _uiControls.Add("UseFuncExpression", useFuncCheckbox);
+
+            var expressionField =
+                WpfHelper.CreateLabeledTextBox(
+                    this,
+                    nameof(FuncExpression),
+                    labelText: "Function: ",
+                    delay: 200
+                );
+
+            expressionField.AddVisibilityBinding(this, nameof(UseFuncExpression));
+
+            _uiControls.Add("FuncExpressionText", expressionField);
         }
 
         protected override void OnRender(DrawingContext dc)
@@ -174,45 +237,106 @@ namespace Modeling_Canvas.UIElements
             base.OnRender(dc);
         }
 
+
+        private List<(FigureStyle, Point[])> _cachedGeometry;
+
+        private bool _isGeometryDirty = true;
+
         protected override List<(FigureStyle, Point[])> GetElementGeometry()
         {
+            if (!_isGeometryDirty)
+            {
+                return _cachedGeometry;
+            }
+
             var geomtery = new List<(FigureStyle, Point[])>();
-            if(ShowParabola)
+
+            var pointsLine = new List<Point>();
+
+            try
             {
-                geomtery.Add((ParabolaStyle, GetParabolaPoints()));
-            }
-            if (ShowLine)
-            {
-                geomtery.Add((LineStyle, GetLinePoints()));
-            }
-            var functionLine = new List<Point>();
-            if (ShowPoints)
-            {
-                for(int i = 0; i < x.Length; i++)
+
+                if (UseFuncExpression && !string.IsNullOrEmpty(FuncExpression))
                 {
-                    if (x[i] == double.NaN || y[i] == double.NaN) continue;
-                    var functionPoint = new Point(x[i], y[i]);
-                    functionLine.Add(functionPoint);
-                    geomtery.Add((PointsStyle, Canvas.GetCircleGeometry(functionPoint, 0.01, precision: 10)));
+                    for (int i = 0; i < xValues.Length; i++)
+                    {
+                        var point = CalculateFunctionValue(xValues[i]);
+                        if (point.HasValue) pointsLine.Add(point.Value);
+                    }
+                    if (ShowPoints)
+                    {
+                        var accurateLinePoints = new List<Point>();
+                        for (double x = RangeStart; x < RangeEnd; x += 0.01)
+                        {
+                            var point = CalculateFunctionValue(x);
+                            if (point.HasValue) accurateLinePoints.Add(point.Value);
+                        }
+                        geomtery.Insert(0, (PointsLineStyle, accurateLinePoints.ToArray()));
+                    }
                 }
+                else
+                {
+                    pointsLine = Points;
+                    geomtery.Insert(0, (PointsLineStyle, pointsLine.ToArray()));
+                }
+
+                if (ShowParabola)
+                {
+                    geomtery.Add((ParabolaStyle, GetParabolaPoints(pointsLine)));
+                }
+                if (ShowLine)
+                {
+                    geomtery.Add((LineStyle, GetLinePoints(pointsLine)));
+                }
+                if (ShowPoints)
+                {
+                    if (ShowPoints)
+                    {
+                        foreach (var p in pointsLine)
+                        {
+                            geomtery.Add((PointsStyle, Canvas.GetCircleGeometry(p, 0.01, precision: 10)));
+                        }
+                    }
+                }
+                _isGeometryDirty = false;
+                _cachedGeometry = geomtery;
+                return geomtery;
+
+            } catch
+            {
+                return [];
             }
-            geomtery.Insert(0, (PointsLineStyle, functionLine.ToArray()));
-            return geomtery;
+
         }
 
-        private Point[] GetLinePoints()
+        private Point? CalculateFunctionValue(double x)
+        {
+            var expr = FuncExpression.ToEntity();
+            var substituted = expr.Substitute("x", x);
+            if (substituted.EvaluableNumerical)
+            {
+                double y = (double)substituted.EvalNumerical();
+                return new Point(x, y);
+            }
+            return null;
+        }
+
+        private Point[] GetLinePoints(List<Point> inputPoints)
         {
             var points = new List<Point>();
-            var lineParams = FitLine(x, y);
+            var lineParams = FitLine(inputPoints);
+            if (lineParams.Length != 2) return [];
+
             points.Add(new Point(RangeStart, lineParams[0] + lineParams[1] * RangeStart));
             points.Add(new Point(RangeEnd, lineParams[0] + lineParams[1] * RangeEnd));
             return points.ToArray();
         }
 
-        private Point[] GetParabolaPoints()
+        private Point[] GetParabolaPoints(List<Point> inputPoints)
         {
             var points = new List<Point>();
-            var lineParams = FitParabola(x, y);
+            var lineParams = FitParabola(inputPoints);
+            if (lineParams.Length != 3) return [];
             for (double i = RangeStart; i < RangeEnd; i += 0.01)
             {
                 points.Add(new Point(i, lineParams[0] + lineParams[1] * i + lineParams[2] * i * i));
@@ -230,20 +354,17 @@ namespace Modeling_Canvas.UIElements
                     .ToArray();
         }
 
-        private double[] FitLine(double[] x, double[] y)
+        public double[] FitLine(List<Point> points)
         {
-            var validPoints = x.Zip(y, (xi, yi) => new { xi, yi })
-                    .Where(point => !double.IsNaN(point.xi) && !double.IsNaN(point.yi))
-                    .ToList();
+            var validPoints = points.Where(p => !double.IsNaN(p.X) && !double.IsNaN(p.Y)).ToList();
 
-            if (validPoints.Count < 2)
-                throw new InvalidOperationException("Not enough valid points to fit a line.");
+            if (validPoints.Count < 2) return [];
 
-            var xValid = validPoints.Select(p => p.xi).ToArray();
-            var yValid = validPoints.Select(p => p.yi).ToArray();
-            int n = xValid.Length;
-
-            double sumX = xValid.Sum(), sumY = yValid.Sum(), sumXY = xValid.Zip(yValid, (xi, yi) => xi * yi).Sum(), sumX2 = xValid.Sum(xi => xi * xi);
+            int n = validPoints.Count;
+            double sumX = validPoints.Sum(p => p.X);
+            double sumY = validPoints.Sum(p => p.Y);
+            double sumXY = validPoints.Sum(p => p.X * p.Y);
+            double sumX2 = validPoints.Sum(p => p.X * p.X);
 
             double denom = n * sumX2 - sumX * sumX;
             double a1 = (n * sumXY - sumX * sumY) / denom;
@@ -252,21 +373,15 @@ namespace Modeling_Canvas.UIElements
             return new double[] { a0, a1 };
         }
 
-        private double[] FitParabola(double[] x, double[] y)
+        public double[] FitParabola(List<Point> points)
         {
-            var validPoints = x.Zip(y, (xi, yi) => new { xi, yi })
-                    .Where(point => !double.IsNaN(point.xi) && !double.IsNaN(point.yi))
-                    .ToList();
+            var validPoints = points.Where(p => !double.IsNaN(p.X) && !double.IsNaN(p.Y)).ToList();
 
-            if (validPoints.Count < 3)
-                throw new InvalidOperationException("Not enough valid points to fit a parabola.");
+            if (validPoints.Count < 3) return [];
 
-            var xValid = validPoints.Select(p => p.xi).ToArray();
-            var yValid = validPoints.Select(p => p.yi).ToArray();
-            int n = xValid.Length;
-
-            var A = Matrix<double>.Build.Dense(n, 3, (i, j) => j == 0 ? 1 : Math.Pow(xValid[i], j));
-            var Y = Vector<double>.Build.Dense(yValid);
+            int n = validPoints.Count;
+            var A = Matrix<double>.Build.Dense(n, 3, (i, j) => j == 0 ? 1 : Math.Pow(validPoints[i].X, j));
+            var Y = Vector<double>.Build.Dense(validPoints.Select(p => (double)p.Y).ToArray());
 
             var coeffs = (A.Transpose() * A).Inverse() * A.Transpose() * Y;
             return coeffs.ToArray();
