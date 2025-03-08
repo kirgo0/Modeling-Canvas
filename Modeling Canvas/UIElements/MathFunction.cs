@@ -281,6 +281,13 @@ namespace Modeling_Canvas.UIElements
             base.InitChildren();
         }
 
+        // Geometry references
+        private (FigureStyle, Point[])? _pointsLineGeometry;
+        private (FigureStyle, Point[])? _accurateLineGeometry;
+        private (FigureStyle, Point[])? _parabolaGeometry;
+        private (FigureStyle, Point[])? _lineGeometry;
+        private List<(FigureStyle, Point[])> _pointsGeometries = new();
+
         protected override List<(FigureStyle, Point[])> GetElementGeometry()
         {
             if (!_isGeometryDirty)
@@ -288,16 +295,15 @@ namespace Modeling_Canvas.UIElements
                 return _cachedGeometry;
             }
 
-            var geomtery = new List<(FigureStyle, Point[])>();
+            var geometry = new List<(FigureStyle, Point[])>();
 
             var pointsLine = new List<Point>();
 
             try
             {
-
                 if (UseFuncExpression && !string.IsNullOrEmpty(FuncExpression))
                 {
-                    for (double x = RangeStart; x < RangeEnd; x+=Step)
+                    for (double x = RangeStart; x < RangeEnd; x += Step)
                     {
                         var point = CalculateFunctionValue(x);
                         if (point.HasValue) pointsLine.Add(point.Value);
@@ -310,58 +316,59 @@ namespace Modeling_Canvas.UIElements
                             var point = CalculateFunctionValue(x);
                             if (point.HasValue) accurateLinePoints.Add(point.Value);
                         }
-                        geomtery.Insert(0, (PointsLineStyle, accurateLinePoints.ToArray()));
+                        _accurateLineGeometry = (PointsLineStyle, accurateLinePoints.ToArray());
+                        geometry.Insert(0, _accurateLineGeometry.Value);
                     }
                 }
                 else
                 {
                     pointsLine = Points;
-                    geomtery.Insert(0, (PointsLineStyle, pointsLine.ToArray()));
+                    _pointsLineGeometry = (PointsLineStyle, pointsLine.ToArray());
+                    geometry.Insert(0, _pointsLineGeometry.Value);
                 }
 
                 if (ShowParabola)
                 {
-                    geomtery.Add((ParabolaStyle, GetParabolaPoints(pointsLine)));
+                    _parabolaGeometry = (ParabolaStyle, GetParabolaPoints(pointsLine));
+                    geometry.Add(_parabolaGeometry.Value);
                 }
                 if (ShowLine)
                 {
-                    geomtery.Add((LineStyle, GetLinePoints(pointsLine)));
+                    _lineGeometry = (LineStyle, GetLinePoints(pointsLine));
+                    geometry.Add(_lineGeometry.Value);
                 }
                 if (ShowPoints)
                 {
-                    if (ShowPoints)
+                    _pointsGeometries.Clear();
+                    foreach (var p in pointsLine)
                     {
-                        foreach (var p in pointsLine)
-                        {
-                            geomtery.Add((PointsStyle, Canvas.GetCircleGeometry(p, 0.01, precision: 10)));
-                        }
+                        var pointGeometry = (PointsStyle, Canvas.GetCircleGeometry(p, 0.01, precision: 10));
+                        _pointsGeometries.Add(pointGeometry);
+                        geometry.Add(pointGeometry);
                     }
                 }
-                _isGeometryDirty = false;
-                _cachedGeometry = geomtery;
-                return geomtery;
 
-            } catch
+                _isGeometryDirty = false;
+                _cachedGeometry = geometry;
+                return geometry;
+            }
+            catch
             {
                 return [];
             }
-
         }
-
         private void AdjustCachedGeometry(double oldStart, double oldEnd, double newStart, double newEnd)
         {
-            if (_cachedGeometry == null)
+            if (_cachedGeometry == null || _cachedGeometry.Count == 0)
             {
                 _isGeometryDirty = true;
                 return;
             }
 
-            var newGeometry = new List<(FigureStyle, Point[])>();
-
-            // Iterate over a copy to prevent modification issues
-            foreach (var (style, points) in _cachedGeometry.ToList())
+            // Modify points line geometry
+            if (_pointsLineGeometry.HasValue)
             {
-                var pointList = points.ToList();
+                var pointsList = _pointsLineGeometry.Value.Item2.ToList();
 
                 // Expand range (add missing points)
                 if (newStart < oldStart)
@@ -369,7 +376,7 @@ namespace Modeling_Canvas.UIElements
                     for (double x = newStart; x < oldStart; x += Step)
                     {
                         var point = CalculateFunctionValue(x);
-                        if (point.HasValue) pointList.Insert(0, point.Value);
+                        if (point.HasValue) pointsList.Insert(0, point.Value);
                     }
                 }
                 if (newEnd > oldEnd)
@@ -377,19 +384,71 @@ namespace Modeling_Canvas.UIElements
                     for (double x = oldEnd; x < newEnd; x += Step)
                     {
                         var point = CalculateFunctionValue(x);
-                        if (point.HasValue) pointList.Add(point.Value);
+                        if (point.HasValue) pointsList.Add(point.Value);
                     }
                 }
 
-                // Trim range (remove excess points)
-                pointList.RemoveAll(p => p.X < newStart || p.X >= newEnd);
+                // Trim range
+                pointsList.RemoveAll(p => p.X < newStart || p.X >= newEnd);
 
-                // Add updated geometry to new list
-                newGeometry.Add((style, pointList.ToArray()));
+                _pointsLineGeometry = (_pointsLineGeometry.Value.Item1, pointsList.ToArray());
             }
 
-            // Assign new geometry safely after iteration
-            _cachedGeometry = newGeometry;
+            // Modify accurate line geometry
+            if (_accurateLineGeometry.HasValue)
+            {
+                var accuratePointsList = _accurateLineGeometry.Value.Item2.ToList();
+
+                if (newStart < oldStart)
+                {
+                    for (double x = newStart; x < oldStart; x += 0.01)
+                    {
+                        var point = CalculateFunctionValue(x);
+                        if (point.HasValue) accuratePointsList.Insert(0, point.Value);
+                    }
+                }
+                if (newEnd > oldEnd)
+                {
+                    for (double x = oldEnd; x < newEnd; x += 0.01)
+                    {
+                        var point = CalculateFunctionValue(x);
+                        if (point.HasValue) accuratePointsList.Add(point.Value);
+                    }
+                }
+
+                accuratePointsList.RemoveAll(p => p.X < newStart || p.X >= newEnd);
+                _accurateLineGeometry = (_accurateLineGeometry.Value.Item1, accuratePointsList.ToArray());
+            }
+
+            // Modify parabola and line geometries
+            if (_parabolaGeometry.HasValue)
+            {
+                _parabolaGeometry = (ParabolaStyle, GetParabolaPoints(_pointsLineGeometry.Value.Item2.ToList()));
+            }
+            if (_lineGeometry.HasValue)
+            {
+                _lineGeometry = (LineStyle, GetLinePoints(_pointsLineGeometry.Value.Item2.ToList()));
+            }
+
+            // Modify individual point geometries
+            _pointsGeometries.Clear();
+            foreach (var p in _pointsLineGeometry.Value.Item2)
+            {
+                _pointsGeometries.Add((PointsStyle, Canvas.GetCircleGeometry(p, 0.01, precision: 10)));
+            }
+
+            // Reconstruct _cachedGeometry in order
+            _cachedGeometry = new List<(FigureStyle, Point[])>();
+
+            if (_accurateLineGeometry.HasValue)
+                _cachedGeometry.Add(_accurateLineGeometry.Value);
+            if (_pointsLineGeometry.HasValue)
+                _cachedGeometry.Add(_pointsLineGeometry.Value);
+            if (_parabolaGeometry.HasValue)
+                _cachedGeometry.Add(_parabolaGeometry.Value);
+            if (_lineGeometry.HasValue)
+                _cachedGeometry.Add(_lineGeometry.Value);
+            _cachedGeometry.AddRange(_pointsGeometries);
 
             _isGeometryDirty = false;
         }
