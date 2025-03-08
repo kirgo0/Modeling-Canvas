@@ -71,7 +71,7 @@ namespace Modeling_Canvas.UIElements
                 {
                     var oldStart = _rangeStart;
                     _rangeStart = value;
-                    AdjustCachedGeometry(oldStart, _rangeEnd, _rangeStart, _rangeEnd);
+                    _isGeometryDirty = true;
                     OnPropertyChanged(nameof(RangeStart));
                 }
             }
@@ -86,7 +86,7 @@ namespace Modeling_Canvas.UIElements
                 {
                     var oldEnd = _rangeEnd;
                     _rangeEnd = value;
-                    AdjustCachedGeometry(_rangeStart, oldEnd, _rangeStart, _rangeEnd);
+                    _isGeometryDirty = true;
                     OnPropertyChanged(nameof(RangeEnd));
                     InvalidateCanvas();
                 }
@@ -251,8 +251,9 @@ namespace Modeling_Canvas.UIElements
                     StrokeColor = Brushes.Purple,
                     StrokeThickness = 2
                 },
-                AfterMoveAction = (e) => { 
-                    var line = (CustomLine) e;
+                AfterMoveAction = (e) =>
+                {
+                    var line = (CustomLine)e;
                     RangeStart = line.Points[0].X;
                 }
             };
@@ -268,7 +269,8 @@ namespace Modeling_Canvas.UIElements
                     StrokeColor = Brushes.Purple,
                     StrokeThickness = 2
                 },
-                AfterMoveAction = (e) => {
+                AfterMoveAction = (e) =>
+                {
                     var line = (CustomLine)e;
                     RangeEnd = line.Points[0].X;
                 }
@@ -297,7 +299,7 @@ namespace Modeling_Canvas.UIElements
 
                 if (UseFuncExpression && !string.IsNullOrEmpty(FuncExpression))
                 {
-                    for (double x = RangeStart; x < RangeEnd; x+=Step)
+                    for (double x = RangeStart; x < RangeEnd; x += Step)
                     {
                         var point = CalculateFunctionValue(x);
                         if (point.HasValue) pointsLine.Add(point.Value);
@@ -341,59 +343,13 @@ namespace Modeling_Canvas.UIElements
                 _cachedGeometry = geomtery;
                 return geomtery;
 
-            } catch
+            }
+            catch
             {
                 return [];
             }
 
         }
-
-        private void AdjustCachedGeometry(double oldStart, double oldEnd, double newStart, double newEnd)
-        {
-            if (_cachedGeometry == null)
-            {
-                _isGeometryDirty = true;
-                return;
-            }
-
-            var newGeometry = new List<(FigureStyle, Point[])>();
-
-            // Iterate over a copy to prevent modification issues
-            foreach (var (style, points) in _cachedGeometry.ToList())
-            {
-                var pointList = points.ToList();
-
-                // Expand range (add missing points)
-                if (newStart < oldStart)
-                {
-                    for (double x = newStart; x < oldStart; x += Step)
-                    {
-                        var point = CalculateFunctionValue(x);
-                        if (point.HasValue) pointList.Insert(0, point.Value);
-                    }
-                }
-                if (newEnd > oldEnd)
-                {
-                    for (double x = oldEnd; x < newEnd; x += Step)
-                    {
-                        var point = CalculateFunctionValue(x);
-                        if (point.HasValue) pointList.Add(point.Value);
-                    }
-                }
-
-                // Trim range (remove excess points)
-                pointList.RemoveAll(p => p.X < newStart || p.X >= newEnd);
-
-                // Add updated geometry to new list
-                newGeometry.Add((style, pointList.ToArray()));
-            }
-
-            // Assign new geometry safely after iteration
-            _cachedGeometry = newGeometry;
-
-            _isGeometryDirty = false;
-        }
-
 
         private Point? CalculateFunctionValue(double x)
         {

@@ -1,8 +1,4 @@
-﻿using Modeling_Canvas.Models;
-using Modeling_Canvas.UIElements;
-using Newtonsoft.Json;
-using System.IO;
-using System.Windows.Media;
+﻿using Modeling_Canvas.UIElements;
 
 public static class BezierCurveSerializer
 {

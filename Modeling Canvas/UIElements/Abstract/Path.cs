@@ -120,7 +120,7 @@ namespace Modeling_Canvas.UIElements.Abstract
                 linePoint.Add(Points.First().Position);
             }
 
-            return new() { ( Style, linePoint.ToArray() ) };
+            return new() { (Style, linePoint.ToArray()) };
         }
 
         protected override void InitControlPanel()

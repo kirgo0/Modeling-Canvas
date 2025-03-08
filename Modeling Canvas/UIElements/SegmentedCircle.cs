@@ -59,7 +59,7 @@ namespace Modeling_Canvas.UIElements
 
         protected override List<(FigureStyle, Point[])> GetElementGeometry()
         {
-            return new() { ( Style, Canvas.GetCircleSegmentGeometry(Center, Radius, StartDegrees, EndDegrees, Precision)) };
+            return new() { (Style, Canvas.GetCircleSegmentGeometry(Center, Radius, StartDegrees, EndDegrees, Precision)) };
         }
 
         protected override void InitControlPanel()

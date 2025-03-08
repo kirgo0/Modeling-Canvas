@@ -105,7 +105,7 @@ namespace Modeling_Canvas.UIElements
                     this,
                     nameof(StepSize),
                     "Step size",
-                    delay: 
+                    delay:
                     0
                     );
 

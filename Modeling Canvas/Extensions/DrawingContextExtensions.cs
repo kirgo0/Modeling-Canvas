@@ -1,8 +1,5 @@
-﻿using Modeling_Canvas.Enums;
-using Modeling_Canvas.UIElements;
-using System.Collections.Generic;
+﻿using Modeling_Canvas.UIElements;
 using System.Windows;
-using System.Windows.Media;
 
 namespace Modeling_Canvas.Extensions
 {
@@ -88,17 +85,17 @@ namespace Modeling_Canvas.Extensions
                 return canvas.GetCircleGeometry(center, radius, normalizedStart, normalizedEnd, precision);
             }
         }
-        
+
         public static Point[] GetBezierCurveGeometry(this CustomCanvas canvas, List<BezierPoint> points, bool isClosed = false, int steps = 100)
         {
             var lineList = new List<Point>();
-            for(var i = 0; i < points.Count - 1; i++)
+            for (var i = 0; i < points.Count - 1; i++)
             {
-                lineList.AddRange(CalculateBezierCurve(points[i], points[i+1], steps));
+                lineList.AddRange(CalculateBezierCurve(points[i], points[i + 1], steps));
             }
-            if(isClosed)
+            if (isClosed)
             {
-                lineList.AddRange(CalculateBezierCurve(points.LastOrDefault(),points.FirstOrDefault(),steps));
+                lineList.AddRange(CalculateBezierCurve(points.LastOrDefault(), points.FirstOrDefault(), steps));
             }
             return lineList.ToArray();
         }

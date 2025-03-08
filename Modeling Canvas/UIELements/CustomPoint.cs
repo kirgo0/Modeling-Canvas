@@ -85,7 +85,7 @@ namespace Modeling_Canvas.UIElements
             };
             _transformGeometry = false;
         }
-        
+
         protected override List<(FigureStyle, Point[])> GetElementGeometry()
         {
             if (_isGeometryDirty)

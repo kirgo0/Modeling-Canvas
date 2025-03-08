@@ -39,7 +39,7 @@ namespace Modeling_Canvas
             KeyDown += MainWindow_KeyDown;
         }
 
-        
+
 
         private void CenterWindowOnScreen()
         {

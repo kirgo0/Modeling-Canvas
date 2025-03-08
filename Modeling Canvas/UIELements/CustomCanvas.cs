@@ -200,7 +200,7 @@ namespace Modeling_Canvas.UIElements
 
         protected double GetOptimalGridFrequency()
         {
-            var calculatedFrequency = GridFrequency; 
+            var calculatedFrequency = GridFrequency;
             if (UnitSize < 10000) calculatedFrequency = 0.1;
             if (UnitSize < 500) calculatedFrequency = 0.25;
             if (UnitSize < 100) calculatedFrequency = 0.5;

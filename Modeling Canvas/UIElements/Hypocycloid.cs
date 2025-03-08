@@ -1,11 +1,9 @@
-﻿using Modeling_Canvas.Enums;
-using Modeling_Canvas.Extensions;
+﻿using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 
 

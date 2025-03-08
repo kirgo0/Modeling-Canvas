@@ -1,6 +1,4 @@
-﻿using Modeling_Canvas.Enums;
-using Modeling_Canvas.Extensions;
-using Modeling_Canvas.Models;
+﻿using Modeling_Canvas.Models;
 using System.Windows;
 using System.Windows.Media;
 
@@ -80,7 +78,7 @@ namespace Modeling_Canvas.UIElements
         {
             ControlPrevPoint.Visibility = ShowPrevControl ? ControlsVisibility : Visibility.Hidden;
             ControlNextPoint.Visibility = ShowNextControl ? ControlsVisibility : Visibility.Hidden;
-            
+
             if (ControlsVisibility is Visibility.Visible)
             {
                 if (ShowPrevControl)

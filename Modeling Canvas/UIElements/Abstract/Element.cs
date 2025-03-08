@@ -134,12 +134,12 @@ namespace Modeling_Canvas.UIElements
             {
                 if (_figureStyle != value)
                 {
-                    if(_figureStyle is not null)
+                    if (_figureStyle is not null)
                         _figureStyle.PropertyChanged -= FigureStyleChanged;
-                    
+
                     _figureStyle = value;
-                    
-                    if(_figureStyle is not null)
+
+                    if (_figureStyle is not null)
                         _figureStyle.PropertyChanged += FigureStyleChanged;
 
                     OnPropertyChanged(nameof(Style));
