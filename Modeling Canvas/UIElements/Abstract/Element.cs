@@ -66,54 +66,6 @@ namespace Modeling_Canvas.UIElements
 
         protected virtual bool SnappingEnabled { get => AllowSnapping ? InputManager.ShiftPressed : false; }
 
-        //public Brush Fill
-        //{
-        //    get => _fill;
-        //    set
-        //    {
-        //        if (_fill != value)
-        //        {
-        //            _fill = value;
-        //            OnPropertyChanged();
-        //            InvalidateCanvas();
-        //        }
-        //    }
-        //}
-
-        //public Brush Stroke
-        //{
-        //    get => _stroke;
-        //    set
-        //    {
-        //        if (_stroke != value)
-        //        {
-        //            _stroke = value;
-        //            OnPropertyChanged();
-        //            InvalidateCanvas();
-        //        }
-        //    }
-        //}
-
-        //public double StrokeThickness
-        //{
-        //    get => _strokeThickness;
-        //    set
-        //    {
-        //        if (_strokeThickness != value)
-        //        {
-        //            _strokeThickness = value;
-        //            OnPropertyChanged();
-        //            InvalidateCanvas();
-        //        }
-        //    }
-        //}
-
-        //public Pen StrokePen
-        //{
-        //    get => _strokePen is null ? new Pen(Stroke, StrokeThickness) : _strokePen;
-        //    set => _strokePen = value;
-        //}
-
         public virtual Visibility ControlsVisibility
         {
             get => ControlsVisible ? _controlsVisibility : Visibility.Hidden;
@@ -459,7 +411,6 @@ namespace Modeling_Canvas.UIElements
                     offset = Canvas.ReverseTransformPoint(currentMousePosition) - Canvas.ReverseTransformPoint(_lastMousePosition);
                     MoveElement(offset);
                     AfterMoveAction?.Invoke(this);
-
                 }
                 _lastMousePosition = currentMousePosition;
             }

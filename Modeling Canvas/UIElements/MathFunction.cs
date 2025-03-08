@@ -5,7 +5,6 @@ using Modeling_Canvas.Extensions;
 using Modeling_Canvas.Models;
 using System.Windows;
 using System.Windows.Media;
-using Xceed.Wpf.Toolkit.Primitives;
 
 namespace Modeling_Canvas.UIElements
 {
@@ -30,6 +29,14 @@ namespace Modeling_Canvas.UIElements
         private bool _useFuncExpression = false;
 
         private string _funcExpression;
+
+        private List<(FigureStyle, Point[])> _cachedGeometry;
+
+        private bool _isGeometryDirty = true;
+
+        public CustomLine StartBound { get; set; }
+
+        public CustomLine EndBound { get; set; }
 
         public FigureStyle ParabolaStyle { get; set; } = new()
         {
@@ -62,8 +69,9 @@ namespace Modeling_Canvas.UIElements
             {
                 if (_rangeStart != value)
                 {
+                    var oldStart = _rangeStart;
                     _rangeStart = value;
-                    _isGeometryDirty = true;
+                    AdjustCachedGeometry(oldStart, _rangeEnd, _rangeStart, _rangeEnd);
                     OnPropertyChanged(nameof(RangeStart));
                 }
             }
@@ -76,13 +84,15 @@ namespace Modeling_Canvas.UIElements
             {
                 if (_rangeEnd != value)
                 {
+                    var oldEnd = _rangeEnd;
                     _rangeEnd = value;
-                    _isGeometryDirty = true;
+                    AdjustCachedGeometry(_rangeStart, oldEnd, _rangeStart, _rangeEnd);
                     OnPropertyChanged(nameof(RangeEnd));
                     InvalidateCanvas();
                 }
             }
         }
+
 
         public double Step
         {
@@ -232,15 +242,44 @@ namespace Modeling_Canvas.UIElements
             _uiControls.Add("FuncExpressionText", expressionField);
         }
 
-        protected override void OnRender(DrawingContext dc)
+        protected override void InitChildren()
         {
-            base.OnRender(dc);
+            StartBound = new CustomLine(Canvas, false)
+            {
+                Style = new FigureStyle()
+                {
+                    StrokeColor = Brushes.Purple,
+                    StrokeThickness = 2
+                },
+                AfterMoveAction = (e) => { 
+                    var line = (CustomLine) e;
+                    RangeStart = line.Points[0].X;
+                }
+            };
+            AddChildren(StartBound);
+
+            StartBound.AddPoint(RangeStart, -7);
+            StartBound.AddPoint(RangeStart, 7);
+
+            EndBound = new CustomLine(Canvas, false)
+            {
+                Style = new FigureStyle()
+                {
+                    StrokeColor = Brushes.Purple,
+                    StrokeThickness = 2
+                },
+                AfterMoveAction = (e) => {
+                    var line = (CustomLine)e;
+                    RangeEnd = line.Points[0].X;
+                }
+            };
+            AddChildren(EndBound);
+
+            EndBound.AddPoint(RangeEnd, -7);
+            EndBound.AddPoint(RangeEnd, 7);
+
+            base.InitChildren();
         }
-
-
-        private List<(FigureStyle, Point[])> _cachedGeometry;
-
-        private bool _isGeometryDirty = true;
 
         protected override List<(FigureStyle, Point[])> GetElementGeometry()
         {
@@ -258,9 +297,9 @@ namespace Modeling_Canvas.UIElements
 
                 if (UseFuncExpression && !string.IsNullOrEmpty(FuncExpression))
                 {
-                    for (int i = 0; i < xValues.Length; i++)
+                    for (double x = RangeStart; x < RangeEnd; x+=Step)
                     {
-                        var point = CalculateFunctionValue(xValues[i]);
+                        var point = CalculateFunctionValue(x);
                         if (point.HasValue) pointsLine.Add(point.Value);
                     }
                     if (ShowPoints)
@@ -308,6 +347,53 @@ namespace Modeling_Canvas.UIElements
             }
 
         }
+
+        private void AdjustCachedGeometry(double oldStart, double oldEnd, double newStart, double newEnd)
+        {
+            if (_cachedGeometry == null)
+            {
+                _isGeometryDirty = true;
+                return;
+            }
+
+            var newGeometry = new List<(FigureStyle, Point[])>();
+
+            // Iterate over a copy to prevent modification issues
+            foreach (var (style, points) in _cachedGeometry.ToList())
+            {
+                var pointList = points.ToList();
+
+                // Expand range (add missing points)
+                if (newStart < oldStart)
+                {
+                    for (double x = newStart; x < oldStart; x += Step)
+                    {
+                        var point = CalculateFunctionValue(x);
+                        if (point.HasValue) pointList.Insert(0, point.Value);
+                    }
+                }
+                if (newEnd > oldEnd)
+                {
+                    for (double x = oldEnd; x < newEnd; x += Step)
+                    {
+                        var point = CalculateFunctionValue(x);
+                        if (point.HasValue) pointList.Add(point.Value);
+                    }
+                }
+
+                // Trim range (remove excess points)
+                pointList.RemoveAll(p => p.X < newStart || p.X >= newEnd);
+
+                // Add updated geometry to new list
+                newGeometry.Add((style, pointList.ToArray()));
+            }
+
+            // Assign new geometry safely after iteration
+            _cachedGeometry = newGeometry;
+
+            _isGeometryDirty = false;
+        }
+
 
         private Point? CalculateFunctionValue(double x)
         {
