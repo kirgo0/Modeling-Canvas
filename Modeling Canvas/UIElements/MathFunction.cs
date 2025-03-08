@@ -10,15 +10,13 @@ namespace Modeling_Canvas.UIElements
 {
     public class MathFunction : Element
     {
-        public PointShape PointsShape { get; set; } = PointShape.Circle;
-
         private double[] xValues;
 
         private double _rangeStart = -0.6;
 
-        private double _rangeEnd = 0.8;
+        private double _rangeEnd = 0.601;
 
-        private double _step = 0.1;
+        private double _step = 0.15;
 
         private bool _showParabola = true;
 
@@ -26,14 +24,18 @@ namespace Modeling_Canvas.UIElements
 
         private bool _showPoints = true;
 
-        private bool _useFuncExpression = false;
+        private bool _useFuncExpression = true;
 
-        private string _funcExpression;
+        private string _funcExpression = "sin(x^2e)*cos(1/x)";
+
+        private double _xToCalculate;
+
+        private double? _calculatedValue;
 
         private List<(FigureStyle, Point[])> _cachedGeometry;
 
         private bool _isGeometryDirty = true;
-
+        
         public CustomLine StartBound { get; set; }
 
         public CustomLine EndBound { get; set; }
@@ -72,7 +74,7 @@ namespace Modeling_Canvas.UIElements
                     var oldStart = _rangeStart;
                     _rangeStart = value;
                     _isGeometryDirty = true;
-                    OnPropertyChanged(nameof(RangeStart));
+                    OnPropertyChanged();
                 }
             }
         }
@@ -87,7 +89,7 @@ namespace Modeling_Canvas.UIElements
                     var oldEnd = _rangeEnd;
                     _rangeEnd = value;
                     _isGeometryDirty = true;
-                    OnPropertyChanged(nameof(RangeEnd));
+                    OnPropertyChanged();
                     InvalidateCanvas();
                 }
             }
@@ -103,7 +105,7 @@ namespace Modeling_Canvas.UIElements
                 {
                     _step = value;
                     _isGeometryDirty = true;
-                    OnPropertyChanged(nameof(Step));
+                    OnPropertyChanged();
                     InvalidateCanvas();
                 }
             }
@@ -118,7 +120,7 @@ namespace Modeling_Canvas.UIElements
                 {
                     _showParabola = value;
                     _isGeometryDirty = true;
-                    OnPropertyChanged(nameof(ShowParabola));
+                    OnPropertyChanged();
                     InvalidateCanvas();
                 }
             }
@@ -133,7 +135,7 @@ namespace Modeling_Canvas.UIElements
                 {
                     _showLine = value;
                     _isGeometryDirty = true;
-                    OnPropertyChanged(nameof(ShowLine));
+                    OnPropertyChanged();
                     InvalidateCanvas();
                 }
             }
@@ -148,7 +150,7 @@ namespace Modeling_Canvas.UIElements
                 {
                     _showPoints = value;
                     _isGeometryDirty = true;
-                    OnPropertyChanged(nameof(ShowPoints));
+                    OnPropertyChanged();
                     InvalidateCanvas();
                 }
             }
@@ -163,7 +165,7 @@ namespace Modeling_Canvas.UIElements
                 {
                     _useFuncExpression = value;
                     _isGeometryDirty = true;
-                    OnPropertyChanged(nameof(UseFuncExpression));
+                    OnPropertyChanged();
                     InvalidateCanvas();
                 }
             }
@@ -178,11 +180,39 @@ namespace Modeling_Canvas.UIElements
                 {
                     _funcExpression = value;
                     _isGeometryDirty = true;
-                    OnPropertyChanged(nameof(FuncExpression));
+                    OnPropertyChanged();
                     InvalidateCanvas();
                 }
             }
         }
+
+        public double XToCalculate
+        {
+            get => _xToCalculate;
+            set
+            {
+                if (_xToCalculate != value)
+                {
+                    _xToCalculate = value;
+                    CalculatedValue = CalculateFunctionValue(XToCalculate)?.Y;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public double? CalculatedValue
+        {
+            get => _calculatedValue;
+            set
+            {
+                if (_calculatedValue != value)
+                {
+                    _calculatedValue = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
 
         public MathFunction(CustomCanvas canvas, bool hasAnchorPoint = true) : base(canvas, hasAnchorPoint)
         {
@@ -227,8 +257,6 @@ namespace Modeling_Canvas.UIElements
                     nameof(UseFuncExpression)
                 );
 
-            _uiControls.Add("UseFuncExpression", useFuncCheckbox);
-
             var expressionField =
                 WpfHelper.CreateLabeledTextBox(
                     this,
@@ -240,6 +268,30 @@ namespace Modeling_Canvas.UIElements
             expressionField.AddVisibilityBinding(this, nameof(UseFuncExpression));
 
             _uiControls.Add("FuncExpressionText", expressionField);
+
+
+            var xToCalculateTextbox =
+                WpfHelper.CreateLabeledTextBox(
+                    this,
+                    nameof(XToCalculate),
+                    labelText: "X to calculate: ",
+                    delay: 200
+                );
+
+            xToCalculateTextbox.AddVisibilityBinding(this, nameof(UseFuncExpression));
+
+            _uiControls.Add("XToCalculateText", xToCalculateTextbox);
+
+            var calculatedValueLabel =
+                WpfHelper.CreateValueTextBlock(
+                    "Y",
+                    this,
+                    nameof(CalculatedValue)
+                    );
+
+            calculatedValueLabel.AddVisibilityBinding(this, nameof(UseFuncExpression));
+
+            _uiControls.Add("CalculatedValue", calculatedValueLabel);
         }
 
         protected override void InitChildren()
@@ -391,8 +443,8 @@ namespace Modeling_Canvas.UIElements
             if (step < 0) throw new ArgumentException("Step must be greater than zero.", nameof(step));
 
             return Enumerable.Range(0, (int)Math.Ceiling((end - start) / step) + 1)
-                    .Select(i => Math.Round(start + i * step, 10)) // Rounding to avoid floating-point precision issues
-                    .Where(value => value <= end) // Ensure we don't exceed the end value due to precision errors
+                    .Select(i => Math.Round(start + i * step, 10))
+                    .Where(value => value <= end)
                     .ToArray();
         }
 
